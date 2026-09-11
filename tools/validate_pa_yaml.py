@@ -35,7 +35,19 @@ def lade_schema() -> dict:
     enum_schema = yaml.safe_load(enum_datei.read_text(encoding="utf-8"))
     # Im Original ist ControlTypeId-1P-controls-enum als "true" hinterlegt (Platzhalter).
     # Wir setzen die echte Control-Liste ein, damit falsche Control-Typen auffallen.
-    schema["definitions"]["ControlTypeId-1P-controls-enum"] = {"enum": enum_schema["enum"]}
+    controls = list(enum_schema["enum"])
+    # Die veroeffentlichte Liste kennt aus dem Classic-Namensraum nur
+    # "Classic/Icon". Power Apps Studio akzeptiert dort aber die gesamte
+    # klassische Familie - belegt durch den Tenant-Test vom 11.09.2026:
+    # "Classic/Icon" lief fehlerfrei durch, waehrend die blanken Namen
+    # Button, TextInput, DropDown, DatePicker und CheckBox auf die MODERNEN
+    # Controls aufloesen und deren abweichende Eigenschaften verlangen.
+    controls += [
+        "Classic/Button", "Classic/TextInput", "Classic/DropDown",
+        "Classic/DatePicker", "Classic/CheckBox", "Classic/ComboBox",
+        "Classic/Toggle", "Classic/Radio", "Classic/Slider", "Classic/ListBox",
+    ]
+    schema["definitions"]["ControlTypeId-1P-controls-enum"] = {"enum": controls}
 
     # BEFUND im offiziellen Schema (Stand des mitgelieferten Abzugs):
     # "CodeComponent-ComponentName".pattern ist ein ungueltiger regulaerer Ausdruck
@@ -56,6 +68,32 @@ def lade_schema() -> dict:
 # tatsaechlich belegt ist.
 ERLAUBTE_VARIANTEN = {
     "GroupContainer": {"GridLayout", "AutoLayout", "ManualLayout"},
+}
+
+# Control-Typen, bei denen Studio eine Variante ZWINGEND verlangt (PA1011).
+VARIANTE_PFLICHT = {"Gallery"}
+
+# Eigenschaften, die Studio fuer eine Kombination aus Control-Typ und Variante
+# ablehnt (PA2108). Aus dem Tenant-Test vom 11.09.2026.
+VERBOTENE_EIGENSCHAFTEN = {
+    ("GroupContainer", "AutoLayout"): {"LayoutMode"},
+}
+
+# Die blanken Namen loesen auf die MODERNEN Controls auf. Wer dort die
+# klassischen Eigenschaften verwendet, bekommt PA2108. Diese Liste nennt je
+# Control-Typ die Eigenschaften, die dann fehlschlagen - und damit zugleich
+# den Hinweis, dass "Classic/<Name>" gemeint war.
+MODERNE_CONTROLS_OHNE = {
+    "Button": {"Fill", "Color", "HoverFill", "HoverColor", "PressedFill",
+               "PressedColor", "DisabledFill", "DisabledColor", "Size",
+               "RadiusTopLeft", "RadiusTopRight", "RadiusBottomLeft",
+               "RadiusBottomRight"},
+    "TextInput": {"Default", "HintText", "Reset", "DelayOutput", "Format",
+                  "Size", "RadiusTopLeft", "RadiusTopRight",
+                  "RadiusBottomLeft", "RadiusBottomRight"},
+    "DatePicker": {"DefaultDate", "Reset", "StartYear", "Size"},
+    "DropDown": {"Default", "Reset", "Size", "Value"},
+    "CheckBox": {"Text", "Default", "Reset", "Size", "Color"},
 }
 
 
@@ -80,9 +118,33 @@ def pruefe_varianten(knoten, pfad="", fehler=None):
                 if not isinstance(inhalt, dict):
                     continue
                 p = f"{pfad}/{name}"
+                typ = (inhalt.get("Control") or "").split("@")[0]
+                eigenschaften = set((inhalt.get("Properties") or {}).keys())
                 variante = inhalt.get("Variant")
+
+                if typ in VARIANTE_PFLICHT and not variante:
+                    fehler.append(
+                        f"{p}: Control-Typ {typ!r} verlangt zwingend eine Variante "
+                        f"(Studio meldet sonst PA1011)."
+                    )
+
+                verboten = VERBOTENE_EIGENSCHAFTEN.get((typ, variante or ""), set())
+                for e in sorted(eigenschaften & verboten):
+                    fehler.append(
+                        f"{p}: Eigenschaft {e!r} ist fuer {typ!r} mit Variante "
+                        f"{variante!r} nicht zulaessig (PA2108)."
+                    )
+
+                klassisch = MODERNE_CONTROLS_OHNE.get(typ, set())
+                treffer = sorted(eigenschaften & klassisch)
+                if treffer:
+                    fehler.append(
+                        f"{p}: {typ!r} loest auf das MODERNE Control auf, aber "
+                        f"{', '.join(treffer)} sind Eigenschaften des klassischen. "
+                        f"Vermutlich ist 'Classic/{typ}' gemeint."
+                    )
+
                 if isinstance(variante, str) and variante:
-                    typ = (inhalt.get("Control") or "").split("@")[0]
                     erlaubt = ERLAUBTE_VARIANTEN.get(typ)
                     if erlaubt is not None and variante not in erlaubt:
                         fehler.append(

@@ -102,6 +102,95 @@ erwartungsgemaess 55 Fehler.
 > verlangen, nennt die Fehlermeldung – wie oben – die gueltigen Alternativen.
 > Diese lassen sich dann in `ERLAUBTE_VARIANTEN` im Pruefwerkzeug eintragen.
 
+### A1c – Controls und Eigenschaften (zweiter Tenant-Befund)
+
+Der zweite Einfuegeversuch lieferte rund 270 Meldungen in drei Gruppen. Sie
+sind alle behoben; die Auswertung ist festgehalten, weil sie die
+Control-Auswahl der App begruendet.
+
+> **Zur Zeilennummerierung:** Studio zaehlt ab der ersten Inhaltszeile, nicht
+> ab dem Kommentarkopf. Beim damaligen Stand lag der Versatz bei 21 Zeilen
+> (Studio-Zeile 10 = Dateizeile 31). Ohne diese Umrechnung zeigen die
+> Fehlerstellen auf die falschen Steuerelemente.
+
+**Gruppe 1 – `LayoutMode` (55x, PA2108)**
+
+```
+Unknown property 'LayoutMode' for control type 'GroupContainer'
+and variant 'AutoLayout'.
+```
+
+Die Variante `AutoLayout` legt den Layoutmodus bereits fest; die Eigenschaft
+ist daneben nicht zulaessig. Ersatzlos entfernt – die Richtung steht
+unveraendert in `LayoutDirection`.
+
+**Gruppe 2 – `Variant` bei Galerien (7x, PA1011)**
+
+```
+The keyword 'Variant' is required but is missing or empty.
+```
+
+Alle sieben Fundstellen waren die sieben Galerien. Im Schritt davor hatte ich
+deren Variante entfernt, weil der gueltige Name nicht belegt war – fuer
+`Gallery` ist sie aber **Pflicht**. `Classic/Icon` stand in derselben Liste
+nicht: dort ist die Variante optional, das Entfernen war dort richtig.
+
+**Gruppe 3 – klassische Eigenschaften an modernen Controls (ca. 210x, PA2108)**
+
+```
+Unknown property 'Fill'   for control type 'Button'.
+Unknown property 'Default' for control type 'TextInput'.
+Unknown property 'Text'   for control type 'CheckBox'.
+```
+
+Der entscheidende Befund. Die **blanken** Namen `Button`, `TextInput`,
+`DropDown`, `DatePicker` und `CheckBox` loesen in dieser Umgebung auf die
+**modernen** Controls auf. Deren Eigenschaftssatz ist ein anderer:
+`Fill`, `Color`, `HoverFill`, `PressedFill`, `Size`, `Radius*`, `Default`,
+`HintText`, `Reset`, `DelayOutput`, `DefaultDate`, `StartYear` existieren dort
+nicht.
+
+Nicht beanstandet wurden dagegen `Label`, `Rectangle`, `Classic/Icon`,
+`GroupContainer` und die Eigenschaften der Galerien. `Label` behaelt also
+`Size`, `Color` und `Fill` – die blanken Namen sind **nicht** einheitlich
+modern.
+
+**Loesung:** Die fuenf Eingabe-Controls auf den klassischen Namensraum
+umgestellt. `Classic/Icon` war fehlerfrei durchgelaufen und belegt, dass es
+den Namensraum gibt; die klassischen Controls haben genau den
+Eigenschaftssatz, gegen den die App geschrieben ist. Es musste deshalb
+**keine einzige Eigenschaft** umgeschrieben werden.
+
+| Control | vorher | jetzt | Anzahl |
+|---|---|---|---|
+| Schaltflaeche | `Button` | `Classic/Button` | 31 |
+| Eingabefeld | `TextInput` | `Classic/TextInput` | 25 |
+| Auswahlliste | `DropDown` | `Classic/DropDown` | 5 |
+| Datumsauswahl | `DatePicker` | `Classic/DatePicker` | 3 |
+| Kontrollkaestchen | `CheckBox` | `Classic/CheckBox` | 3 |
+
+> **Warum nicht die modernen Controls?** Die Microsoft-Dokumentation zu den
+> modernen Controls fuehrt `Size`, `Color` und `RadiusTopLeft` als gueltige
+> Eigenschaften des modernen Button – Ihre Umgebung lehnt sie ab. Die Doku
+> beschreibt also eine **neuere Controlversion**, als der Tenant ausliefert.
+> Ein Umschreiben auf moderne Eigenschaftsnamen waere damit gegen eine
+> Version erfolgt, die hier niemand sehen kann. Die klassischen Controls sind
+> versionsstabil und liefern die geplante Gestaltung (eigene Fuellfarben,
+> Hover- und Pressed-Zustaende, Eckenradien) unveraendert.
+
+**Verbleibendes Risiko:** Der Variantenname `Vertical` fuer `Gallery` ist
+nicht belegt. Er ist die naheliegende Entsprechung zu
+`GridLayout`/`AutoLayout`/`ManualLayout` beim Container. Ist er falsch, nennt
+Studio – wie bei `GroupContainer` geschehen – die gueltigen Alternativen in
+der Meldung. Moeglich ist ausserdem, dass Studio die Eigenschaften der
+Galerien beim letzten Lauf gar nicht geprueft hat, weil die Variante fehlte.
+
+**Aufgenommen in `tools/validate_pa_yaml.py`:** Variantenpflicht je
+Control-Typ, verbotene Eigenschaften je Control-Variante-Kombination und die
+Erkennung klassischer Eigenschaften an modernen Controls samt Hinweis auf
+`Classic/<Name>`. Der Gegentest mit je einem kuenstlich eingebauten Fehler
+meldet alle drei Gruppen.
+
 ### A2 – Querverweise
 
 | Geprüft | Anzahl | Ergebnis |

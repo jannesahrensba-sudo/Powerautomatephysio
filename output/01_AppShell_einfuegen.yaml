@@ -28,7 +28,6 @@
       Width: =Parent.Width
       X: =0
       Y: =0
-      LayoutMode: =LayoutMode.Auto
       # Breit (Desktop, iPad quer): Navigation links neben dem Inhalt.
       # Schmal (iPhone, iPad hochkant schmal): Navigation oben, Inhalt darunter.
       LayoutDirection: =If(Parent.Width >= bpBreit, LayoutDirection.Horizontal, LayoutDirection.Vertical)
@@ -48,7 +47,6 @@
             FillPortions: =0
             Width: =If(conPraxisApp.Width >= bpBreit, 248, conPraxisApp.Width)
             Height: =If(conPraxisApp.Width >= bpBreit, conPraxisApp.Height, 132)
-            LayoutMode: =LayoutMode.Auto
             LayoutDirection: =LayoutDirection.Vertical
             LayoutAlignItems: =LayoutAlignItems.Stretch
             LayoutGap: =0
@@ -90,6 +88,7 @@
             # senkrecht und auf schmalen Geraeten waagerecht laufen kann.
             - galNav:
                 Control: Gallery
+                Variant: Vertical
                 Properties:
                   Items: |-
                     =Table(
@@ -186,7 +185,6 @@
           Properties:
             Fill: =clrHintergrund
             FillPortions: =1
-            LayoutMode: =LayoutMode.Auto
             LayoutDirection: =LayoutDirection.Vertical
             LayoutAlignItems: =LayoutAlignItems.Stretch
             LayoutGap: =0
@@ -200,7 +198,6 @@
                   Fill: =clrFlaeche
                   FillPortions: =0
                   Height: =If(conPraxisApp.Width >= bpMittel, 88, 128)
-                  LayoutMode: =LayoutMode.Auto
                   LayoutDirection: =If(conPraxisApp.Width >= bpMittel, LayoutDirection.Horizontal, LayoutDirection.Vertical)
                   LayoutAlignItems: =LayoutAlignItems.Stretch
                   LayoutGap: =spM
@@ -218,7 +215,6 @@
                       Properties:
                         Fill: =RGBA(0, 0, 0, 0)
                         FillPortions: =1
-                        LayoutMode: =LayoutMode.Auto
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =2
@@ -269,7 +265,6 @@
                         Fill: =If(IsBlank(gblRezept), clrHintergrund, clrAkzentSanft)
                         FillPortions: =0
                         Width: =If(conPraxisApp.Width >= bpMittel, 300, conKopf.Width - 2 * spL)
-                        LayoutMode: =LayoutMode.Auto
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =0
@@ -333,7 +328,7 @@
                               PaddingLeft: =0
                               VerticalAlign: =VerticalAlign.Middle
                   - btnKopfAktualisieren:
-                      Control: Button
+                      Control: Classic/Button
                       Properties:
                         Text: ="Stand aktualisieren"
                         OnSelect: |-
@@ -377,7 +372,6 @@
                         clrAkzentSanft)
                   FillPortions: =0
                   Height: =52
-                  LayoutMode: =LayoutMode.Auto
                   LayoutDirection: =LayoutDirection.Horizontal
                   LayoutAlignItems: =LayoutAlignItems.Center
                   LayoutGap: =spM
@@ -402,7 +396,7 @@
                         VerticalAlign: =VerticalAlign.Middle
                         Live: =Live.Polite
                   - btnMeldungZu:
-                      Control: Button
+                      Control: Classic/Button
                       Properties:
                         Text: ="Schließen"
                         OnSelect: |-
@@ -430,7 +424,6 @@
                   Fill: =clrWarnungSanft
                   FillPortions: =0
                   Height: =60
-                  LayoutMode: =LayoutMode.Auto
                   LayoutDirection: =LayoutDirection.Horizontal
                   LayoutAlignItems: =LayoutAlignItems.Center
                   LayoutGap: =spS
@@ -450,7 +443,7 @@
                         VerticalAlign: =VerticalAlign.Middle
                         Live: =Live.Assertive
                   - btnWechselBleiben:
-                      Control: Button
+                      Control: Classic/Button
                       Properties:
                         Text: ="Hier bleiben"
                         OnSelect: |-
@@ -468,7 +461,7 @@
                         RadiusBottomLeft: =radM
                         RadiusBottomRight: =radM
                   - btnWechselVerwerfen:
-                      Control: Button
+                      Control: Classic/Button
                       Properties:
                         Text: ="Eingaben verwerfen"
                         OnSelect: |-
@@ -499,7 +492,6 @@
                 Properties:
                   Fill: =RGBA(0, 0, 0, 0)
                   FillPortions: =1
-                  LayoutMode: =LayoutMode.Auto
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Stretch
                   LayoutGap: =0
@@ -515,7 +507,6 @@
                         Visible: =gblAnsicht = "Heute"
                         Fill: =RGBA(0, 0, 0, 0)
                         FillPortions: =1
-                        LayoutMode: =LayoutMode.Auto
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =spM
@@ -546,7 +537,6 @@
                               Fill: =clrFlaeche
                               FillPortions: =0
                               Height: =360
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -594,6 +584,7 @@
                                     PaddingLeft: =0
                               - galHeuteDoku:
                                   Control: Gallery
+                                  Variant: Vertical
                                   Properties:
                                     # Zeitraumfilter statt "= Today()", weil die Datumsspalten
                                     # teilweise noch ohne Uhrzeit gefuehrt werden.
@@ -695,7 +686,7 @@
                                           PaddingRight: =0
                                           OnSelect: =Select(Parent)
                                     - btnHeuteOeffnen:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           # Oeffnet den VORHANDENEN Datensatz. Es wird bewusst
                                           # keine zweite Dokumentation angelegt.
@@ -736,7 +727,6 @@
                               Fill: =clrFlaeche
                               FillPortions: =0
                               Height: =280
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -765,6 +755,7 @@
                                     PaddingLeft: =0
                               - galHeuteAufgaben:
                                   Control: Gallery
+                                  Variant: Vertical
                                   Properties:
                                     Items: |-
                                       =Sort(
@@ -804,7 +795,7 @@
                                           PaddingLeft: =0
                                           OnSelect: =Select(Parent)
                                     - btnAufgZuAufgaben:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: ="Bearbeiten"
                                           OnSelect: |-
@@ -834,7 +825,6 @@
                         Visible: =gblAnsicht = "Patienten"
                         Fill: =RGBA(0, 0, 0, 0)
                         FillPortions: =1
-                        LayoutMode: =LayoutMode.Auto
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =spM
@@ -850,7 +840,6 @@
                               Fill: =RGBA(0, 0, 0, 0)
                               FillPortions: =0
                               Height: =56
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutAlignItems: =LayoutAlignItems.Center
                               LayoutGap: =spM
@@ -868,7 +857,7 @@
                                     PaddingLeft: =0
                                     VerticalAlign: =VerticalAlign.Middle
                               - btnPatNeu:
-                                  Control: Button
+                                  Control: Classic/Button
                                   Properties:
                                     Text: ="Patient aufnehmen"
                                     OnSelect: |-
@@ -901,7 +890,6 @@
                             Properties:
                               Fill: =clrFlaeche
                               FillPortions: =1
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -918,7 +906,7 @@
                               RadiusBottomRight: =radL
                             Children:
                               - txtPatSuche:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Default: =""
                                     HintText: ="Nachname oder Vorname eingeben"
@@ -958,6 +946,7 @@
                                     PaddingLeft: =0
                               - galPatienten:
                                   Control: Gallery
+                                  Variant: Vertical
                                   Properties:
                                     Items: |-
                                       =If(
@@ -1031,7 +1020,7 @@
                                           PaddingLeft: =0
                                           OnSelect: =Select(Parent)
                                     - btnPatOeffnen:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: ="Akte öffnen"
                                           OnSelect: |-
@@ -1070,7 +1059,6 @@
                         Visible: =gblAnsicht = "Patientenakte"
                         Fill: =RGBA(0, 0, 0, 0)
                         FillPortions: =1
-                        LayoutMode: =LayoutMode.Auto
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =spM
@@ -1101,7 +1089,6 @@
                               Fill: =clrFlaeche
                               FillPortions: =0
                               Height: =340
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -1134,7 +1121,6 @@
                                   Properties:
                                     Fill: =RGBA(0, 0, 0, 0)
                                     FillPortions: =1
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutAlignItems: =LayoutAlignItems.Start
                                     LayoutWrap: =true
@@ -1148,7 +1134,6 @@
                                           FillPortions: =0
                                           Width: =If(conPraxisApp.Width >= bpBreit, 300, conAkteFelder.Width - spM)
                                           Height: =78
-                                          LayoutMode: =LayoutMode.Auto
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutAlignItems: =LayoutAlignItems.Stretch
                                           LayoutGap: =spXS
@@ -1164,7 +1149,7 @@
                                                 Wrap: =false
                                                 PaddingLeft: =0
                                           - txtStammVorname:
-                                              Control: TextInput
+                                              Control: Classic/TextInput
                                               Properties:
                                                 Default: =Coalesce(gblPatient.Vorname, "")
                                                 Reset: =gblFormularReset
@@ -1188,7 +1173,6 @@
                                           FillPortions: =0
                                           Width: =If(conPraxisApp.Width >= bpBreit, 300, conAkteFelder.Width - spM)
                                           Height: =78
-                                          LayoutMode: =LayoutMode.Auto
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutAlignItems: =LayoutAlignItems.Stretch
                                           LayoutGap: =spXS
@@ -1204,7 +1188,7 @@
                                                 Wrap: =false
                                                 PaddingLeft: =0
                                           - txtStammNachname:
-                                              Control: TextInput
+                                              Control: Classic/TextInput
                                               Properties:
                                                 Default: =Coalesce(gblPatient.Nachname, "")
                                                 Reset: =gblFormularReset
@@ -1228,7 +1212,6 @@
                                           FillPortions: =0
                                           Width: =If(conPraxisApp.Width >= bpBreit, 300, conAkteFelder.Width - spM)
                                           Height: =78
-                                          LayoutMode: =LayoutMode.Auto
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutAlignItems: =LayoutAlignItems.Stretch
                                           LayoutGap: =spXS
@@ -1244,7 +1227,7 @@
                                                 Wrap: =false
                                                 PaddingLeft: =0
                                           - dpStammGeburt:
-                                              Control: DatePicker
+                                              Control: Classic/DatePicker
                                               Properties:
                                                 DefaultDate: =gblPatient.Geburtsdatum
                                                 Reset: =gblFormularReset
@@ -1264,7 +1247,6 @@
                                           FillPortions: =0
                                           Width: =If(conPraxisApp.Width >= bpBreit, 300, conAkteFelder.Width - spM)
                                           Height: =78
-                                          LayoutMode: =LayoutMode.Auto
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutAlignItems: =LayoutAlignItems.Stretch
                                           LayoutGap: =spXS
@@ -1281,7 +1263,7 @@
                                                 Wrap: =false
                                                 PaddingLeft: =0
                                           - txtStammNummer:
-                                              Control: TextInput
+                                              Control: Classic/TextInput
                                               Properties:
                                                 Default: =Coalesce(gblPatient.'Patienten ID', "")
                                                 Reset: =gblFormularReset
@@ -1304,7 +1286,6 @@
                                     Fill: =RGBA(0, 0, 0, 0)
                                     FillPortions: =0
                                     Height: =hTouch + spS
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutJustifyContent: =LayoutJustifyContent.End
@@ -1323,7 +1304,7 @@
                                           PaddingLeft: =0
                                           VerticalAlign: =VerticalAlign.Middle
                                     - btnAkteSpeichern:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: =If(gblSpeichert, "Speichert ...", "Stammdaten speichern")
                                           # Doppelklickschutz: waehrend des Schreibens gesperrt.
@@ -1397,7 +1378,6 @@
                               Fill: =clrFlaeche
                               FillPortions: =0
                               Height: =340
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -1437,6 +1417,7 @@
                                     PaddingLeft: =0
                               - galVerlauf:
                                   Control: Gallery
+                                  Variant: Vertical
                                   Properties:
                                     Items: |-
                                       =Sort(
@@ -1502,7 +1483,7 @@
                                           PaddingLeft: =0
                                           OnSelect: =Select(Parent)
                                     - btnVerlaufOeffnen:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: ="Anzeigen"
                                           OnSelect: |-
@@ -1541,7 +1522,6 @@
                         Visible: =gblAnsicht = "Aufnahme"
                         Fill: =RGBA(0, 0, 0, 0)
                         FillPortions: =1
-                        LayoutMode: =LayoutMode.Auto
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =spM
@@ -1576,7 +1556,6 @@
                               Fill: =RGBA(0, 0, 0, 0)
                               FillPortions: =0
                               Height: =8
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spXS
@@ -1615,7 +1594,6 @@
                               Fill: =clrFlaeche
                               FillPortions: =0
                               Height: =330
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -1648,7 +1626,7 @@
                                     Wrap: =true
                                     PaddingLeft: =0
                               - txtAufnVorname:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Visible: =IsBlank(gblPatient)
                                     Default: =""
@@ -1666,7 +1644,7 @@
                                     RadiusBottomRight: =radM
                                     OnChange: =Set(gblUngespeichert, true)
                               - txtAufnNachname:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Visible: =IsBlank(gblPatient)
                                     Default: =""
@@ -1684,7 +1662,7 @@
                                     RadiusBottomRight: =radM
                                     OnChange: =Set(gblUngespeichert, true)
                               - dpAufnGeburt:
-                                  Control: DatePicker
+                                  Control: Classic/DatePicker
                                   Properties:
                                     Visible: =IsBlank(gblPatient)
                                     DefaultDate: =Blank()
@@ -1698,7 +1676,7 @@
                                     Size: =fsNormal
                                     OnChange: =Set(gblUngespeichert, true)
                               - btnAufnS1Weiter:
-                                  Control: Button
+                                  Control: Classic/Button
                                   Properties:
                                     Text: |-
                                       =If(gblSpeichert, "Speichert ...",
@@ -1774,7 +1752,6 @@
                               Fill: =clrFlaeche
                               FillPortions: =0
                               Height: =430
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -1802,7 +1779,7 @@
                                     Wrap: =false
                                     PaddingLeft: =0
                               - txtAufnDiagnose:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     # Anzeigename "Diagnose laut Rezept", intern DiagnoselautRezept.
                                     # Es wird bewusst KEIN zweites Feld "Diagnose" angelegt.
@@ -1827,14 +1804,13 @@
                                     Fill: =RGBA(0, 0, 0, 0)
                                     FillPortions: =0
                                     Height: =hEingabe
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutWrap: =true
                                     LayoutGap: =spS
                                   Children:
                                     - txtAufnEinheiten:
-                                        Control: TextInput
+                                        Control: Classic/TextInput
                                         Properties:
                                           # Anzeigename der Rezeptmenge ist "Behandlungseinheiten".
                                           # Kein Feld "EinheitenSoll" anlegen.
@@ -1854,7 +1830,7 @@
                                           RadiusBottomRight: =radM
                                           OnChange: =Set(gblUngespeichert, true)
                                     - txtAufnFrequenz:
-                                        Control: TextInput
+                                        Control: Classic/TextInput
                                         Properties:
                                           Default: =Coalesce(gblRezept.Frequenz, "")
                                           Reset: =gblFormularReset
@@ -1871,7 +1847,7 @@
                                           RadiusBottomRight: =radM
                                           OnChange: =Set(gblUngespeichert, true)
                               - txtAufnVerordner:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Default: =Coalesce(gblRezept.Verordner, "")
                                     Reset: =gblFormularReset
@@ -1888,7 +1864,7 @@
                                     RadiusBottomRight: =radM
                                     OnChange: =Set(gblUngespeichert, true)
                               - txtAufnAltEinheiten:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     # Bereits außerhalb der App erbrachte Einheiten dieses Rezepts.
                                     # Das ist NICHT die Behandlungsmenge einer einzelnen Doku-Zeile.
@@ -1914,13 +1890,12 @@
                                     Fill: =RGBA(0, 0, 0, 0)
                                     FillPortions: =0
                                     Height: =hTouch
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutGap: =spS
                                   Children:
                                     - btnAufnS2Zurueck:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: ="Zurück"
                                           OnSelect: =Set(gblAufnahmeSchritt, 1)
@@ -1937,7 +1912,7 @@
                                           RadiusBottomLeft: =radM
                                           RadiusBottomRight: =radM
                                     - btnAufnS2Weiter:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: =If(gblSpeichert, "Speichert ...", "Rezept als Entwurf sichern und weiter")
                                           DisplayMode: =If(gblSpeichert, DisplayMode.Disabled, DisplayMode.Edit)
@@ -2009,7 +1984,6 @@
                               Fill: =clrFlaeche
                               FillPortions: =0
                               Height: =520
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -2047,7 +2021,7 @@
                                     Wrap: =true
                                     PaddingLeft: =0
                               - txtAufnBeschwerden:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Default: =Coalesce(gblRezept.Beschwerden, "")
                                     Reset: =gblFormularReset
@@ -2065,7 +2039,7 @@
                                     RadiusBottomRight: =radM
                                     OnChange: =Set(gblUngespeichert, true)
                               - txtAufnAnamnese:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Default: =Coalesce(gblRezept.Anamnese, "")
                                     Reset: =gblFormularReset
@@ -2083,7 +2057,7 @@
                                     RadiusBottomRight: =radM
                                     OnChange: =Set(gblUngespeichert, true)
                               - txtAufnErstbefund:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Default: =Coalesce(gblRezept.Erstbefund, "")
                                     Reset: =gblFormularReset
@@ -2101,7 +2075,7 @@
                                     RadiusBottomRight: =radM
                                     OnChange: =Set(gblUngespeichert, true)
                               - txtAufnZiele:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Default: =Coalesce(gblRezept.Therapieziele, "")
                                     Reset: =gblFormularReset
@@ -2125,13 +2099,12 @@
                                     Fill: =RGBA(0, 0, 0, 0)
                                     FillPortions: =0
                                     Height: =hTouch
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutGap: =spS
                                   Children:
                                     - btnAufnS3Zurueck:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: ="Zurück"
                                           OnSelect: =Set(gblAufnahmeSchritt, 2)
@@ -2148,7 +2121,7 @@
                                           RadiusBottomLeft: =radM
                                           RadiusBottomRight: =radM
                                     - btnAufnS3Weiter:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: =If(gblSpeichert, "Speichert ...", "Entwurf speichern und weiter")
                                           DisplayMode: |-
@@ -2209,7 +2182,6 @@
                               Fill: =clrFlaeche
                               FillPortions: =0
                               Height: =420
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -2277,13 +2249,12 @@
                                     Fill: =RGBA(0, 0, 0, 0)
                                     FillPortions: =0
                                     Height: =hTouch
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutGap: =spS
                                   Children:
                                     - btnAufnS4Zurueck:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: ="Zurück"
                                           OnSelect: =Set(gblAufnahmeSchritt, 3)
@@ -2300,7 +2271,7 @@
                                           RadiusBottomLeft: =radM
                                           RadiusBottomRight: =radM
                                     - btnAufnAbschliessen:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: =If(gblSpeichert, "Speichert ...", "Aufnahme abschließen")
                                           DisplayMode: |-
@@ -2355,7 +2326,6 @@
                         Visible: =gblAnsicht = "Rezepte"
                         Fill: =RGBA(0, 0, 0, 0)
                         FillPortions: =1
-                        LayoutMode: =LayoutMode.Auto
                         LayoutDirection: =If(conPraxisApp.Width >= bpBreit, LayoutDirection.Horizontal, LayoutDirection.Vertical)
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =spM
@@ -2372,7 +2342,6 @@
                               Fill: =clrFlaeche
                               FillPortions: =1
                               Height: =If(conPraxisApp.Width >= bpBreit, conViewRezepte.Height - 2 * spL, 320)
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -2420,6 +2389,7 @@
                                     PaddingLeft: =0
                               - galRezepte:
                                   Control: Gallery
+                                  Variant: Vertical
                                   Properties:
                                     Items: |-
                                       =Sort(
@@ -2519,7 +2489,7 @@
                                           PaddingRight: =0
                                           OnSelect: =Select(Parent)
                                     - btnRezWaehlen:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: ="Auswählen"
                                           OnSelect: |-
@@ -2550,7 +2520,6 @@
                               Fill: =clrFlaeche
                               FillPortions: =1
                               Height: =If(conPraxisApp.Width >= bpBreit, conViewRezepte.Height - 2 * spL, 520)
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -2640,14 +2609,13 @@
                                     Fill: =RGBA(0, 0, 0, 0)
                                     FillPortions: =0
                                     Height: =hTouch
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutWrap: =true
                                     LayoutGap: =spS
                                   Children:
                                     - btnRezBehandlung:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: ="Behandlung starten"
                                           DisplayMode: |-
@@ -2679,7 +2647,7 @@
                                           RadiusBottomLeft: =radM
                                           RadiusBottomRight: =radM
                                     - drpRezStatus:
-                                        Control: DropDown
+                                        Control: Classic/DropDown
                                         Properties:
                                           Items: |-
                                             =["Entwurf", "Aktiv", "Pausiert", "Abgeschlossen", "Abgebrochen"]
@@ -2692,7 +2660,7 @@
                                           BorderThickness: =1
                                           Size: =fsNormal
                                     - btnRezStatusSpeichern:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: ="Status übernehmen"
                                           DisplayMode: =If(gblSpeichert, DisplayMode.Disabled, DisplayMode.Edit)
@@ -2747,7 +2715,6 @@
                         Visible: =gblAnsicht = "Behandlung"
                         Fill: =RGBA(0, 0, 0, 0)
                         FillPortions: =1
-                        LayoutMode: =LayoutMode.Auto
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =spM
@@ -2779,7 +2746,6 @@
                               Fill: =clrErfolgSanft
                               FillPortions: =0
                               Height: =64
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutAlignItems: =LayoutAlignItems.Center
                               LayoutGap: =spS
@@ -2806,7 +2772,7 @@
                                     PaddingLeft: =0
                                     VerticalAlign: =VerticalAlign.Middle
                               - btnDokuKorrektur:
-                                  Control: Button
+                                  Control: Classic/Button
                                   Properties:
                                     Text: ="Korrektur erfassen"
                                     OnSelect: |-
@@ -2837,7 +2803,6 @@
                               Fill: =clrFlaeche
                               FillPortions: =0
                               Height: =220
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -2875,7 +2840,6 @@
                                     Fill: =RGBA(0, 0, 0, 0)
                                     FillPortions: =0
                                     Height: =74
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutAlignItems: =LayoutAlignItems.Start
                                     LayoutWrap: =true
@@ -2889,7 +2853,6 @@
                                           FillPortions: =0
                                           Width: =240
                                           Height: =74
-                                          LayoutMode: =LayoutMode.Auto
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutAlignItems: =LayoutAlignItems.Stretch
                                           LayoutGap: =spXS
@@ -2905,7 +2868,7 @@
                                                 Wrap: =false
                                                 PaddingLeft: =0
                                           - dpDokuDatum:
-                                              Control: DatePicker
+                                              Control: Classic/DatePicker
                                               Properties:
                                                 # Sinnvoll vorbelegt mit heute, aber aenderbar.
                                                 DefaultDate: =Coalesce(gblDoku.Behandlungsdatum, Today())
@@ -2927,7 +2890,6 @@
                                           FillPortions: =0
                                           Width: =240
                                           Height: =74
-                                          LayoutMode: =LayoutMode.Auto
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutAlignItems: =LayoutAlignItems.Stretch
                                           LayoutGap: =spXS
@@ -2943,7 +2905,7 @@
                                                 Wrap: =false
                                                 PaddingLeft: =0
                                           - drpDokuTherapeut:
-                                              Control: DropDown
+                                              Control: Classic/DropDown
                                               Properties:
                                                 # "Therapeut" ist ein Auswahlfeld (Choice), KEIN
                                                 # Microsoft-365-Personenfeld. Deshalb gibt es hier
@@ -2968,7 +2930,6 @@
                                           FillPortions: =0
                                           Width: =240
                                           Height: =74
-                                          LayoutMode: =LayoutMode.Auto
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutAlignItems: =LayoutAlignItems.Stretch
                                           LayoutGap: =spXS
@@ -2984,7 +2945,7 @@
                                                 Wrap: =false
                                                 PaddingLeft: =0
                                           - drpDokuTermin:
-                                              Control: DropDown
+                                              Control: Classic/DropDown
                                               Properties:
                                                 # Nur "Durchgeführt" verbraucht später Einheiten.
                                                 # Gezaehlt wird ausschliesslich im Flow, nicht hier.
@@ -3006,13 +2967,12 @@
                                     Fill: =RGBA(0, 0, 0, 0)
                                     FillPortions: =0
                                     Height: =hEingabe
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutGap: =spM
                                   Children:
                                     - chkDokuAbweichend:
-                                        Control: CheckBox
+                                        Control: Classic/CheckBox
                                         Properties:
                                           # Standard ist eine Einheit. Abweichungen müssen
                                           # ausdruecklich erfasst werden.
@@ -3029,7 +2989,7 @@
                                           OnCheck: =Set(gblUngespeichert, true)
                                           OnUncheck: =Set(gblUngespeichert, true)
                                     - txtDokuMenge:
-                                        Control: TextInput
+                                        Control: Classic/TextInput
                                         Properties:
                                           Visible: =chkDokuAbweichend.Value
                                           Default: =Text(Coalesce(gblDoku.AltEinheiten, 1))
@@ -3074,7 +3034,6 @@
                               Fill: =clrHintergrund
                               FillPortions: =0
                               Height: =180
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -3139,7 +3098,6 @@
                               Fill: =clrFlaeche
                               FillPortions: =0
                               Height: =640
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -3162,14 +3120,13 @@
                                     Fill: =RGBA(0, 0, 0, 0)
                                     FillPortions: =0
                                     Height: =hTouch
-                                    LayoutMode: =LayoutMode.Auto
                                     LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutAlignItems: =LayoutAlignItems.Center
                                     LayoutWrap: =true
                                     LayoutGap: =spS
                                   Children:
                                     - btnDokuVorherige:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: |-
                                             =If(gblZeigeVorherige, "Letzte Behandlung ausblenden", "Letzte Behandlung einblenden")
@@ -3188,7 +3145,7 @@
                                           RadiusBottomLeft: =radM
                                           RadiusBottomRight: =radM
                                     - drpDokuBaustein:
-                                        Control: DropDown
+                                        Control: Classic/DropDown
                                         Properties:
                                           # Textbausteine stammen aus der Einstellungsliste.
                                           # Es werden bewusst KEINE fachlichen Inhalte mitgeliefert.
@@ -3206,7 +3163,7 @@
                                             =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                             =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.Disabled, DisplayMode.Edit)
                                     - btnDokuBausteinEinfuegen:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: ="Baustein in Maßnahmen einfügen"
                                           DisplayMode: |-
@@ -3254,7 +3211,7 @@
                                     Wrap: =true
                                     PaddingLeft: =0
                               - txtDokuSituation:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Default: =Coalesce(gblDoku.Situation, "")
                                     Reset: =gblFormularReset
@@ -3275,7 +3232,7 @@
                                       =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                     OnChange: =Set(gblUngespeichert, true)
                               - txtDokuMassnahmen:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Default: =Coalesce(gblDokuMassnahmenText, gblDoku.Massnahmen, "")
                                     Reset: =gblFormularReset Or gblResetMassnahmen
@@ -3296,7 +3253,7 @@
                                       =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                     OnChange: =Set(gblUngespeichert, true)
                               - txtDokuReaktion:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Default: =Coalesce(gblDoku.Reaktion, "")
                                     Reset: =gblFormularReset
@@ -3317,7 +3274,7 @@
                                       =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                     OnChange: =Set(gblUngespeichert, true)
                               - btnDokuMehr:
-                                  Control: Button
+                                  Control: Classic/Button
                                   Properties:
                                     # Seltener benoetigte Angaben sind eingeklappt.
                                     Text: |-
@@ -3337,7 +3294,7 @@
                                     RadiusBottomLeft: =radM
                                     RadiusBottomRight: =radM
                               - txtDokuHeim:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Visible: =gblDokuMehr
                                     Default: =Coalesce(gblDoku.Heimuebungen, "")
@@ -3359,7 +3316,7 @@
                                       =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                     OnChange: =Set(gblUngespeichert, true)
                               - txtDokuVorgehen:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Visible: =gblDokuMehr
                                     Default: =Coalesce(gblDoku.WeiteresVorgehen, "")
@@ -3405,7 +3362,6 @@
                               Fill: =clrFlaeche
                               FillPortions: =0
                               Height: =If(conPraxisApp.Width >= bpBreit, hTouch + 2 * spM, 2 * hTouch + 3 * spM)
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutAlignItems: =LayoutAlignItems.Center
                               LayoutWrap: =true
@@ -3436,7 +3392,7 @@
                                     VerticalAlign: =VerticalAlign.Middle
 
                               - btnDokuEntwurf:
-                                  Control: Button
+                                  Control: Classic/Button
                                   Properties:
                                     Text: =If(gblSpeichert, "Speichert ...", "Entwurf speichern")
                                     DisplayMode: |-
@@ -3524,7 +3480,7 @@
                                     RadiusBottomRight: =radM
 
                               - btnDokuGeprueft:
-                                  Control: Button
+                                  Control: Classic/Button
                                   Properties:
                                     Text: ="Als geprüft markieren"
                                     DisplayMode: |-
@@ -3573,7 +3529,7 @@
                                     RadiusBottomRight: =radM
 
                               - btnDokuFreigeben:
-                                  Control: Button
+                                  Control: Classic/Button
                                   Properties:
                                     Text: =If(gblSpeichert, "Speichert ...", "Dokumentation freigeben")
                                     DisplayMode: |-
@@ -3645,7 +3601,7 @@
                                     RadiusBottomRight: =radM
 
                               - btnDokuNeu:
-                                  Control: Button
+                                  Control: Classic/Button
                                   Properties:
                                     Text: ="Neue Behandlung"
                                     DisplayMode: =If(gblSpeichert, DisplayMode.Disabled, DisplayMode.Edit)
@@ -3686,7 +3642,6 @@
                         Visible: =gblAnsicht = "Aufgaben"
                         Fill: =RGBA(0, 0, 0, 0)
                         FillPortions: =1
-                        LayoutMode: =LayoutMode.Auto
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =spM
@@ -3702,7 +3657,6 @@
                               Fill: =RGBA(0, 0, 0, 0)
                               FillPortions: =0
                               Height: =56
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutAlignItems: =LayoutAlignItems.Center
                               LayoutGap: =spM
@@ -3720,7 +3674,7 @@
                                     PaddingLeft: =0
                                     VerticalAlign: =VerticalAlign.Middle
                               - drpAufgFilter:
-                                  Control: DropDown
+                                  Control: Classic/DropDown
                                   Properties:
                                     Items: =["Offen", "Zurückgestellt", "Erledigt"]
                                     Default: ="Offen"
@@ -3737,7 +3691,6 @@
                             Properties:
                               Fill: =clrFlaeche
                               FillPortions: =1
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -3767,6 +3720,7 @@
                                     PaddingLeft: =0
                               - galAufgaben:
                                   Control: Gallery
+                                  Variant: Vertical
                                   Properties:
                                     Items: |-
                                       =Sort(
@@ -3852,7 +3806,7 @@
                                           PaddingRight: =0
                                           OnSelect: =Select(Parent)
                                     - btnAufgZurueckstellen:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: ="7 Tage zurückstellen"
                                           DisplayMode: |-
@@ -3899,7 +3853,7 @@
                                           RadiusBottomRight: =radM
                                           Visible: =Coalesce(ThisItem.Aufgabenstatus.Value, "") <> "Erledigt"
                                     - btnAufgErledigt:
-                                        Control: Button
+                                        Control: Classic/Button
                                         Properties:
                                           Text: ="Erledigt"
                                           DisplayMode: =If(gblSpeichert, DisplayMode.Disabled, DisplayMode.Edit)
@@ -3953,7 +3907,6 @@
                         Visible: =gblAnsicht = "Einstellungen"
                         Fill: =RGBA(0, 0, 0, 0)
                         FillPortions: =1
-                        LayoutMode: =LayoutMode.Auto
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =spM
@@ -3995,7 +3948,6 @@
                               Fill: =clrFlaeche
                               FillPortions: =0
                               Height: =520
-                              LayoutMode: =LayoutMode.Auto
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutGap: =spS
@@ -4026,7 +3978,7 @@
                                     PaddingRight: =spS
                                     VerticalAlign: =VerticalAlign.Middle
                               - txtEinstRest:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Default: =Text(cfgRestschwelle)
                                     Reset: =gblFormularReset
@@ -4043,7 +3995,7 @@
                                     RadiusBottomLeft: =radM
                                     RadiusBottomRight: =radM
                               - txtEinstInaktiv:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Default: =Text(cfgInaktivTage)
                                     Reset: =gblFormularReset
@@ -4060,7 +4012,7 @@
                                     RadiusBottomLeft: =radM
                                     RadiusBottomRight: =radM
                               - txtEinstAbrechnung:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Default: =Text(cfgAbrechnungsschwelle)
                                     Reset: =gblFormularReset
@@ -4077,7 +4029,7 @@
                                     RadiusBottomLeft: =radM
                                     RadiusBottomRight: =radM
                               - txtEinstMail:
-                                  Control: TextInput
+                                  Control: Classic/TextInput
                                   Properties:
                                     Default: =cfgMailIntern
                                     Reset: =gblFormularReset
@@ -4093,7 +4045,7 @@
                                     RadiusBottomLeft: =radM
                                     RadiusBottomRight: =radM
                               - chkEinstVortag:
-                                  Control: CheckBox
+                                  Control: Classic/CheckBox
                                   Properties:
                                     Text: ="Erinnerung einen Tag vor der voraussichtlich letzten geplanten Behandlung"
                                     Default: =cfgVortagAktiv
@@ -4103,7 +4055,7 @@
                                     Size: =fsNormal
                                     Color: =clrText
                               - chkEinstVersand:
-                                  Control: CheckBox
+                                  Control: Classic/CheckBox
                                   Properties:
                                     # Anzeigename "VersandAktiv", interner Name "VerandAktiv".
                                     # Power Fx verwendet den Anzeigenamen, Flows den internen Namen.
@@ -4125,7 +4077,7 @@
                                     Wrap: =true
                                     PaddingLeft: =0
                               - btnEinstSpeichern:
-                                  Control: Button
+                                  Control: Classic/Button
                                   Properties:
                                     Text: =If(gblSpeichert, "Speichert ...", "Einstellungen speichern")
                                     DisplayMode: |-
