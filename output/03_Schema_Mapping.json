@@ -1,0 +1,626 @@
+{
+  "titel": "Feldzuordnung Physio Human Performance",
+  "stand": "2026-09-11",
+  "quellenlage": {
+    "hinweis": "Das Verzeichnis referenzen/ mit den Dateien 01 bis 12 war in diesem Arbeitsstand NICHT vorhanden - das Repository war leer. Es lag ausschliesslich die Auftragsbeschreibung vor.",
+    "belegt_durch": "Abschnitt 5 der Auftragsbeschreibung (Befunde 1 bis 10).",
+    "nicht_geprueft": "Kein Zugriff auf den Tenant, keine Live-Metadaten, keine Schemaexporte. 'bestaetigt_auftrag' heißt: im Auftragstext benannt - NICHT: gegen die Liste geprüft."
+  },
+  "beziehungen": {
+    "grundsatz": "Technische Beziehungen laufen über die SharePoint-Spalte ID, nicht über Namen und nicht über die fachliche 'Patienten ID' (Auftrag Befund 10).",
+    "umsetzung_der_app": "Die App schreibt Zahlenspalten PatientID und RezeptID. Grund: Typ und Ziel der vorhandenen Spalten 'Patient' und 'Rezept' sind nicht belegt (Befund 6). Ein Schreibzugriff auf eine Spalte unbekannten Typs wäre geraten.",
+    "alternative_lookup": "Ergibt die Bestandspruefung ein echtes Lookup-Feld mit Einfachauswahl, kann statt PatientID geschrieben werden: Patient: { Id: gblPatient.ID, Value: gblPatient.Nachname }. Erst nach Bestaetigung umstellen."
+  },
+  "namensregel": {
+    "power_fx": "Power Fx spricht SharePoint-Spalten über den ANZEIGENAMEN an.",
+    "power_automate": "Power Automate spricht dieselben Spalten über den INTERNEN Namen an.",
+    "betroffene_felder": [
+      {
+        "liste": "Rezepte",
+        "anzeigename": "Diagnose laut Rezept",
+        "interner_name": "DiagnoselautRezept"
+      },
+      {
+        "liste": "Behandlungsdokumentation",
+        "anzeigename": "AltEinheiten",
+        "interner_name": "Einheiten"
+      },
+      {
+        "liste": "AufgabenEinstellungen",
+        "anzeigename": "VersandAktiv",
+        "interner_name": "VerandAktiv"
+      },
+      {
+        "liste": "Behandlungsdokumentation",
+        "anzeigename": "Freigegeben am",
+        "interner_name": "Freigegebenam"
+      },
+      {
+        "liste": "Behandlungsdokumentation",
+        "anzeigename": "Freigegeben von",
+        "interner_name": "Freigegebenvon"
+      },
+      {
+        "liste": "Patientenstamm",
+        "anzeigename": "Patienten ID",
+        "interner_name": "PatientenID"
+      }
+    ],
+    "warnung": "Die internen Namen in dieser Tabelle sind aus dem Auftragstext abgeleitet beziehungsweise die uebliche SharePoint-Ableitung (Leerzeichen entfallen). Vor dem Bau der Flows mit dem Bestandsskript prüfen - ein falscher interner Name lässt den Flow zur Laufzeit fehlschlagen."
+  },
+  "statuslegende": {
+    "system": "Systemspalte von SharePoint",
+    "bestaetigt_auftrag": "im Auftrag ausdruecklich benannt",
+    "unbestaetigt": "plausibel, aber nicht belegt",
+    "offen": "ausdruecklich ungeklaert",
+    "ergaenzung": "muss ergänzt werden"
+  },
+  "listen": {
+    "Patientenstamm": [
+      {
+        "anzeigename": "ID",
+        "interner_name": "ID",
+        "typ": "Zahl (System)",
+        "lookup_ziel": null,
+        "status": "system",
+        "befund": "Technischer Schlüssel von SharePoint. Alle Beziehungen laufen hierueber.",
+        "erforderliche_aenderung": "keine"
+      },
+      {
+        "anzeigename": "Vorname",
+        "interner_name": "Vorname",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Wird im Auftrag als Suchfeld genannt, der Anzeigename ist aber nirgends belegt.",
+        "erforderliche_aenderung": "Anzeigenamen mit dem Bestandsskript prüfen."
+      },
+      {
+        "anzeigename": "Nachname",
+        "interner_name": "Nachname",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Wie Vorname.",
+        "erforderliche_aenderung": "Anzeigenamen mit dem Bestandsskript prüfen."
+      },
+      {
+        "anzeigename": "Geburtsdatum",
+        "interner_name": "Geburtsdatum",
+        "typ": "Datum",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Im Auftrag als Unterscheidungsmerkmal bei gleichen Namen genannt.",
+        "erforderliche_aenderung": "Anzeigenamen und Uhrzeitanteil prüfen."
+      },
+      {
+        "anzeigename": "Patienten ID",
+        "interner_name": "PatientenID",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Auftrag Befund 10: fachliche Patientennummer, ausdruecklich NICHT der technische Schlüssel.",
+        "erforderliche_aenderung": "Nicht für Beziehungen verwenden."
+      }
+    ],
+    "Rezepte": [
+      {
+        "anzeigename": "ID",
+        "interner_name": "ID",
+        "typ": "Zahl (System)",
+        "lookup_ziel": null,
+        "status": "system",
+        "befund": "Technischer Schlüssel. Ziel aller Verweise aus der Dokumentation.",
+        "erforderliche_aenderung": "keine"
+      },
+      {
+        "anzeigename": "Behandlungseinheiten",
+        "interner_name": "Behandlungseinheiten",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Auftrag Befund 2: So heißt die verordnete Rezeptmenge.",
+        "erforderliche_aenderung": "Kein zweites Feld EinheitenSoll anlegen."
+      },
+      {
+        "anzeigename": "Diagnose laut Rezept",
+        "interner_name": "DiagnoselautRezept",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Auftrag Befund 2. Anzeigename und interner Name weichen voneinander ab.",
+        "erforderliche_aenderung": "Kein zweites Feld Diagnose anlegen. In Flows den internen Namen verwenden."
+      },
+      {
+        "anzeigename": "Title / Titel / Rezeptname",
+        "interner_name": "Title",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "offen",
+        "befund": "Auftrag Befund 5: Im Feld-XML steht Title/Titel, in der Übersicht Rezeptname. Der tatsächliche Anzeigename ist nicht belegt.",
+        "erforderliche_aenderung": "OFFEN. Die App liest dieses Feld bewusst NICHT und bildet die Rezeptbezeichnung aus ID und Diagnose. Erst nach einem Metadatenabzug entscheiden."
+      },
+      {
+        "anzeigename": "Patient",
+        "interner_name": "Patient",
+        "typ": "unbekannt",
+        "lookup_ziel": "unbekannt",
+        "status": "offen",
+        "befund": "Auftrag Befund 6: Erscheint nur in Spaltenuebersichten. Einzel- oder Mehrfachauswahl, Ziel-Liste und Lookup-Ziel-ID sind nicht belegt.",
+        "erforderliche_aenderung": "OFFEN. Vor einem Schreibzugriff mit dem Bestandsskript klaeren. Die App schreibt stattdessen PatientID."
+      },
+      {
+        "anzeigename": "PatientID",
+        "interner_name": "PatientID",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Die App verbindet Rezept und Patient über die technische SharePoint-ID (Befund 10). Eine Zahlenspalte ist eindeutig schreibbar, ohne den Typ von Patient zu kennen.",
+        "erforderliche_aenderung": "ANLEGEN (Zahl). Alternative mit echtem Lookup siehe Abschnitt Beziehungen."
+      },
+      {
+        "anzeigename": "Rezeptstatus",
+        "interner_name": "Rezeptstatus",
+        "typ": "Auswahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Der Auftrag verlangt aktive, pausierte, abgeschlossene und abgebrochene Rezepte.",
+        "erforderliche_aenderung": "ANLEGEN (Auswahl: Entwurf, Aktiv, Pausiert, Abgeschlossen, Abgebrochen)."
+      },
+      {
+        "anzeigename": "Verordner",
+        "interner_name": "Verordner",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Im Auftrag als vorhandenes Rezeptdatum genannt, Anzeigename nicht belegt.",
+        "erforderliche_aenderung": "Anzeigenamen prüfen."
+      },
+      {
+        "anzeigename": "Frequenz",
+        "interner_name": "Frequenz",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Wie Verordner.",
+        "erforderliche_aenderung": "Anzeigenamen prüfen."
+      },
+      {
+        "anzeigename": "Beschwerden",
+        "interner_name": "Beschwerden",
+        "typ": "Mehrzeiliger Text",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Wie Verordner.",
+        "erforderliche_aenderung": "Anzeigenamen prüfen."
+      },
+      {
+        "anzeigename": "Anamnese",
+        "interner_name": "Anamnese",
+        "typ": "Mehrzeiliger Text",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Wie Verordner.",
+        "erforderliche_aenderung": "Anzeigenamen prüfen."
+      },
+      {
+        "anzeigename": "Erstbefund",
+        "interner_name": "Erstbefund",
+        "typ": "Mehrzeiliger Text",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Dient zugleich als Aufnahmebefund. Es wird keine zweite Kopie gepflegt.",
+        "erforderliche_aenderung": "Anzeigenamen prüfen."
+      },
+      {
+        "anzeigename": "Therapieziele",
+        "interner_name": "Therapieziele",
+        "typ": "Mehrzeiliger Text",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Wie Verordner.",
+        "erforderliche_aenderung": "Anzeigenamen prüfen."
+      },
+      {
+        "anzeigename": "AltEinheiten",
+        "interner_name": "AltEinheiten",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Bereits außerhalb der App erbrachte Einheiten DIESES Rezepts. Auftrag Abschnitt 6. Nicht zu verwechseln mit der gleichnamigen Doku-Spalte (Befund 3).",
+        "erforderliche_aenderung": "ANLEGEN (Zahl, Standard 0)."
+      },
+      {
+        "anzeigename": "EinheitenApp",
+        "interner_name": "EinheitenApp",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Auftrag Befund 4: Liegt teilweise in der Dokumentation. Gemeinsame Zähler gehören an das Rezept.",
+        "erforderliche_aenderung": "ANLEGEN (Zahl). Bestandswerte nicht blind verschieben - Umzugsschritt siehe unten."
+      },
+      {
+        "anzeigename": "Erbracht",
+        "interner_name": "Erbracht",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Wie EinheitenApp.",
+        "erforderliche_aenderung": "ANLEGEN (Zahl)."
+      },
+      {
+        "anzeigename": "Offen",
+        "interner_name": "Offen",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Wie EinheitenApp.",
+        "erforderliche_aenderung": "ANLEGEN (Zahl)."
+      },
+      {
+        "anzeigename": "LetzterAppTermin",
+        "interner_name": "LetzterAppTermin",
+        "typ": "Datum und Uhrzeit",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Wie EinheitenApp.",
+        "erforderliche_aenderung": "ANLEGEN (Datum und Uhrzeit)."
+      },
+      {
+        "anzeigename": "InaktivTage",
+        "interner_name": "InaktivTage",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Wie EinheitenApp.",
+        "erforderliche_aenderung": "ANLEGEN (Zahl)."
+      },
+      {
+        "anzeigename": "ZaehlerStand",
+        "interner_name": "ZaehlerStand",
+        "typ": "Datum und Uhrzeit",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Zeitpunkt der letzten Zaehlerberechnung. Ist das Feld leer, zeigt die App ausdruecklich 'noch nicht berechnet' statt '0 offen'.",
+        "erforderliche_aenderung": "ANLEGEN (Datum und Uhrzeit). Ohne dieses Feld ist der Zaehlerstand nicht bewertbar."
+      },
+      {
+        "anzeigename": "ZaehlerLauf",
+        "interner_name": "ZaehlerLauf",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Kennung des gerade laufenden Zaehlerdurchgangs. Verhindert, dass zwei gleichzeitige Flow-Laeufe sich gegenseitig überschreiben.",
+        "erforderliche_aenderung": "ANLEGEN (Text)."
+      }
+    ],
+    "Behandlungsdokumentation": [
+      {
+        "anzeigename": "ID",
+        "interner_name": "ID",
+        "typ": "Zahl (System)",
+        "lookup_ziel": null,
+        "status": "system",
+        "befund": "Technischer Schlüssel.",
+        "erforderliche_aenderung": "keine"
+      },
+      {
+        "anzeigename": "AltEinheiten",
+        "interner_name": "Einheiten",
+        "typ": "Zahl (Standard 1)",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Auftrag Befund 3: Anzeigename AltEinheiten, interner Name Einheiten, Standard 1. Der Standardwert 1 spricht dafür, dass fachlich die Behandlungsmenge EINER Zeile gemeint ist - der Anzeigename legt dagegen einen Rezeptaltbestand nahe.",
+        "erforderliche_aenderung": "VORSCHLAG (bestaetigungspflichtig): Anzeigename zu 'Behandlungsmenge' korrigieren. Der Rezeptaltbestand bekommt eine eigene Spalte am Rezept. Vorher Bestandsdaten prüfen - Skript in 04_Setup. Bis zur Korrektur schreibt die App auf den Anzeigenamen AltEinheiten."
+      },
+      {
+        "anzeigename": "Therapeut",
+        "interner_name": "Therapeut",
+        "typ": "Auswahl",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Auftrag Befund 7: Auswahlfeld, derzeit Wert 'Alex'. KEIN Microsoft-365-Personenfeld.",
+        "erforderliche_aenderung": "Kein Zugriff auf .Email oder .DisplayName. Keine Ableitung aus dem angemeldeten Benutzer. Eine echte Zuordnung wäre ein eigener Einrichtungsschritt."
+      },
+      {
+        "anzeigename": "Status",
+        "interner_name": "Status",
+        "typ": "Auswahl",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Auftrag Befund 8: Entwurf, Geprüft, Freigegeben. Standard Entwurf.",
+        "erforderliche_aenderung": "keine"
+      },
+      {
+        "anzeigename": "Freigegeben am",
+        "interner_name": "Freigegebenam",
+        "typ": "Datum (ohne Uhrzeit)",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Auftrag Befund 8: bisher ohne Uhrzeit.",
+        "erforderliche_aenderung": "Optional auf 'Datum und Uhrzeit' erweitern. Solange nicht erweitert, schreibt die App nur das Datum - eine Uhrzeit wäre sonst frei erfunden."
+      },
+      {
+        "anzeigename": "Freigegeben von",
+        "interner_name": "Freigegebenvon",
+        "typ": "Person",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Auftrag Befund 8: echtes Personenfeld - im Unterschied zu Therapeut.",
+        "erforderliche_aenderung": "keine. Die App schreibt den angemeldeten Benutzer als Personeneintrag."
+      },
+      {
+        "anzeigename": "Dokumentenlink",
+        "interner_name": "Dokumentenlink",
+        "typ": "Hyperlink oder Text",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Wird vom bestehenden Exportprozess gesetzt.",
+        "erforderliche_aenderung": "Die App schreibt dieses Feld NICHT, um vorhandene Ablaeufe nicht zu doppeln."
+      },
+      {
+        "anzeigename": "Terminstatus",
+        "interner_name": "Terminstatus",
+        "typ": "Auswahl",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Auftrag Abschnitt 6: Nur 'Durchgeführt' verbraucht Einheiten.",
+        "erforderliche_aenderung": "Werte sicherstellen: Geplant, Durchgeführt, Abgesagt, Nicht erschienen, Storniert."
+      },
+      {
+        "anzeigename": "Patient",
+        "interner_name": "Patient",
+        "typ": "unbekannt",
+        "lookup_ziel": "unbekannt",
+        "status": "offen",
+        "befund": "Auftrag Befund 6: Typ und Ziel nicht belegt.",
+        "erforderliche_aenderung": "OFFEN. Die App schreibt stattdessen PatientID."
+      },
+      {
+        "anzeigename": "Rezept",
+        "interner_name": "Rezept",
+        "typ": "unbekannt",
+        "lookup_ziel": "unbekannt",
+        "status": "offen",
+        "befund": "Auftrag Befund 6: Typ und Ziel nicht belegt.",
+        "erforderliche_aenderung": "OFFEN. Die App schreibt stattdessen RezeptID."
+      },
+      {
+        "anzeigename": "PatientID",
+        "interner_name": "PatientID",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Verweis auf Patientenstamm.ID.",
+        "erforderliche_aenderung": "ANLEGEN (Zahl) und indizieren."
+      },
+      {
+        "anzeigename": "RezeptID",
+        "interner_name": "RezeptID",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Verweis auf Rezepte.ID. Der Zähler-Flow filtert hierauf.",
+        "erforderliche_aenderung": "ANLEGEN (Zahl) und indizieren - sonst läuft der Flow in Listenansichtsgrenzen."
+      },
+      {
+        "anzeigename": "Behandlungsdatum",
+        "interner_name": "Behandlungsdatum",
+        "typ": "Datum",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Auftrag Abschnitt 4: Datumsfelder enthalten teilweise noch keine Uhrzeiten. Die App filtert deshalb über einen Tageszeitraum statt auf Gleichheit.",
+        "erforderliche_aenderung": "Anzeigenamen prüfen."
+      },
+      {
+        "anzeigename": "Situation",
+        "interner_name": "Situation",
+        "typ": "Mehrzeiliger Text",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Inhaltsfeld der Dokumentation.",
+        "erforderliche_aenderung": "Anzeigenamen prüfen."
+      },
+      {
+        "anzeigename": "Massnahmen",
+        "interner_name": "Massnahmen",
+        "typ": "Mehrzeiliger Text",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Inhaltsfeld.",
+        "erforderliche_aenderung": "Anzeigenamen prüfen."
+      },
+      {
+        "anzeigename": "Reaktion",
+        "interner_name": "Reaktion",
+        "typ": "Mehrzeiliger Text",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Inhaltsfeld (Reaktion/Ergebnis).",
+        "erforderliche_aenderung": "Anzeigenamen prüfen."
+      },
+      {
+        "anzeigename": "Heimuebungen",
+        "interner_name": "Heimuebungen",
+        "typ": "Mehrzeiliger Text",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Selten benötigt, in der App eingeklappt.",
+        "erforderliche_aenderung": "Anzeigenamen prüfen."
+      },
+      {
+        "anzeigename": "WeiteresVorgehen",
+        "interner_name": "WeiteresVorgehen",
+        "typ": "Mehrzeiliger Text",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Wie Heimübungen.",
+        "erforderliche_aenderung": "Anzeigenamen prüfen."
+      },
+      {
+        "anzeigename": "KorrekturZu",
+        "interner_name": "KorrekturZu",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "ID des urspruenglichen Eintrags. Eine Korrektur an einem freigegebenen Eintrag entsteht als neue Zeile, damit der Vorgang nachvollziehbar bleibt.",
+        "erforderliche_aenderung": "ANLEGEN (Zahl)."
+      }
+    ],
+    "AufgabenEinstellungen": [
+      {
+        "anzeigename": "ID",
+        "interner_name": "ID",
+        "typ": "Zahl (System)",
+        "lookup_ziel": null,
+        "status": "system",
+        "befund": "Technischer Schlüssel.",
+        "erforderliche_aenderung": "keine"
+      },
+      {
+        "anzeigename": "Typart",
+        "interner_name": "Typart",
+        "typ": "Auswahl",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Auftrag Befund 9: vorhandener Typname. Die Liste mischt Aufgaben und Einstellungen.",
+        "erforderliche_aenderung": "Werte ergaenzen: Einstellung, Textbaustein, Restschwelle, Inaktivität, Abrechnung."
+      },
+      {
+        "anzeigename": "VersandAktiv",
+        "interner_name": "VerandAktiv",
+        "typ": "Ja/Nein",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Auftrag Befund 9: Der interne Name enthält einen Tippfehler (VerandAktiv ohne s). Power Fx spricht den Anzeigenamen an, Power Automate den INTERNEN Namen.",
+        "erforderliche_aenderung": "Internen Namen NICHT ändern - das wuerde bestehende Verweise brechen. In Flows zwingend VerandAktiv schreiben."
+      },
+      {
+        "anzeigename": "MailGesendetam",
+        "interner_name": "MailGesendetam",
+        "typ": "Datum",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Auftrag Befund 9: Hat faelschlich einen heutigen Standardwert. Ein vorhandener Wert ist daher KEIN Versandnachweis.",
+        "erforderliche_aenderung": "Standardwert entfernen. Feld erst nach erfolgreichem Versand setzen."
+      },
+      {
+        "anzeigename": "MailIntern",
+        "interner_name": "MailIntern",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Auftrag Befund 9: enthält info@physio-humanperformance.de. Daraus folgt KEINE aktive Versandverbindung.",
+        "erforderliche_aenderung": "keine."
+      },
+      {
+        "anzeigename": "Aufgabenstatus",
+        "interner_name": "Aufgabenstatus",
+        "typ": "Auswahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Trennt Aufgabenzeilen von Einstellungszeilen und steuert die Filter der App.",
+        "erforderliche_aenderung": "ANLEGEN (Auswahl: Offen, Zurückgestellt, Erledigt). Einstellungszeilen bleiben leer."
+      },
+      {
+        "anzeigename": "Beschreibung",
+        "interner_name": "Beschreibung",
+        "typ": "Mehrzeiliger Text",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Aufgabentext, zugleich Inhalt eines Textbausteins.",
+        "erforderliche_aenderung": "ANLEGEN (mehrzeiliger Text)."
+      },
+      {
+        "anzeigename": "Wiedervorlage",
+        "interner_name": "Wiedervorlage",
+        "typ": "Datum",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Für das Zurueckstellen.",
+        "erforderliche_aenderung": "ANLEGEN (Datum)."
+      },
+      {
+        "anzeigename": "ErledigtAm",
+        "interner_name": "ErledigtAm",
+        "typ": "Datum und Uhrzeit",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Zeitpunkt der Erledigung.",
+        "erforderliche_aenderung": "ANLEGEN (Datum und Uhrzeit)."
+      },
+      {
+        "anzeigename": "NichtAktuell",
+        "interner_name": "NichtAktuell",
+        "typ": "Ja/Nein",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Nicht mehr zutreffende Aufgaben werden gekennzeichnet statt geloescht.",
+        "erforderliche_aenderung": "ANLEGEN (Ja/Nein, Standard Nein)."
+      },
+      {
+        "anzeigename": "Ereignisschluessel",
+        "interner_name": "Ereignisschluessel",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Einmaliger Schlüssel je Ereignis, damit ein erneuter Flow-Lauf keine zweite Aufgabe zur selben Sache anlegt.",
+        "erforderliche_aenderung": "ANLEGEN (Text), eindeutig erzwingen."
+      },
+      {
+        "anzeigename": "RezeptID",
+        "interner_name": "RezeptID",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Bezug der Aufgabe zum Rezept.",
+        "erforderliche_aenderung": "ANLEGEN (Zahl)."
+      },
+      {
+        "anzeigename": "PatientID",
+        "interner_name": "PatientID",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Bezug der Aufgabe zum Patienten.",
+        "erforderliche_aenderung": "ANLEGEN (Zahl)."
+      },
+      {
+        "anzeigename": "Restschwelle",
+        "interner_name": "Restschwelle",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Einstellung: ab wie vielen Resteinheiten erinnert wird.",
+        "erforderliche_aenderung": "ANLEGEN (Zahl, Standard 1)."
+      },
+      {
+        "anzeigename": "InaktivTage",
+        "interner_name": "InaktivTage",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Einstellung: Hinweis nach so vielen Tagen ohne Behandlung.",
+        "erforderliche_aenderung": "ANLEGEN (Zahl, Standard 21)."
+      },
+      {
+        "anzeigename": "Abrechnungsschwelle",
+        "interner_name": "Abrechnungsschwelle",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Einstellung: Abrechnungshinweis nach so vielen erbrachten Einheiten.",
+        "erforderliche_aenderung": "ANLEGEN (Zahl, Standard 5)."
+      },
+      {
+        "anzeigename": "VortagAktiv",
+        "interner_name": "VortagAktiv",
+        "typ": "Ja/Nein",
+        "lookup_ziel": null,
+        "status": "ergaenzung",
+        "befund": "Einstellung: Vortagserinnerung ein/aus.",
+        "erforderliche_aenderung": "ANLEGEN (Ja/Nein, Standard Nein)."
+      }
+    ]
+  }
+}

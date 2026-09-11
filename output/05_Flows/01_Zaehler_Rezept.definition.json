@@ -1,0 +1,218 @@
+{
+  "_hinweis": [
+    "REFERENZDEFINITION - KEIN GEPRUEFTES IMPORTPAKET.",
+    "Diese Datei beschreibt den Flow in dem Format, das Power Automate unter",
+    "'Code anzeigen' (Peek code) verwendet. Sie wurde NICHT in einen Tenant",
+    "importiert und nicht ausgefuehrt. Bauen Sie den Flow nach der Schritt-fuer-",
+    "Schritt-Anleitung in Einrichtung.md und vergleichen Sie anschliessend die",
+    "Ausdruecke mit dieser Datei.",
+    "",
+    "Vor dem Bau: Alle Vorkommen von IHRE-SHAREPOINT-ADRESSE ersetzen.",
+    "Alle Spaltennamen hier sind INTERNE Namen (Power Automate), nicht die",
+    "Anzeigenamen aus der App. Siehe 03_Datenmodell.md."
+  ],
+
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "$connections": { "defaultValue": {}, "type": "Object" },
+      "$authentication": { "defaultValue": {}, "type": "SecureObject" }
+    },
+
+    "triggers": {
+      "Wenn_eine_Dokumentationszeile_angelegt_oder_geaendert_wird": {
+        "type": "OpenApiConnection",
+        "description": "Loest bei Anlage UND Aenderung aus. Gezaehlt wird jedes Mal neu aus den echten Zeilen - ein wiederholtes Speichern erzeugt deshalb keine zusaetzliche Einheit.",
+        "inputs": {
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "connectionName": "shared_sharepointonline",
+            "operationId": "GetOnUpdatedItems"
+          },
+          "parameters": {
+            "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+            "table": "Behandlungsdokumentation"
+          },
+          "authentication": "@parameters('$authentication')"
+        },
+        "recurrence": { "frequency": "Minute", "interval": 3 },
+        "runtimeConfiguration": {
+          "concurrency": { "runs": 1 }
+        },
+        "metadata": {
+          "_erlaeuterung_concurrency": "runs=1 macht diesen Flow zum EINZIGEN Schreiber der Rezeptzaehler. Ohne diese Einstellung koennen zwei gleichzeitige Laeufe denselben Zaehler mit verschiedenen Zwischenstaenden ueberschreiben."
+        }
+      }
+    },
+
+    "actions": {
+
+      "RezeptID_ermitteln": {
+        "type": "Compose",
+        "runAfter": {},
+        "inputs": "@triggerOutputs()?['body/RezeptID']"
+      },
+
+      "Nur_weiter_wenn_ein_Rezept_zugeordnet_ist": {
+        "type": "If",
+        "runAfter": { "RezeptID_ermitteln": [ "Succeeded" ] },
+        "expression": {
+          "and": [
+            { "not": { "equals": [ "@coalesce(outputs('RezeptID_ermitteln'), '')", "" ] } },
+            { "greater": [ "@int(coalesce(outputs('RezeptID_ermitteln'), 0))", 0 ] }
+          ]
+        },
+        "else": {
+          "actions": {
+            "Ohne_Rezept_nichts_zu_zaehlen": {
+              "type": "Terminate",
+              "runAfter": {},
+              "inputs": {
+                "runStatus": "Succeeded"
+              },
+              "description": "Eine Dokumentationszeile ohne RezeptID ist kein Fehler - sie kann nur nichts verbrauchen."
+            }
+          }
+        },
+        "actions": {
+
+          "Durchgefuehrte_Zeilen_des_Rezepts_holen": {
+            "type": "OpenApiConnection",
+            "runAfter": {},
+            "description": "Nur Terminstatus 'Durchgefuehrt' verbraucht Einheiten. Geplant, Abgesagt, Nicht erschienen und Storniert werden NICHT mitgezaehlt.",
+            "inputs": {
+              "host": {
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                "connectionName": "shared_sharepointonline",
+                "operationId": "GetItems"
+              },
+              "parameters": {
+                "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                "table": "Behandlungsdokumentation",
+                "$filter": "@concat('RezeptID eq ', string(outputs('RezeptID_ermitteln')), ' and Terminstatus eq ''Durchgeführt''')",
+                "$orderby": "Behandlungsdatum desc",
+                "$top": 5000
+              },
+              "authentication": "@parameters('$authentication')"
+            },
+            "runtimeConfiguration": {
+              "paginationPolicy": { "minimumItemCount": 5000 }
+            },
+            "metadata": {
+              "_erlaeuterung_pagination": "Ohne diese Einstellung liefert 'Elemente abrufen' hoechstens 100 Zeilen. Der Zaehler waere dann bei langen Rezepten zu niedrig - und niemand wuerde es merken.",
+              "_erlaeuterung_index": "RezeptID muss in SharePoint indiziert sein, sonst bricht die Abfrage ab 5000 Listenelementen ab."
+            }
+          },
+
+          "Behandlungsmengen_auswaehlen": {
+            "type": "Select",
+            "runAfter": { "Durchgefuehrte_Zeilen_des_Rezepts_holen": [ "Succeeded" ] },
+            "description": "INTERNER Name der Mengenspalte ist 'Einheiten' (Anzeigename bisher 'AltEinheiten'). Siehe 03_Datenmodell.md, Befund 3.",
+            "inputs": {
+              "from": "@body('Durchgefuehrte_Zeilen_des_Rezepts_holen')?['value']",
+              "select": "@float(coalesce(item()?['Einheiten'], 0))"
+            }
+          },
+
+          "EinheitenApp_summieren": {
+            "type": "Compose",
+            "runAfter": { "Behandlungsmengen_auswaehlen": [ "Succeeded" ] },
+            "description": "Summe ohne Schleife. Die Zahlenliste wird kurz als XML dargestellt, weil XPath ein sum() kennt und Power Automate nicht.",
+            "inputs": "@if(empty(body('Behandlungsmengen_auswaehlen')), 0, float(xpath(xml(json(concat('{\"root\":{\"w\":', string(body('Behandlungsmengen_auswaehlen')), '}}'))), 'sum(/root/w)')))"
+          },
+
+          "Rezept_holen": {
+            "type": "OpenApiConnection",
+            "runAfter": { "EinheitenApp_summieren": [ "Succeeded" ] },
+            "inputs": {
+              "host": {
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                "connectionName": "shared_sharepointonline",
+                "operationId": "GetItem"
+              },
+              "parameters": {
+                "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                "table": "Rezepte",
+                "id": "@outputs('RezeptID_ermitteln')"
+              },
+              "authentication": "@parameters('$authentication')"
+            }
+          },
+
+          "Letzter_durchgefuehrter_Termin": {
+            "type": "Compose",
+            "runAfter": { "Rezept_holen": [ "Succeeded" ] },
+            "description": "Die Zeilen sind absteigend nach Behandlungsdatum sortiert, die erste ist also die juengste.",
+            "inputs": "@if(empty(body('Durchgefuehrte_Zeilen_des_Rezepts_holen')?['value']), '', coalesce(first(body('Durchgefuehrte_Zeilen_des_Rezepts_holen')?['value'])?['Behandlungsdatum'], ''))"
+          },
+
+          "Inaktive_Tage_berechnen": {
+            "type": "Compose",
+            "runAfter": { "Letzter_durchgefuehrter_Termin": [ "Succeeded" ] },
+            "description": "Kalendertage seit der letzten tatsaechlichen Behandlung, gerechnet in Praxiszeit (Europe/Berlin = 'W. Europe Standard Time'). Eine Abwesenheit zieht KEINE Einheit ab - sie erhoeht nur diesen Wert.",
+            "inputs": "@if(equals(outputs('Letzter_durchgefuehrter_Termin'), ''), null, div(sub(ticks(convertTimeZone(utcNow(), 'UTC', 'W. Europe Standard Time', 'yyyy-MM-dd')), ticks(convertTimeZone(outputs('Letzter_durchgefuehrter_Termin'), 'UTC', 'W. Europe Standard Time', 'yyyy-MM-dd'))), 864000000000))"
+          },
+
+          "Offene_Einheiten_berechnen": {
+            "type": "Compose",
+            "runAfter": { "Inaktive_Tage_berechnen": [ "Succeeded" ] },
+            "description": "Offen = verordnete Behandlungseinheiten - bereits ausserhalb der App erbrachte AltEinheiten - in der App dokumentierte EinheitenApp. Wird nie negativ ausgewiesen.",
+            "inputs": {
+              "Verordnet": "@float(coalesce(body('Rezept_holen')?['Behandlungseinheiten'], 0))",
+              "AltEinheiten": "@float(coalesce(body('Rezept_holen')?['AltEinheiten'], 0))",
+              "EinheitenApp": "@outputs('EinheitenApp_summieren')",
+              "Erbracht": "@add(float(coalesce(body('Rezept_holen')?['AltEinheiten'], 0)), outputs('EinheitenApp_summieren'))",
+              "Offen": "@max(0, sub(float(coalesce(body('Rezept_holen')?['Behandlungseinheiten'], 0)), add(float(coalesce(body('Rezept_holen')?['AltEinheiten'], 0)), outputs('EinheitenApp_summieren'))))"
+            }
+          },
+
+          "Nur_die_Zaehlerfelder_des_Rezepts_aktualisieren": {
+            "type": "OpenApiConnection",
+            "runAfter": { "Offene_Einheiten_berechnen": [ "Succeeded" ] },
+            "description": "Bewusst KEINE Aktion 'Element aktualisieren': die schreibt alle Felder zurueck und wuerde eine gleichzeitige Aenderung an der Diagnose ueberschreiben. MERGE aktualisiert nur die hier genannten Felder.",
+            "inputs": {
+              "host": {
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                "connectionName": "shared_sharepointonline",
+                "operationId": "HttpRequest"
+              },
+              "parameters": {
+                "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                "parameters/method": "POST",
+                "parameters/uri": "@concat('_api/web/lists/getByTitle(''Rezepte'')/items(', string(outputs('RezeptID_ermitteln')), ')')",
+                "parameters/headers": {
+                  "Content-Type": "application/json;odata=nometadata",
+                  "Accept": "application/json;odata=nometadata",
+                  "IF-MATCH": "*",
+                  "X-HTTP-Method": "MERGE"
+                },
+                "parameters/body": "@json(concat('{\"EinheitenApp\":', string(outputs('EinheitenApp_summieren')), ',\"Erbracht\":', string(outputs('Offene_Einheiten_berechnen')['Erbracht']), ',\"Offen\":', string(outputs('Offene_Einheiten_berechnen')['Offen']), ',\"InaktivTage\":', if(equals(outputs('Inaktive_Tage_berechnen'), null), 'null', string(outputs('Inaktive_Tage_berechnen'))), ',\"LetzterAppTermin\":', if(equals(outputs('Letzter_durchgefuehrter_Termin'), ''), 'null', concat('\"', outputs('Letzter_durchgefuehrter_Termin'), '\"')), ',\"ZaehlerStand\":\"', utcNow(), '\",\"ZaehlerLauf\":\"', workflow()['run']['name'], '\"}'))"
+              },
+              "authentication": "@parameters('$authentication')"
+            },
+            "metadata": {
+              "_erlaeuterung_nometadata": "Mit odata=nometadata wird kein __metadata-Typname benoetigt. Damit muss der interne Entitaetstyp der Liste nicht erraten werden.",
+              "_erlaeuterung_ifmatch": "IF-MATCH '*' schreibt ohne Versionspruefung. Das ist hier richtig, weil nur diese eine Automatik die Zaehlerfelder schreibt (concurrency runs=1) und der Wert ohnehin komplett neu berechnet wurde."
+            }
+          },
+
+          "Bei_Fehler_Lauf_als_fehlgeschlagen_kennzeichnen": {
+            "type": "Terminate",
+            "runAfter": {
+              "Nur_die_Zaehlerfelder_des_Rezepts_aktualisieren": [ "Failed", "TimedOut" ]
+            },
+            "description": "Schlaegt das Schreiben fehl, bleibt ZaehlerStand am Rezept auf dem alten Wert. Die App zeigt den Stand dann als veraltet an - sie zeigt NICHT faelschlich '0 offen'.",
+            "inputs": {
+              "runStatus": "Failed",
+              "runError": {
+                "code": "ZaehlerNichtGeschrieben",
+                "message": "Die Zaehlerfelder des Rezepts konnten nicht aktualisiert werden. Der zuletzt gueltige Stand bleibt erhalten."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,363 @@
+{
+  "_hinweis": [
+    "REFERENZDEFINITION - KEIN GEPRUEFTES IMPORTPAKET.",
+    "Nicht in einen Tenant importiert und nicht ausgefuehrt. Nachbauen nach Einrichtung.md.",
+    "",
+    "WICHTIG - Voraussetzung fuer diesen Flow:",
+    "Er setzt eine GEPFLEGTE Terminplanung voraus, also Dokumentationszeilen mit",
+    "Terminstatus 'Geplant' und einem Behandlungsdatum in der Zukunft. Solange die",
+    "Praxis keine Termine im Voraus erfasst, findet der Flow nichts und legt nichts",
+    "an. Das ist gewollt: Ohne belastbare Planung waere jede Vorhersage geraten.",
+    "",
+    "Der Flow berechnet KEIN rechtliches Ablaufdatum eines Rezepts. Er schaetzt nur,",
+    "an welchem geplanten Termin die offenen Einheiten voraussichtlich aufgebraucht",
+    "sind - und erinnert einen Tag davor.",
+    "",
+    "Verschobene Termine und mehrere Einheiten je Termin sind beruecksichtigt: Der",
+    "Flow rechnet bei jedem Lauf neu aus den aktuellen geplanten Zeilen und deren",
+    "jeweiliger Menge."
+  ],
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "$connections": {
+        "defaultValue": {},
+        "type": "Object"
+      },
+      "$authentication": {
+        "defaultValue": {},
+        "type": "SecureObject"
+      }
+    },
+    "triggers": {
+      "Taeglich_um_6_Uhr_30_Praxiszeit": {
+        "type": "Recurrence",
+        "recurrence": {
+          "frequency": "Day",
+          "interval": 1,
+          "timeZone": "W. Europe Standard Time",
+          "schedule": {
+            "hours": [
+              "6"
+            ],
+            "minutes": [
+              30
+            ]
+          }
+        }
+      }
+    },
+    "actions": {
+      "Einstellungszeile_holen": {
+        "type": "OpenApiConnection",
+        "runAfter": {},
+        "inputs": {
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "connectionName": "shared_sharepointonline",
+            "operationId": "GetItems"
+          },
+          "parameters": {
+            "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+            "table": "AufgabenEinstellungen",
+            "$filter": "Typart eq 'Einstellung'",
+            "$top": 1
+          },
+          "authentication": "@parameters('$authentication')"
+        }
+      },
+      "Nur_wenn_Vortagserinnerung_eingeschaltet_ist": {
+        "type": "If",
+        "runAfter": {
+          "Einstellungszeile_holen": [
+            "Succeeded"
+          ]
+        },
+        "description": "Schalter VortagAktiv in den Einstellungen. Standard ist AUS.",
+        "expression": {
+          "equals": [
+            "@coalesce(first(body('Einstellungszeile_holen')?['value'])?['VortagAktiv'], false)",
+            true
+          ]
+        },
+        "else": {
+          "actions": {
+            "Vortagserinnerung_ist_ausgeschaltet": {
+              "type": "Terminate",
+              "runAfter": {},
+              "inputs": {
+                "runStatus": "Succeeded"
+              },
+              "description": "Kein Fehler - die Funktion ist bewusst abgeschaltet."
+            }
+          }
+        },
+        "actions": {
+          "Datum_von_morgen": {
+            "type": "Compose",
+            "runAfter": {},
+            "inputs": "@convertTimeZone(addDays(utcNow(), 1), 'UTC', 'W. Europe Standard Time', 'yyyy-MM-dd')",
+            "description": "Praxiszeit, nicht UTC. Sonst liegt die Erinnerung an Tagesraendern falsch."
+          },
+          "Aktive_Rezepte_mit_offenen_Einheiten": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+              "Datum_von_morgen": [
+                "Succeeded"
+              ]
+            },
+            "inputs": {
+              "host": {
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                "connectionName": "shared_sharepointonline",
+                "operationId": "GetItems"
+              },
+              "parameters": {
+                "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                "table": "Rezepte",
+                "$filter": "Rezeptstatus eq 'Aktiv' and Offen gt 0",
+                "$top": 5000
+              },
+              "authentication": "@parameters('$authentication')"
+            },
+            "description": "Rezepte ohne berechneten Zaehler werden im Schleifenrumpf aussortiert.",
+            "runtimeConfiguration": {
+              "paginationPolicy": {
+                "minimumItemCount": 5000
+              }
+            }
+          },
+          "Je_Rezept": {
+            "type": "Foreach",
+            "runAfter": {
+              "Aktive_Rezepte_mit_offenen_Einheiten": [
+                "Succeeded"
+              ]
+            },
+            "foreach": "@body('Aktive_Rezepte_mit_offenen_Einheiten')?['value']",
+            "runtimeConfiguration": {
+              "concurrency": {
+                "repetitions": 1
+              }
+            },
+            "actions": {
+              "Nur_mit_berechnetem_Zaehler": {
+                "type": "If",
+                "runAfter": {},
+                "description": "Ohne ZaehlerStand ist 'Offen' nicht belastbar.",
+                "expression": {
+                  "not": {
+                    "equals": [
+                      "@coalesce(items('Je_Rezept')?['ZaehlerStand'], '')",
+                      ""
+                    ]
+                  }
+                },
+                "else": {
+                  "actions": {}
+                },
+                "actions": {
+                  "Geplante_Termine_holen": {
+                    "type": "OpenApiConnection",
+                    "runAfter": {},
+                    "inputs": {
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "connectionName": "shared_sharepointonline",
+                        "operationId": "GetItems"
+                      },
+                      "parameters": {
+                        "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                        "table": "Behandlungsdokumentation",
+                        "$filter": "@concat('RezeptID eq ', string(items('Je_Rezept')?['ID']), ' and Terminstatus eq ''Geplant'' and Behandlungsdatum ge datetime''', convertTimeZone(utcNow(), 'UTC', 'W. Europe Standard Time', 'yyyy-MM-dd'), 'T00:00:00Z''')",
+                        "$orderby": "Behandlungsdatum asc",
+                        "$top": 5000
+                      },
+                      "authentication": "@parameters('$authentication')"
+                    },
+                    "description": "Nur kuenftige geplante Termine, aufsteigend. Verschiebt die Praxis einen Termin, aendert sich diese Liste - und damit die Vorhersage.",
+                    "runtimeConfiguration": {
+                      "paginationPolicy": {
+                        "minimumItemCount": 5000
+                      }
+                    }
+                  },
+                  "Nur_bei_vorhandener_Planung": {
+                    "type": "If",
+                    "runAfter": {
+                      "Geplante_Termine_holen": [
+                        "Succeeded"
+                      ]
+                    },
+                    "description": "Ohne geplante Termine gibt es nichts vorherzusagen. Es wird ausdruecklich NICHTS geschaetzt.",
+                    "expression": {
+                      "greater": [
+                        "@length(body('Geplante_Termine_holen')?['value'])",
+                        0
+                      ]
+                    },
+                    "else": {
+                      "actions": {}
+                    },
+                    "actions": {
+                      "Mengen_der_geplanten_Termine": {
+                        "type": "Select",
+                        "runAfter": {},
+                        "description": "INTERNER Name der Mengenspalte ist 'Einheiten'. Ein Termin kann mehrere Einheiten umfassen.",
+                        "inputs": {
+                          "from": "@body('Geplante_Termine_holen')?['value']",
+                          "select": "@float(coalesce(item()?['Einheiten'], 1))"
+                        }
+                      },
+                      "Termine_mit_Laufsumme": {
+                        "type": "Select",
+                        "runAfter": {
+                          "Mengen_der_geplanten_Termine": [
+                            "Succeeded"
+                          ]
+                        },
+                        "description": "Zu jedem geplanten Termin die Summe der Einheiten bis einschliesslich dieses Termins. Ohne Schleife und ohne Variablen - dadurch gibt es hier keine Nebenwirkungen zwischen Durchlaeufen.",
+                        "inputs": {
+                          "from": "@range(0, length(body('Geplante_Termine_holen')?['value']))",
+                          "select": {
+                            "Datum": "@body('Geplante_Termine_holen')?['value'][item()]?['Behandlungsdatum']",
+                            "Laufsumme": "@float(xpath(xml(json(concat('{\"root\":{\"w\":', string(take(body('Mengen_der_geplanten_Termine'), add(item(), 1))), '}}'))), 'sum(/root/w)'))"
+                          }
+                        }
+                      },
+                      "Termine_die_das_Rezept_aufbrauchen": {
+                        "type": "Query",
+                        "runAfter": {
+                          "Termine_mit_Laufsumme": [
+                            "Succeeded"
+                          ]
+                        },
+                        "description": "Der erste Termin, an dem die offenen Einheiten rechnerisch aufgebraucht sind.",
+                        "inputs": {
+                          "from": "@body('Termine_mit_Laufsumme')",
+                          "where": "@greaterOrEquals(item()?['Laufsumme'], float(coalesce(items('Je_Rezept')?['Offen'], 0)))"
+                        }
+                      },
+                      "Voraussichtlich_letzter_Termin": {
+                        "type": "Compose",
+                        "runAfter": {
+                          "Termine_die_das_Rezept_aufbrauchen": [
+                            "Succeeded"
+                          ]
+                        },
+                        "inputs": "@if(empty(body('Termine_die_das_Rezept_aufbrauchen')), '', convertTimeZone(first(body('Termine_die_das_Rezept_aufbrauchen'))?['Datum'], 'UTC', 'W. Europe Standard Time', 'yyyy-MM-dd'))",
+                        "description": "Leer, wenn die geplanten Termine die offenen Einheiten gar nicht aufbrauchen. Dann wird nicht erinnert."
+                      },
+                      "Erinnern_wenn_das_morgen_ist": {
+                        "type": "If",
+                        "runAfter": {
+                          "Voraussichtlich_letzter_Termin": [
+                            "Succeeded"
+                          ]
+                        },
+                        "expression": {
+                          "and": [
+                            {
+                              "not": {
+                                "equals": [
+                                  "@outputs('Voraussichtlich_letzter_Termin')",
+                                  ""
+                                ]
+                              }
+                            },
+                            {
+                              "equals": [
+                                "@outputs('Voraussichtlich_letzter_Termin')",
+                                "@outputs('Datum_von_morgen')"
+                              ]
+                            }
+                          ]
+                        },
+                        "else": {
+                          "actions": {}
+                        },
+                        "actions": {
+                          "Vortag_Schluessel": {
+                            "type": "Compose",
+                            "runAfter": {},
+                            "inputs": "@concat('Vortag-', string(items('Je_Rezept')?['ID']), '-', outputs('Voraussichtlich_letzter_Termin'))",
+                            "description": "Enthaelt das Datum: Wird der Termin verschoben, entsteht spaeter ein neuer Schluessel und damit eine neue, zutreffende Erinnerung."
+                          },
+                          "Vortag_Vorhandene_Aufgabe_suchen": {
+                            "type": "OpenApiConnection",
+                            "runAfter": {
+                              "Vortag_Schluessel": [
+                                "Succeeded"
+                              ]
+                            },
+                            "inputs": {
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "connectionName": "shared_sharepointonline",
+                                "operationId": "GetItems"
+                              },
+                              "parameters": {
+                                "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                                "table": "AufgabenEinstellungen",
+                                "$filter": "@concat('Ereignisschluessel eq ''', outputs('Vortag_Schluessel'), '''')",
+                                "$top": 1
+                              },
+                              "authentication": "@parameters('$authentication')"
+                            }
+                          },
+                          "Vortag_Nur_anlegen_wenn_neu": {
+                            "type": "If",
+                            "runAfter": {
+                              "Vortag_Vorhandene_Aufgabe_suchen": [
+                                "Succeeded"
+                              ]
+                            },
+                            "expression": {
+                              "equals": [
+                                "@length(body('Vortag_Vorhandene_Aufgabe_suchen')?['value'])",
+                                0
+                              ]
+                            },
+                            "else": {
+                              "actions": {}
+                            },
+                            "actions": {
+                              "Vortag_Aufgabe_anlegen": {
+                                "type": "OpenApiConnection",
+                                "runAfter": {},
+                                "inputs": {
+                                  "host": {
+                                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                    "connectionName": "shared_sharepointonline",
+                                    "operationId": "PostItem"
+                                  },
+                                  "parameters": {
+                                    "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                                    "table": "AufgabenEinstellungen",
+                                    "item/Typart/Value": "Restschwelle",
+                                    "item/Aufgabenstatus/Value": "Offen",
+                                    "item/Beschreibung": "@concat('Rezept ', string(items('Je_Rezept')?['ID']), ': Die voraussichtlich letzte geplante Behandlung ist morgen (', outputs('Voraussichtlich_letzter_Termin'), '). Folgerezept klaeren. Schaetzung aus der aktuellen Planung - kein rechtliches Ablaufdatum.')",
+                                    "item/Ereignisschluessel": "@outputs('Vortag_Schluessel')",
+                                    "item/RezeptID": "@int(items('Je_Rezept')?['ID'])",
+                                    "item/PatientID": "@int(coalesce(items('Je_Rezept')?['PatientID'], 0))",
+                                    "item/NichtAktuell": false
+                                  },
+                                  "authentication": "@parameters('$authentication')"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

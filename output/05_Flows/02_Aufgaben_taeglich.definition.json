@@ -1,0 +1,583 @@
+{
+  "_hinweis": [
+    "REFERENZDEFINITION - KEIN GEPRUEFTES IMPORTPAKET.",
+    "Format wie unter 'Code anzeigen' in Power Automate. Nicht in einen Tenant",
+    "importiert und nicht ausgefuehrt. Nachbauen nach Einrichtung.md.",
+    "",
+    "Dieser Flow LEGT NUR AUFGABEN AN. Er verschickt nichts. Der Versand ist",
+    "bewusst ein eigener Flow (03_Versand_Aufgaben), damit eine Aufgabe auch",
+    "dann entsteht, wenn der Versand aus ist oder scheitert.",
+    "",
+    "Alle Spaltennamen sind INTERNE Namen."
+  ],
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "$connections": {
+        "defaultValue": {},
+        "type": "Object"
+      },
+      "$authentication": {
+        "defaultValue": {},
+        "type": "SecureObject"
+      }
+    },
+    "triggers": {
+      "Taeglich_um_6_Uhr_Praxiszeit": {
+        "type": "Recurrence",
+        "description": "Praxisregeln laufen in Europe/Berlin. Die Sommerzeitumstellung erledigt die Zeitzone selbst.",
+        "recurrence": {
+          "frequency": "Day",
+          "interval": 1,
+          "timeZone": "W. Europe Standard Time",
+          "schedule": {
+            "hours": [
+              "6"
+            ],
+            "minutes": [
+              0
+            ]
+          }
+        }
+      }
+    },
+    "actions": {
+      "Einstellungszeile_holen": {
+        "type": "OpenApiConnection",
+        "runAfter": {},
+        "inputs": {
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "connectionName": "shared_sharepointonline",
+            "operationId": "GetItems"
+          },
+          "parameters": {
+            "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+            "table": "AufgabenEinstellungen",
+            "$filter": "Typart eq 'Einstellung'",
+            "$top": 1
+          },
+          "authentication": "@parameters('$authentication')"
+        },
+        "description": "Die Liste mischt Aufgaben und Einstellungen (Befund 9). Die Einstellungszeile ist die mit Typart = 'Einstellung'."
+      },
+      "Schwellen_bestimmen": {
+        "type": "Compose",
+        "runAfter": {
+          "Einstellungszeile_holen": [
+            "Succeeded"
+          ]
+        },
+        "inputs": {
+          "Restschwelle": "@int(coalesce(first(body('Einstellungszeile_holen')?['value'])?['Restschwelle'], 1))",
+          "InaktivTage": "@int(coalesce(first(body('Einstellungszeile_holen')?['value'])?['InaktivTage'], 21))",
+          "Abrechnungsschwelle": "@int(coalesce(first(body('Einstellungszeile_holen')?['value'])?['Abrechnungsschwelle'], 5))",
+          "Heute": "@convertTimeZone(utcNow(), 'UTC', 'W. Europe Standard Time', 'yyyy-MM-dd')"
+        },
+        "description": "Fehlt die Einstellungszeile, gelten die Standardwerte aus dem Auftrag. Der Flow faellt deshalb nicht aus."
+      },
+      "Aktive_Rezepte_holen": {
+        "type": "OpenApiConnection",
+        "runAfter": {
+          "Schwellen_bestimmen": [
+            "Succeeded"
+          ]
+        },
+        "inputs": {
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "connectionName": "shared_sharepointonline",
+            "operationId": "GetItems"
+          },
+          "parameters": {
+            "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+            "table": "Rezepte",
+            "$filter": "Rezeptstatus eq 'Aktiv'",
+            "$top": 5000
+          },
+          "authentication": "@parameters('$authentication')"
+        },
+        "description": "Nur aktive Rezepte. Pausierte, abgeschlossene und abgebrochene Rezepte erzeugen keine Aufgaben.",
+        "runtimeConfiguration": {
+          "paginationPolicy": {
+            "minimumItemCount": 5000
+          }
+        }
+      },
+      "Je_aktives_Rezept": {
+        "type": "Foreach",
+        "runAfter": {
+          "Aktive_Rezepte_holen": [
+            "Succeeded"
+          ]
+        },
+        "foreach": "@body('Aktive_Rezepte_holen')?['value']",
+        "runtimeConfiguration": {
+          "concurrency": {
+            "repetitions": 1
+          }
+        },
+        "metadata": {
+          "_erlaeuterung": "repetitions=1: ein einziger Schreiber fuer die Aufgabenliste. Sonst koennen zwei Durchlaeufe denselben Ereignisschluessel gleichzeitig als 'noch nicht vorhanden' bewerten und zwei Aufgaben anlegen."
+        },
+        "actions": {
+          "Nur_Rezepte_mit_berechnetem_Zaehler": {
+            "type": "If",
+            "runAfter": {},
+            "description": "Ohne ZaehlerStand ist nichts berechnet. Ein nicht berechneter Zaehler darf NICHT wie '0 offen' behandelt werden - sonst entstuenden Erinnerungen aus dem Nichts.",
+            "expression": {
+              "and": [
+                {
+                  "not": {
+                    "equals": [
+                      "@coalesce(items('Je_aktives_Rezept')?['ZaehlerStand'], '')",
+                      ""
+                    ]
+                  }
+                }
+              ]
+            },
+            "else": {
+              "actions": {}
+            },
+            "actions": {
+              "Kennzahlen_des_Rezepts": {
+                "type": "Compose",
+                "runAfter": {},
+                "inputs": {
+                  "Offen": "@float(coalesce(items('Je_aktives_Rezept')?['Offen'], 0))",
+                  "Erbracht": "@float(coalesce(items('Je_aktives_Rezept')?['Erbracht'], 0))",
+                  "InaktivTage": "@int(coalesce(items('Je_aktives_Rezept')?['InaktivTage'], -1))",
+                  "RezeptID": "@string(items('Je_aktives_Rezept')?['ID'])"
+                },
+                "description": "InaktivTage = -1 bedeutet: es gab noch nie eine durchgefuehrte Behandlung. Dann greift die Inaktivitaetsregel bewusst nicht."
+              },
+              "Regel_Restschwelle": {
+                "type": "If",
+                "runAfter": {
+                  "Kennzahlen_des_Rezepts": [
+                    "Succeeded"
+                  ]
+                },
+                "description": "Regel 'Restschwelle'. Der Ereignisschluessel macht die Anlage einmalig.",
+                "expression": {
+                  "and": [
+                    {
+                      "lessOrEquals": [
+                        "@outputs('Kennzahlen_des_Rezepts')['Offen']",
+                        "@float(outputs('Schwellen_bestimmen')['Restschwelle'])"
+                      ]
+                    },
+                    {
+                      "greater": [
+                        "@outputs('Kennzahlen_des_Rezepts')['Offen']",
+                        0
+                      ]
+                    }
+                  ]
+                },
+                "actions": {
+                  "Rest_Schluessel": {
+                    "type": "Compose",
+                    "runAfter": {},
+                    "inputs": "@concat('Rest-', outputs('Kennzahlen_des_Rezepts')['RezeptID'], '-', string(outputs('Schwellen_bestimmen')['Restschwelle']))"
+                  },
+                  "Rest_Vorhandene_Aufgabe_suchen": {
+                    "type": "OpenApiConnection",
+                    "runAfter": {
+                      "Rest_Schluessel": [
+                        "Succeeded"
+                      ]
+                    },
+                    "inputs": {
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "connectionName": "shared_sharepointonline",
+                        "operationId": "GetItems"
+                      },
+                      "parameters": {
+                        "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                        "table": "AufgabenEinstellungen",
+                        "$filter": "@concat('Ereignisschluessel eq ''', outputs('Rest_Schluessel'), '''')",
+                        "$top": 1
+                      },
+                      "authentication": "@parameters('$authentication')"
+                    },
+                    "description": "Sucht unabhaengig vom Aufgabenstatus. Eine bereits erledigte Aufgabe wird dadurch nicht erneut angelegt."
+                  },
+                  "Rest_Nur_anlegen_wenn_neu": {
+                    "type": "If",
+                    "runAfter": {
+                      "Rest_Vorhandene_Aufgabe_suchen": [
+                        "Succeeded"
+                      ]
+                    },
+                    "expression": {
+                      "equals": [
+                        "@length(body('Rest_Vorhandene_Aufgabe_suchen')?['value'])",
+                        0
+                      ]
+                    },
+                    "actions": {
+                      "Rest_Aufgabe_anlegen": {
+                        "type": "OpenApiConnection",
+                        "runAfter": {},
+                        "inputs": {
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                            "connectionName": "shared_sharepointonline",
+                            "operationId": "PostItem"
+                          },
+                          "parameters": {
+                            "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                            "table": "AufgabenEinstellungen",
+                            "item/Typart/Value": "Restschwelle",
+                            "item/Aufgabenstatus/Value": "Offen",
+                            "item/Beschreibung": "@concat('Rezept ', outputs('Kennzahlen_des_Rezepts')['RezeptID'], ': nur noch ', string(outputs('Kennzahlen_des_Rezepts')['Offen']), ' Einheit(en) offen. Folgerezept rechtzeitig klaeren.')",
+                            "item/Ereignisschluessel": "@outputs('Rest_Schluessel')",
+                            "item/RezeptID": "@int(items('Je_aktives_Rezept')?['ID'])",
+                            "item/PatientID": "@int(coalesce(items('Je_aktives_Rezept')?['PatientID'], 0))",
+                            "item/NichtAktuell": false
+                          },
+                          "authentication": "@parameters('$authentication')"
+                        }
+                      }
+                    },
+                    "else": {
+                      "actions": {}
+                    }
+                  }
+                },
+                "else": {
+                  "actions": {}
+                }
+              },
+              "Regel_Inaktivitaet": {
+                "type": "If",
+                "runAfter": {
+                  "Regel_Restschwelle": [
+                    "Succeeded"
+                  ]
+                },
+                "description": "Regel 'Inaktivität'. Der Ereignisschluessel macht die Anlage einmalig.",
+                "expression": {
+                  "and": [
+                    {
+                      "greaterOrEquals": [
+                        "@outputs('Kennzahlen_des_Rezepts')['InaktivTage']",
+                        "@outputs('Schwellen_bestimmen')['InaktivTage']"
+                      ]
+                    },
+                    {
+                      "greater": [
+                        "@outputs('Kennzahlen_des_Rezepts')['Offen']",
+                        0
+                      ]
+                    }
+                  ]
+                },
+                "actions": {
+                  "Inaktiv_Schluessel": {
+                    "type": "Compose",
+                    "runAfter": {},
+                    "inputs": "@concat('Inaktiv-', outputs('Kennzahlen_des_Rezepts')['RezeptID'], '-', string(outputs('Schwellen_bestimmen')['InaktivTage']))"
+                  },
+                  "Inaktiv_Vorhandene_Aufgabe_suchen": {
+                    "type": "OpenApiConnection",
+                    "runAfter": {
+                      "Inaktiv_Schluessel": [
+                        "Succeeded"
+                      ]
+                    },
+                    "inputs": {
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "connectionName": "shared_sharepointonline",
+                        "operationId": "GetItems"
+                      },
+                      "parameters": {
+                        "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                        "table": "AufgabenEinstellungen",
+                        "$filter": "@concat('Ereignisschluessel eq ''', outputs('Inaktiv_Schluessel'), '''')",
+                        "$top": 1
+                      },
+                      "authentication": "@parameters('$authentication')"
+                    },
+                    "description": "Sucht unabhaengig vom Aufgabenstatus. Eine bereits erledigte Aufgabe wird dadurch nicht erneut angelegt."
+                  },
+                  "Inaktiv_Nur_anlegen_wenn_neu": {
+                    "type": "If",
+                    "runAfter": {
+                      "Inaktiv_Vorhandene_Aufgabe_suchen": [
+                        "Succeeded"
+                      ]
+                    },
+                    "expression": {
+                      "equals": [
+                        "@length(body('Inaktiv_Vorhandene_Aufgabe_suchen')?['value'])",
+                        0
+                      ]
+                    },
+                    "actions": {
+                      "Inaktiv_Aufgabe_anlegen": {
+                        "type": "OpenApiConnection",
+                        "runAfter": {},
+                        "inputs": {
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                            "connectionName": "shared_sharepointonline",
+                            "operationId": "PostItem"
+                          },
+                          "parameters": {
+                            "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                            "table": "AufgabenEinstellungen",
+                            "item/Typart/Value": "Inaktivität",
+                            "item/Aufgabenstatus/Value": "Offen",
+                            "item/Beschreibung": "@concat('Rezept ', outputs('Kennzahlen_des_Rezepts')['RezeptID'], ': seit ', string(outputs('Kennzahlen_des_Rezepts')['InaktivTage']), ' Kalendertagen keine Behandlung, Rezept noch offen. Es wurde KEINE Einheit abgezogen.')",
+                            "item/Ereignisschluessel": "@outputs('Inaktiv_Schluessel')",
+                            "item/RezeptID": "@int(items('Je_aktives_Rezept')?['ID'])",
+                            "item/PatientID": "@int(coalesce(items('Je_aktives_Rezept')?['PatientID'], 0))",
+                            "item/NichtAktuell": false
+                          },
+                          "authentication": "@parameters('$authentication')"
+                        }
+                      }
+                    },
+                    "else": {
+                      "actions": {}
+                    }
+                  }
+                },
+                "else": {
+                  "actions": {}
+                }
+              },
+              "Regel_Abrechnung": {
+                "type": "If",
+                "runAfter": {
+                  "Regel_Inaktivitaet": [
+                    "Succeeded"
+                  ]
+                },
+                "description": "Regel 'Abrechnung'. Der Ereignisschluessel macht die Anlage einmalig.",
+                "expression": {
+                  "and": [
+                    {
+                      "greaterOrEquals": [
+                        "@outputs('Kennzahlen_des_Rezepts')['Erbracht']",
+                        "@float(outputs('Schwellen_bestimmen')['Abrechnungsschwelle'])"
+                      ]
+                    }
+                  ]
+                },
+                "actions": {
+                  "Abrechnung_Schluessel": {
+                    "type": "Compose",
+                    "runAfter": {},
+                    "inputs": "@concat('Abrechnung-', outputs('Kennzahlen_des_Rezepts')['RezeptID'], '-', string(div(int(outputs('Kennzahlen_des_Rezepts')['Erbracht']), outputs('Schwellen_bestimmen')['Abrechnungsschwelle'])))"
+                  },
+                  "Abrechnung_Vorhandene_Aufgabe_suchen": {
+                    "type": "OpenApiConnection",
+                    "runAfter": {
+                      "Abrechnung_Schluessel": [
+                        "Succeeded"
+                      ]
+                    },
+                    "inputs": {
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "connectionName": "shared_sharepointonline",
+                        "operationId": "GetItems"
+                      },
+                      "parameters": {
+                        "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                        "table": "AufgabenEinstellungen",
+                        "$filter": "@concat('Ereignisschluessel eq ''', outputs('Abrechnung_Schluessel'), '''')",
+                        "$top": 1
+                      },
+                      "authentication": "@parameters('$authentication')"
+                    },
+                    "description": "Sucht unabhaengig vom Aufgabenstatus. Eine bereits erledigte Aufgabe wird dadurch nicht erneut angelegt."
+                  },
+                  "Abrechnung_Nur_anlegen_wenn_neu": {
+                    "type": "If",
+                    "runAfter": {
+                      "Abrechnung_Vorhandene_Aufgabe_suchen": [
+                        "Succeeded"
+                      ]
+                    },
+                    "expression": {
+                      "equals": [
+                        "@length(body('Abrechnung_Vorhandene_Aufgabe_suchen')?['value'])",
+                        0
+                      ]
+                    },
+                    "actions": {
+                      "Abrechnung_Aufgabe_anlegen": {
+                        "type": "OpenApiConnection",
+                        "runAfter": {},
+                        "inputs": {
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                            "connectionName": "shared_sharepointonline",
+                            "operationId": "PostItem"
+                          },
+                          "parameters": {
+                            "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                            "table": "AufgabenEinstellungen",
+                            "item/Typart/Value": "Abrechnung",
+                            "item/Aufgabenstatus/Value": "Offen",
+                            "item/Beschreibung": "@concat('Rezept ', outputs('Kennzahlen_des_Rezepts')['RezeptID'], ': ', string(outputs('Kennzahlen_des_Rezepts')['Erbracht']), ' Einheiten erbracht. Abrechnung pruefen. Es wird KEINE Rechnung und keine Zahlung ausgeloest.')",
+                            "item/Ereignisschluessel": "@outputs('Abrechnung_Schluessel')",
+                            "item/RezeptID": "@int(items('Je_aktives_Rezept')?['ID'])",
+                            "item/PatientID": "@int(coalesce(items('Je_aktives_Rezept')?['PatientID'], 0))",
+                            "item/NichtAktuell": false
+                          },
+                          "authentication": "@parameters('$authentication')"
+                        }
+                      }
+                    },
+                    "else": {
+                      "actions": {}
+                    }
+                  }
+                },
+                "else": {
+                  "actions": {}
+                }
+              }
+            }
+          }
+        }
+      },
+      "Offene_Restschwellen_Aufgaben_holen": {
+        "type": "OpenApiConnection",
+        "runAfter": {
+          "Je_aktives_Rezept": [
+            "Succeeded"
+          ]
+        },
+        "inputs": {
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "connectionName": "shared_sharepointonline",
+            "operationId": "GetItems"
+          },
+          "parameters": {
+            "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+            "table": "AufgabenEinstellungen",
+            "$filter": "Aufgabenstatus eq 'Offen' and Typart eq 'Restschwelle' and NichtAktuell eq 0",
+            "$top": 5000
+          },
+          "authentication": "@parameters('$authentication')"
+        },
+        "description": "Zum Nachhalten: Eine Restschwellen-Aufgabe ist hinfaellig, sobald das Rezept ein Folgerezept bekommen hat oder nicht mehr aktiv ist.",
+        "runtimeConfiguration": {
+          "paginationPolicy": {
+            "minimumItemCount": 5000
+          }
+        }
+      },
+      "Je_offene_Aufgabe_pruefen": {
+        "type": "Foreach",
+        "runAfter": {
+          "Offene_Restschwellen_Aufgaben_holen": [
+            "Succeeded"
+          ]
+        },
+        "foreach": "@body('Offene_Restschwellen_Aufgaben_holen')?['value']",
+        "runtimeConfiguration": {
+          "concurrency": {
+            "repetitions": 1
+          }
+        },
+        "actions": {
+          "Zugehoeriges_Rezept_holen": {
+            "type": "OpenApiConnection",
+            "runAfter": {},
+            "inputs": {
+              "host": {
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                "connectionName": "shared_sharepointonline",
+                "operationId": "GetItems"
+              },
+              "parameters": {
+                "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                "table": "Rezepte",
+                "$filter": "@concat('ID eq ', string(coalesce(items('Je_offene_Aufgabe_pruefen')?['RezeptID'], 0)))",
+                "$top": 1
+              },
+              "authentication": "@parameters('$authentication')"
+            }
+          },
+          "Hinfaellig_wenn_Rezept_nicht_mehr_passt": {
+            "type": "If",
+            "runAfter": {
+              "Zugehoeriges_Rezept_holen": [
+                "Succeeded"
+              ]
+            },
+            "description": "Nicht loeschen, sondern kennzeichnen. So bleibt nachvollziehbar, dass es die Aufgabe gab.",
+            "expression": {
+              "or": [
+                {
+                  "equals": [
+                    "@length(body('Zugehoeriges_Rezept_holen')?['value'])",
+                    0
+                  ]
+                },
+                {
+                  "not": {
+                    "equals": [
+                      "@coalesce(first(body('Zugehoeriges_Rezept_holen')?['value'])?['Rezeptstatus']?['Value'], '')",
+                      "Aktiv"
+                    ]
+                  }
+                },
+                {
+                  "greater": [
+                    "@float(coalesce(first(body('Zugehoeriges_Rezept_holen')?['value'])?['Offen'], 0))",
+                    "@float(outputs('Schwellen_bestimmen')['Restschwelle'])"
+                  ]
+                }
+              ]
+            },
+            "else": {
+              "actions": {}
+            },
+            "actions": {
+              "Aufgabe_als_nicht_aktuell_kennzeichnen": {
+                "type": "OpenApiConnection",
+                "runAfter": {},
+                "inputs": {
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "connectionName": "shared_sharepointonline",
+                    "operationId": "HttpRequest"
+                  },
+                  "parameters": {
+                    "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                    "parameters/method": "POST",
+                    "parameters/uri": "@concat('_api/web/lists/getByTitle(''AufgabenEinstellungen'')/items(', string(items('Je_offene_Aufgabe_pruefen')?['ID']), ')')",
+                    "parameters/headers": {
+                      "Content-Type": "application/json;odata=nometadata",
+                      "Accept": "application/json;odata=nometadata",
+                      "IF-MATCH": "*",
+                      "X-HTTP-Method": "MERGE"
+                    },
+                    "parameters/body": {
+                      "NichtAktuell": true
+                    }
+                  },
+                  "authentication": "@parameters('$authentication')"
+                },
+                "description": "Gezieltes MERGE: nur dieses eine Feld. Beschreibung und Ereignisschluessel bleiben unveraendert."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

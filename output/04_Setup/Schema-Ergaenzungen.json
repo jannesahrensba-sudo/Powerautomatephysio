@@ -1,0 +1,261 @@
+{
+  "hinweis": "Aus 03_Schema_Mapping.json erzeugt. Nicht von Hand ändern - stattdessen die Zuordnung anpassen und neu erzeugen.",
+  "indizes": [
+    {
+      "liste": "Behandlungsdokumentation",
+      "interner_name": "RezeptID",
+      "grund": "Der Zähler-Flow filtert auf RezeptID. Ohne Index läuft die Abfrage in die Listenansichtsgrenze von 5000 Elementen."
+    },
+    {
+      "liste": "Behandlungsdokumentation",
+      "interner_name": "PatientID",
+      "grund": "Der Behandlungsverlauf filtert auf PatientID."
+    },
+    {
+      "liste": "Rezepte",
+      "interner_name": "PatientID",
+      "grund": "Die Rezeptliste je Patient filtert hierauf."
+    },
+    {
+      "liste": "Patientenstamm",
+      "interner_name": "Nachname",
+      "grund": "Die Patientensuche sortiert und filtert auf Nachname."
+    }
+  ],
+  "spalten": [
+    {
+      "liste": "Rezepte",
+      "anzeigename": "PatientID",
+      "interner_name": "PatientID",
+      "typ": "Number",
+      "zweck": "Die App verbindet Rezept und Patient über die technische SharePoint-ID (Befund 10). Eine Zahlenspalte ist eindeutig schreibbar, ohne den Typ von Patient zu kennen."
+    },
+    {
+      "liste": "Rezepte",
+      "anzeigename": "Rezeptstatus",
+      "interner_name": "Rezeptstatus",
+      "typ": "Choice",
+      "zweck": "Der Auftrag verlangt aktive, pausierte, abgeschlossene und abgebrochene Rezepte.",
+      "auswahlwerte": [
+        "Entwurf",
+        "Aktiv",
+        "Pausiert",
+        "Abgeschlossen",
+        "Abgebrochen"
+      ]
+    },
+    {
+      "liste": "Rezepte",
+      "anzeigename": "AltEinheiten",
+      "interner_name": "AltEinheiten",
+      "typ": "Number",
+      "zweck": "Bereits außerhalb der App erbrachte Einheiten DIESES Rezepts. Auftrag Abschnitt 6. Nicht zu verwechseln mit der gleichnamigen Doku-Spalte (Befund 3).",
+      "standardwert": "0"
+    },
+    {
+      "liste": "Rezepte",
+      "anzeigename": "EinheitenApp",
+      "interner_name": "EinheitenApp",
+      "typ": "Number",
+      "zweck": "Auftrag Befund 4: Liegt teilweise in der Dokumentation. Gemeinsame Zähler gehören an das Rezept."
+    },
+    {
+      "liste": "Rezepte",
+      "anzeigename": "Erbracht",
+      "interner_name": "Erbracht",
+      "typ": "Number",
+      "zweck": "Wie EinheitenApp."
+    },
+    {
+      "liste": "Rezepte",
+      "anzeigename": "Offen",
+      "interner_name": "Offen",
+      "typ": "Number",
+      "zweck": "Wie EinheitenApp."
+    },
+    {
+      "liste": "Rezepte",
+      "anzeigename": "LetzterAppTermin",
+      "interner_name": "LetzterAppTermin",
+      "typ": "DateTime",
+      "zweck": "Wie EinheitenApp.",
+      "anzeige": "DateTime"
+    },
+    {
+      "liste": "Rezepte",
+      "anzeigename": "InaktivTage",
+      "interner_name": "InaktivTage",
+      "typ": "Number",
+      "zweck": "Wie EinheitenApp.",
+      "standardwert": "21"
+    },
+    {
+      "liste": "Rezepte",
+      "anzeigename": "ZaehlerStand",
+      "interner_name": "ZaehlerStand",
+      "typ": "DateTime",
+      "zweck": "Zeitpunkt der letzten Zaehlerberechnung. Ist das Feld leer, zeigt die App ausdruecklich 'noch nicht berechnet' statt '0 offen'.",
+      "anzeige": "DateTime"
+    },
+    {
+      "liste": "Rezepte",
+      "anzeigename": "ZaehlerLauf",
+      "interner_name": "ZaehlerLauf",
+      "typ": "Text",
+      "zweck": "Kennung des gerade laufenden Zaehlerdurchgangs. Verhindert, dass zwei gleichzeitige Flow-Laeufe sich gegenseitig überschreiben."
+    },
+    {
+      "liste": "Behandlungsdokumentation",
+      "anzeigename": "PatientID",
+      "interner_name": "PatientID",
+      "typ": "Number",
+      "zweck": "Verweis auf Patientenstamm.ID."
+    },
+    {
+      "liste": "Behandlungsdokumentation",
+      "anzeigename": "RezeptID",
+      "interner_name": "RezeptID",
+      "typ": "Number",
+      "zweck": "Verweis auf Rezepte.ID. Der Zähler-Flow filtert hierauf."
+    },
+    {
+      "liste": "Behandlungsdokumentation",
+      "anzeigename": "KorrekturZu",
+      "interner_name": "KorrekturZu",
+      "typ": "Number",
+      "zweck": "ID des urspruenglichen Eintrags. Eine Korrektur an einem freigegebenen Eintrag entsteht als neue Zeile, damit der Vorgang nachvollziehbar bleibt."
+    },
+    {
+      "liste": "AufgabenEinstellungen",
+      "anzeigename": "Aufgabenstatus",
+      "interner_name": "Aufgabenstatus",
+      "typ": "Choice",
+      "zweck": "Trennt Aufgabenzeilen von Einstellungszeilen und steuert die Filter der App.",
+      "auswahlwerte": [
+        "Offen",
+        "Zurückgestellt",
+        "Erledigt"
+      ]
+    },
+    {
+      "liste": "AufgabenEinstellungen",
+      "anzeigename": "Beschreibung",
+      "interner_name": "Beschreibung",
+      "typ": "Note",
+      "zweck": "Aufgabentext, zugleich Inhalt eines Textbausteins."
+    },
+    {
+      "liste": "AufgabenEinstellungen",
+      "anzeigename": "Wiedervorlage",
+      "interner_name": "Wiedervorlage",
+      "typ": "DateTime",
+      "zweck": "Für das Zurueckstellen.",
+      "anzeige": "DateOnly"
+    },
+    {
+      "liste": "AufgabenEinstellungen",
+      "anzeigename": "ErledigtAm",
+      "interner_name": "ErledigtAm",
+      "typ": "DateTime",
+      "zweck": "Zeitpunkt der Erledigung.",
+      "anzeige": "DateTime"
+    },
+    {
+      "liste": "AufgabenEinstellungen",
+      "anzeigename": "NichtAktuell",
+      "interner_name": "NichtAktuell",
+      "typ": "Boolean",
+      "zweck": "Nicht mehr zutreffende Aufgaben werden gekennzeichnet statt geloescht.",
+      "standardwert": "0"
+    },
+    {
+      "liste": "AufgabenEinstellungen",
+      "anzeigename": "Ereignisschluessel",
+      "interner_name": "Ereignisschluessel",
+      "typ": "Text",
+      "zweck": "Einmaliger Schlüssel je Ereignis, damit ein erneuter Flow-Lauf keine zweite Aufgabe zur selben Sache anlegt."
+    },
+    {
+      "liste": "AufgabenEinstellungen",
+      "anzeigename": "RezeptID",
+      "interner_name": "RezeptID",
+      "typ": "Number",
+      "zweck": "Bezug der Aufgabe zum Rezept."
+    },
+    {
+      "liste": "AufgabenEinstellungen",
+      "anzeigename": "PatientID",
+      "interner_name": "PatientID",
+      "typ": "Number",
+      "zweck": "Bezug der Aufgabe zum Patienten."
+    },
+    {
+      "liste": "AufgabenEinstellungen",
+      "anzeigename": "Restschwelle",
+      "interner_name": "Restschwelle",
+      "typ": "Number",
+      "zweck": "Einstellung: ab wie vielen Resteinheiten erinnert wird.",
+      "standardwert": "1"
+    },
+    {
+      "liste": "AufgabenEinstellungen",
+      "anzeigename": "InaktivTage",
+      "interner_name": "InaktivTage",
+      "typ": "Number",
+      "zweck": "Einstellung: Hinweis nach so vielen Tagen ohne Behandlung.",
+      "standardwert": "21"
+    },
+    {
+      "liste": "AufgabenEinstellungen",
+      "anzeigename": "Abrechnungsschwelle",
+      "interner_name": "Abrechnungsschwelle",
+      "typ": "Number",
+      "zweck": "Einstellung: Abrechnungshinweis nach so vielen erbrachten Einheiten.",
+      "standardwert": "5"
+    },
+    {
+      "liste": "AufgabenEinstellungen",
+      "anzeigename": "VortagAktiv",
+      "interner_name": "VortagAktiv",
+      "typ": "Boolean",
+      "zweck": "Einstellung: Vortagserinnerung ein/aus.",
+      "standardwert": "0"
+    }
+  ],
+  "auswahlwerte_ergaenzen": [
+    {
+      "liste": "AufgabenEinstellungen",
+      "interner_name": "Typart",
+      "werte": [
+        "Einstellung",
+        "Textbaustein",
+        "Restschwelle",
+        "Inaktivität",
+        "Abrechnung"
+      ],
+      "zweck": "Die Liste mischt Aufgaben und Einstellungen (Befund 9). Diese Werte trennen beides."
+    },
+    {
+      "liste": "Behandlungsdokumentation",
+      "interner_name": "Terminstatus",
+      "werte": [
+        "Geplant",
+        "Durchgeführt",
+        "Abgesagt",
+        "Nicht erschienen",
+        "Storniert"
+      ],
+      "zweck": "Nur 'Durchgeführt' verbraucht Einheiten."
+    },
+    {
+      "liste": "Behandlungsdokumentation",
+      "interner_name": "Status",
+      "werte": [
+        "Entwurf",
+        "Geprüft",
+        "Freigegeben"
+      ],
+      "zweck": "Entwurf, Prüfung und Freigabe (Befund 8)."
+    }
+  ]
+}

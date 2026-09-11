@@ -1,0 +1,334 @@
+{
+  "_hinweis": [
+    "REFERENZDEFINITION - KEIN GEPRUEFTES IMPORTPAKET.",
+    "Nicht in einen Tenant importiert und nicht ausgefuehrt.",
+    "",
+    "VORAUSSETZUNG - sonst wird nie etwas verschickt:",
+    "Die Spalte MailGesendetam hat laut Befund 9 faelschlich einen heutigen",
+    "Standardwert. Solange der gesetzt ist, sieht JEDE neue Aufgabe aus wie bereits",
+    "verschickt. Vorher einmalig ausfuehren:",
+    "  .\\Ergaenze-Schema.ps1 -SiteUrl <...> -StandardwertMailGesendetamEntfernen",
+    "Der Flow prueft das und meldet es ausdruecklich.",
+    "",
+    "Der Versand ist im Auslieferungszustand AUS (VerandAktiv = nein).",
+    "Interner Spaltenname ist VerandAktiv - mit dem Tippfehler aus dem Bestand.",
+    "Der Anzeigename lautet VersandAktiv."
+  ],
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "$connections": {
+        "defaultValue": {},
+        "type": "Object"
+      },
+      "$authentication": {
+        "defaultValue": {},
+        "type": "SecureObject"
+      }
+    },
+    "triggers": {
+      "Taeglich_um_7_Uhr_Praxiszeit": {
+        "type": "Recurrence",
+        "recurrence": {
+          "frequency": "Day",
+          "interval": 1,
+          "timeZone": "W. Europe Standard Time",
+          "schedule": {
+            "hours": [
+              "7"
+            ],
+            "minutes": [
+              0
+            ]
+          }
+        }
+      }
+    },
+    "actions": {
+      "Einstellungszeile_holen": {
+        "type": "OpenApiConnection",
+        "runAfter": {},
+        "inputs": {
+          "host": {
+            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "connectionName": "shared_sharepointonline",
+            "operationId": "GetItems"
+          },
+          "parameters": {
+            "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+            "table": "AufgabenEinstellungen",
+            "$filter": "Typart eq 'Einstellung'",
+            "$top": 1
+          },
+          "authentication": "@parameters('$authentication')"
+        }
+      },
+      "Nur_wenn_Versand_eingeschaltet_ist": {
+        "type": "If",
+        "runAfter": {
+          "Einstellungszeile_holen": [
+            "Succeeded"
+          ]
+        },
+        "description": "VerandAktiv ist der INTERNE Name (Tippfehler aus dem Bestand). Eine hinterlegte Adresse allein bedeutet ausdruecklich NICHT, dass versendet wird.",
+        "expression": {
+          "equals": [
+            "@coalesce(first(body('Einstellungszeile_holen')?['value'])?['VerandAktiv'], false)",
+            true
+          ]
+        },
+        "else": {
+          "actions": {
+            "Versand_ist_ausgeschaltet": {
+              "type": "Terminate",
+              "runAfter": {},
+              "inputs": {
+                "runStatus": "Succeeded"
+              },
+              "description": "Auslieferungszustand. Die Aufgaben entstehen trotzdem und sind in der App sichtbar."
+            }
+          }
+        },
+        "actions": {
+          "Empfaenger_bestimmen": {
+            "type": "Compose",
+            "runAfter": {},
+            "inputs": "@coalesce(first(body('Einstellungszeile_holen')?['value'])?['MailIntern'], '')"
+          },
+          "Ohne_Empfaenger_nicht_versenden": {
+            "type": "If",
+            "runAfter": {
+              "Empfaenger_bestimmen": [
+                "Succeeded"
+              ]
+            },
+            "expression": {
+              "equals": [
+                "@outputs('Empfaenger_bestimmen')",
+                ""
+              ]
+            },
+            "else": {
+              "actions": {}
+            },
+            "actions": {
+              "Keine_Empfaengeradresse": {
+                "type": "Terminate",
+                "runAfter": {},
+                "inputs": {
+                  "runStatus": "Failed",
+                  "runError": {
+                    "code": "KeineEmpfaengeradresse",
+                    "message": "Der Versand ist eingeschaltet, aber in den Einstellungen steht keine interne Empfaengeradresse."
+                  }
+                }
+              }
+            }
+          },
+          "Noch_nicht_versandte_offene_Aufgaben": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+              "Ohne_Empfaenger_nicht_versenden": [
+                "Succeeded"
+              ]
+            },
+            "inputs": {
+              "host": {
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                "connectionName": "shared_sharepointonline",
+                "operationId": "GetItems"
+              },
+              "parameters": {
+                "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                "table": "AufgabenEinstellungen",
+                "$filter": "Aufgabenstatus eq 'Offen' and NichtAktuell eq 0 and MailGesendetam eq null",
+                "$top": 5000
+              },
+              "authentication": "@parameters('$authentication')"
+            },
+            "description": "MailGesendetam leer heisst: noch nicht zugestellt. Ein Lauf, der beim Versand scheitert, setzt das Feld NICHT - der naechste Lauf nimmt die Aufgabe deshalb erneut mit.",
+            "runtimeConfiguration": {
+              "paginationPolicy": {
+                "minimumItemCount": 5000
+              }
+            }
+          },
+          "Alle_offenen_Aufgaben_zum_Vergleich": {
+            "type": "OpenApiConnection",
+            "runAfter": {
+              "Noch_nicht_versandte_offene_Aufgaben": [
+                "Succeeded"
+              ]
+            },
+            "inputs": {
+              "host": {
+                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                "connectionName": "shared_sharepointonline",
+                "operationId": "GetItems"
+              },
+              "parameters": {
+                "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                "table": "AufgabenEinstellungen",
+                "$filter": "Aufgabenstatus eq 'Offen' and NichtAktuell eq 0",
+                "$top": 5000
+              },
+              "authentication": "@parameters('$authentication')"
+            },
+            "description": "Nur zur Diagnose des Standardwert-Problems."
+          },
+          "Hinweis_falls_Standardwert_noch_gesetzt_ist": {
+            "type": "If",
+            "runAfter": {
+              "Alle_offenen_Aufgaben_zum_Vergleich": [
+                "Succeeded"
+              ]
+            },
+            "description": "Gibt es offene Aufgaben, aber keine einzige ohne MailGesendetam, steht der fehlerhafte Standardwert vermutlich noch. Das wird gemeldet statt still zu schweigen.",
+            "expression": {
+              "and": [
+                {
+                  "equals": [
+                    "@length(body('Noch_nicht_versandte_offene_Aufgaben')?['value'])",
+                    0
+                  ]
+                },
+                {
+                  "greater": [
+                    "@length(body('Alle_offenen_Aufgaben_zum_Vergleich')?['value'])",
+                    0
+                  ]
+                }
+              ]
+            },
+            "else": {
+              "actions": {}
+            },
+            "actions": {
+              "Standardwert_vermutlich_noch_gesetzt": {
+                "type": "Terminate",
+                "runAfter": {},
+                "inputs": {
+                  "runStatus": "Failed",
+                  "runError": {
+                    "code": "MailGesendetamStandardwert",
+                    "message": "Es gibt offene Aufgaben, aber keine ohne MailGesendetam. Vermutlich ist der fehlerhafte heutige Standardwert der Spalte noch gesetzt. Bitte Ergaenze-Schema.ps1 mit -StandardwertMailGesendetamEntfernen ausfuehren."
+                  }
+                }
+              }
+            }
+          },
+          "Nur_wenn_es_etwas_zu_melden_gibt": {
+            "type": "If",
+            "runAfter": {
+              "Hinweis_falls_Standardwert_noch_gesetzt_ist": [
+                "Succeeded"
+              ]
+            },
+            "expression": {
+              "greater": [
+                "@length(body('Noch_nicht_versandte_offene_Aufgaben')?['value'])",
+                0
+              ]
+            },
+            "else": {
+              "actions": {}
+            },
+            "actions": {
+              "Zeilen_fuer_die_Mail": {
+                "type": "Select",
+                "runAfter": {},
+                "inputs": {
+                  "from": "@body('Noch_nicht_versandte_offene_Aufgaben')?['value']",
+                  "select": "@concat('<tr><td>', coalesce(item()?['Typart']?['Value'], 'Aufgabe'), '</td><td>', coalesce(item()?['Beschreibung'], ''), '</td></tr>')"
+                }
+              },
+              "Mail_senden": {
+                "type": "OpenApiConnection",
+                "runAfter": {
+                  "Zeilen_fuer_die_Mail": [
+                    "Succeeded"
+                  ]
+                },
+                "description": "Ein Sammel-Mail je Lauf statt einer Mail je Aufgabe.",
+                "inputs": {
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                    "connectionName": "shared_office365",
+                    "operationId": "SendEmailV2"
+                  },
+                  "parameters": {
+                    "emailMessage/To": "@outputs('Empfaenger_bestimmen')",
+                    "emailMessage/Subject": "@concat('Praxis-App: ', string(length(body('Noch_nicht_versandte_offene_Aufgaben')?['value'])), ' offene Aufgabe(n)')",
+                    "emailMessage/Body": "@concat('<p>Offene Aufgaben aus der Praxis-App, Stand ', convertTimeZone(utcNow(), 'UTC', 'W. Europe Standard Time', 'dd.MM.yyyy HH:mm'), '.</p><table border=\"1\" cellpadding=\"6\" cellspacing=\"0\"><tr><th>Art</th><th>Beschreibung</th></tr>', join(body('Zeilen_fuer_die_Mail'), ''), '</table><p>Bearbeitet werden die Aufgaben in der Praxis-App unter Aufgaben.</p>')",
+                    "emailMessage/Importance": "Normal"
+                  },
+                  "authentication": "@parameters('$authentication')"
+                }
+              },
+              "Versand_gescheitert": {
+                "type": "Terminate",
+                "runAfter": {
+                  "Mail_senden": [
+                    "Failed",
+                    "TimedOut",
+                    "Skipped"
+                  ]
+                },
+                "description": "Kein MailGesendetam schreiben. Die Aufgaben bleiben damit in der Warteschlange und werden beim naechsten Lauf erneut zugestellt.",
+                "inputs": {
+                  "runStatus": "Failed",
+                  "runError": {
+                    "code": "VersandGescheitert",
+                    "message": "Die Benachrichtigung konnte nicht versendet werden. Es wurde kein Versandzeitpunkt gesetzt; der naechste Lauf versucht es erneut."
+                  }
+                }
+              },
+              "Erst_nach_erfolgreichem_Versand_kennzeichnen": {
+                "type": "Foreach",
+                "runAfter": {
+                  "Mail_senden": [
+                    "Succeeded"
+                  ]
+                },
+                "foreach": "@body('Noch_nicht_versandte_offene_Aufgaben')?['value']",
+                "runtimeConfiguration": {
+                  "concurrency": {
+                    "repetitions": 1
+                  }
+                },
+                "actions": {
+                  "Versandzeitpunkt_setzen": {
+                    "type": "OpenApiConnection",
+                    "runAfter": {},
+                    "inputs": {
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "connectionName": "shared_sharepointonline",
+                        "operationId": "HttpRequest"
+                      },
+                      "parameters": {
+                        "dataset": "https://IHRE-SHAREPOINT-ADRESSE/sites/Praxis",
+                        "parameters/method": "POST",
+                        "parameters/uri": "@concat('_api/web/lists/getByTitle(''AufgabenEinstellungen'')/items(', string(items('Erst_nach_erfolgreichem_Versand_kennzeichnen')?['ID']), ')')",
+                        "parameters/headers": {
+                          "Content-Type": "application/json;odata=nometadata",
+                          "Accept": "application/json;odata=nometadata",
+                          "IF-MATCH": "*",
+                          "X-HTTP-Method": "MERGE"
+                        },
+                        "parameters/body": "@json(concat('{\"MailGesendetam\":\"', utcNow(), '\"}'))"
+                      },
+                      "authentication": "@parameters('$authentication')"
+                    },
+                    "description": "Gezieltes MERGE auf genau ein Feld. Beschreibung und Status der Aufgabe bleiben unberuehrt."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
