@@ -103,7 +103,7 @@ um. Dann bleiben alle Formeln gültig.
    öffnet.)
 3. Bestätigen.
 
-Danach steht `conPraxisApp` mit 216 untergeordneten Steuerelementen im Baum.
+Danach steht `conPraxisApp` mit 217 untergeordneten Steuerelementen im Baum.
 
 > Erscheint beim Einfügen nichts, prüfen Sie die
 > **Zwischenablage-Berechtigung** des Browsers für `make.powerapps.com`.
@@ -120,7 +120,7 @@ es die Schritte 1, 2, 4 und 7.
 | Prüfung | Erwartet |
 |---|---|
 | Vorschau starten | Navigation links, Ansicht „Heute" |
-| Fenster schmal ziehen | Navigation springt nach oben |
+| Fenster schmal ziehen | Navigation wird zur Auswahlliste oben |
 | Bereich **Patienten** → Namen tippen | Trefferliste, Hinweis mit Trefferzahl |
 | **Patient aufnehmen** → Test-Patient anlegen | Meldung „Patient angelegt (ID …)" |
 | Weiter zum Rezept, Entwurf sichern | Meldung „Rezeptentwurf gesichert" |

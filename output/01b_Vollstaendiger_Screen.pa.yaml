@@ -156,7 +156,7 @@ Screens:
                   Fill: =clrAkzentDunkel
                   FillPortions: =0
                   Width: =If(conPraxisApp.Width >= bpBreit, 248, conPraxisApp.Width)
-                  Height: =If(conPraxisApp.Width >= bpBreit, conPraxisApp.Height, 132)
+                  Height: =If(conPraxisApp.Width >= bpBreit, conPraxisApp.Height, 108)
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Stretch
                   LayoutGap: =0
@@ -196,10 +196,14 @@ Screens:
 
                   # Die Navigation ist eine Galerie, damit sie auf breiten Geraeten
                   # senkrecht und auf schmalen Geraeten waagerecht laufen kann.
+                  # Senkrechte Navigation fuer breite Geraete.
+                  # Die Richtung bestimmt die Variante; eine Eigenschaft "Layout"
+                  # gibt es dafuer nicht.
                   - galNav:
                       Control: Gallery
                       Variant: Vertical
                       Properties:
+                        Visible: =conPraxisApp.Width >= bpBreit
                         Items: |-
                           =Table(
                               { Bez: "Heute",         Sym: Icon.Home },
@@ -211,11 +215,10 @@ Screens:
                               { Bez: "Aufgaben",      Sym: Icon.CheckBadge },
                               { Bez: "Einstellungen", Sym: Icon.Settings }
                           )
-                        Layout: =If(conPraxisApp.Width >= bpBreit, Layout.Vertical, Layout.Horizontal)
-                        TemplateSize: =If(conPraxisApp.Width >= bpBreit, 48, 104)
+                        TemplateSize: =48
                         TemplatePadding: =0
                         FillPortions: =1
-                        Height: =If(conPraxisApp.Width >= bpBreit, conNav.Height - 68, 76)
+                        Height: =conNav.Height - 68
                         ShowScrollbar: =false
                         DelayItemLoading: =false
                         TabIndex: =0
@@ -237,8 +240,8 @@ Screens:
                               Color: =If(ThisItem.Bez = gblAnsicht, clrFlaecheWeiss, clrNavRuhe)
                               Width: =24
                               Height: =24
-                              X: =If(conPraxisApp.Width >= bpBreit, spM, (Parent.TemplateWidth - 24) / 2)
-                              Y: =If(conPraxisApp.Width >= bpBreit, (Parent.TemplateHeight - 24) / 2, 12)
+                              X: =spM
+                              Y: =(Parent.TemplateHeight - 24) / 2
                               PaddingTop: =0
                               PaddingBottom: =0
                               PaddingLeft: =0
@@ -258,19 +261,42 @@ Screens:
                             Properties:
                               Text: =ThisItem.Bez
                               Color: =If(ThisItem.Bez = gblAnsicht, clrFlaecheWeiss, clrNavRuhe)
-                              Size: =If(conPraxisApp.Width >= bpBreit, fsNormal, fsKlein)
+                              Size: =fsNormal
                               FontWeight: =If(ThisItem.Bez = gblAnsicht, FontWeight.Semibold, FontWeight.Normal)
-                              Align: =If(conPraxisApp.Width >= bpBreit, Align.Left, Align.Center)
+                              Align: =Align.Left
                               VerticalAlign: =VerticalAlign.Middle
                               Wrap: =false
-                              X: =If(conPraxisApp.Width >= bpBreit, 52, 0)
-                              Y: =If(conPraxisApp.Width >= bpBreit, 0, 40)
-                              Width: =If(conPraxisApp.Width >= bpBreit, Parent.TemplateWidth - 60, Parent.TemplateWidth)
-                              Height: =If(conPraxisApp.Width >= bpBreit, Parent.TemplateHeight, 28)
+                              X: =52
+                              Y: =0
+                              Width: =Parent.TemplateWidth - 60
+                              Height: =Parent.TemplateHeight
                               PaddingLeft: =0
                               PaddingRight: =0
                               OnSelect: |-
                                 =Select(icoNav)
+
+                  # Kompakte Navigation fuer schmale Geraete.
+                  # Eine Auswahlliste braucht auf dem Telefon eine Zeile statt acht
+                  # und kommt ohne waagerechtes Scrollen aus.
+                  - drpNav:
+                      Control: Classic/DropDown
+                      Properties:
+                        Visible: =conPraxisApp.Width < bpBreit
+                        Items: |-
+                          =["Heute", "Patienten", "Patientenakte", "Aufnahme",
+                            "Rezepte", "Behandlung", "Aufgaben", "Einstellungen"]
+                        Default: =gblAnsicht
+                        Height: =hEingabe
+                        FillPortions: =0
+                        Size: =fsNormal
+                        BorderColor: =clrAkzentDunkel
+                        BorderThickness: =1
+                        OnChange: |-
+                          =If(
+                              gblUngespeichert And Self.Selected.Value <> gblAnsicht,
+                              Set(gblWechselZiel, Self.Selected.Value); Set(gblFrageWechsel, true),
+                              Set(gblAnsicht, Self.Selected.Value); Set(gblMeldung, ""); Set(gblMeldungArt, "")
+                          )
 
                   - lblNavFuss:
                       Control: Label
@@ -708,7 +734,6 @@ Screens:
                                                 ID,
                                                 SortOrder.Ascending
                                             )
-                                          Layout: =Layout.Vertical
                                           TemplateSize: =72
                                           TemplatePadding: =0
                                           FillPortions: =1
@@ -873,7 +898,6 @@ Screens:
                                                 ID,
                                                 SortOrder.Descending
                                             )
-                                          Layout: =Layout.Vertical
                                           TemplateSize: =60
                                           TemplatePadding: =0
                                           FillPortions: =1
@@ -1071,7 +1095,6 @@ Screens:
                                                     SortOrder.Ascending
                                                 )
                                             )
-                                          Layout: =Layout.Vertical
                                           TemplateSize: =72
                                           TemplatePadding: =0
                                           FillPortions: =1
@@ -1535,7 +1558,6 @@ Screens:
                                                 ID,
                                                 SortOrder.Descending
                                             )
-                                          Layout: =Layout.Vertical
                                           TemplateSize: =66
                                           TemplatePadding: =0
                                           FillPortions: =1
@@ -2507,7 +2529,6 @@ Screens:
                                                 ID,
                                                 SortOrder.Descending
                                             )
-                                          Layout: =Layout.Vertical
                                           TemplateSize: =86
                                           TemplatePadding: =0
                                           FillPortions: =1
@@ -3260,8 +3281,10 @@ Screens:
                                                 # Textbausteine stammen aus der Einstellungsliste.
                                                 # Es werden bewusst KEINE fachlichen Inhalte mitgeliefert.
                                                 Items: |-
-                                                  =Sort(Filter(AufgabenEinstellungen, Typart.Value = "Textbaustein"), ID, SortOrder.Ascending)
-                                                Value: ="Beschreibung"
+                                                  =ShowColumns(
+                                                      Sort(Filter(AufgabenEinstellungen, Typart.Value = "Textbaustein"), ID, SortOrder.Ascending),
+                                                      "Beschreibung"
+                                                  )
                                                 Reset: =gblFormularReset
                                                 Height: =hTouch
                                                 Width: =300
@@ -3838,7 +3861,6 @@ Screens:
                                                 ID,
                                                 SortOrder.Descending
                                             )
-                                          Layout: =Layout.Vertical
                                           TemplateSize: =98
                                           TemplatePadding: =0
                                           FillPortions: =1

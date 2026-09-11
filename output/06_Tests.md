@@ -37,7 +37,7 @@ Geprüft gegen `pa.schema.yaml` (v3.0) aus `microsoft/PowerApps-Tooling`, die
 Control-Typen zusätzlich gegen die dort hinterlegte Liste der
 Erstanbieter-Controls. Beide Dateien liegen unverändert in `tools/`.
 
-**Ergebnis:** bestanden, 217 Steuerelemente, als Fragment und als vollständiger
+**Ergebnis:** bestanden, 218 Steuerelemente, als Fragment und als vollständiger
 Bildschirm.
 
 Zwei Befunde aus dieser Arbeit sind festzuhalten:
@@ -191,6 +191,51 @@ Erkennung klassischer Eigenschaften an modernen Controls samt Hinweis auf
 `Classic/<Name>`. Der Gegentest mit je einem kuenstlich eingebauten Fehler
 meldet alle drei Gruppen.
 
+### A1d – Galerie-Layout und Auswahlliste (dritter Tenant-Befund)
+
+Der dritte Einfügeversuch war fast sauber: **8 Meldungen statt 270**.
+`Variant: Vertical` für `Gallery` wurde akzeptiert, ebenso die gesamte
+klassische Controlfamilie.
+
+```
+(104,19) : PA2108 : Unknown property 'Layout' for control type 'Gallery'
+                    and variant 'Vertical'.          (7x)
+(3154,43): PA2108 : Unknown property 'Value' for control type 'Classic/DropDown'.
+```
+
+**`Layout` bei Galerien (7×).** Die Variante legt die Laufrichtung bereits
+fest – dieselbe Systematik wie bei `GroupContainer`, wo die Variante den
+Layoutmodus festlegt und `LayoutMode` deshalb entfällt. Ersatzlos entfernt.
+
+Das hatte eine echte Folge für die Navigation: Die Navigationsgalerie schaltete
+über `Layout: =If(breit, Layout.Vertical, Layout.Horizontal)` zwischen
+Seitenleiste und waagerechter Leiste um. Ohne diese Eigenschaft geht das nicht
+mehr.
+
+**Gelöst ohne neue Unsicherheit:** Die Galerie bleibt senkrecht und wird auf
+breiten Geräten gezeigt. Auf schmalen Geräten tritt eine Auswahlliste
+(`drpNav`, `Classic/DropDown`) an ihre Stelle – ein Steuerelement statt acht,
+ohne waagerechtes Scrollen. `Variant: Horizontal` wäre die naheliegende
+Alternative gewesen, ist aber **nicht belegt**; `Classic/DropDown` ist es.
+
+**`Value` bei `Classic/DropDown` (1×).** Damit hatte die Textbaustein-Auswahl
+bestimmt, welche Spalte angezeigt wird. Die Eigenschaft gibt es nicht.
+Stattdessen wird die Liste mit `ShowColumns` auf eine einzige Spalte
+reduziert – dann ist ohne weitere Angabe eindeutig, was angezeigt wird:
+
+```powerfx
+=ShowColumns(
+    Sort(Filter(AufgabenEinstellungen, Typart.Value = "Textbaustein"), ID, SortOrder.Ascending),
+    "Beschreibung"
+)
+```
+
+`drpDokuBaustein.Selected.Beschreibung` bleibt dadurch unverändert gültig.
+
+Beide Regeln sind in `tools/validate_pa_yaml.py` aufgenommen (verbotene
+Eigenschaft je Control-Variante-Kombination sowie je Control-Typ); der
+Gegentest mit je einem künstlich eingebauten Fehler meldet beide.
+
 ### A2 – Querverweise
 
 | Geprüft | Anzahl | Ergebnis |
@@ -244,9 +289,9 @@ Nach dem Einfügen zeigt Studio jeden Formelfehler an. Reihenfolge der Prüfung:
 | # | Prüfung | Erwartet |
 |---|---|---|
 | B1 | Nach dem Einfügen: **App-Prüfung** öffnen | Keine Fehler. Fehler an Spaltennamen sind der erwartete Fall, wenn `Pruefe-Schema.ps1` noch nicht abgearbeitet wurde. |
-| B2 | Baumansicht | `conPraxisApp` mit 216 untergeordneten Steuerelementen |
+| B2 | Baumansicht | `conPraxisApp` mit 217 untergeordneten Steuerelementen |
 | B3 | Fenster auf ~1400 px | Navigation links, 248 px breit |
-| B4 | Fenster auf ~600 px | Navigation oben, waagerecht, Beschriftungen unter den Symbolen |
+| B4 | Fenster auf ~600 px | Navigationsgalerie verschwindet, an ihrer Stelle steht die Auswahlliste `drpNav` |
 | B5 | Vorschau ohne Patient | Kopf zeigt „Kein Patient ausgewählt", die Akte den Hinweistext – keine leeren Flächen |
 | B6 | Rezept ohne `ZaehlerStand` | „Einheiten noch nicht berechnet" in Warnfarbe – **niemals** „0 offen" |
 

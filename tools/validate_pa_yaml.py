@@ -76,7 +76,19 @@ VARIANTE_PFLICHT = {"Gallery"}
 # Eigenschaften, die Studio fuer eine Kombination aus Control-Typ und Variante
 # ablehnt (PA2108). Aus dem Tenant-Test vom 11.09.2026.
 VERBOTENE_EIGENSCHAFTEN = {
+    # Die Variante legt den Layoutmodus bereits fest.
     ("GroupContainer", "AutoLayout"): {"LayoutMode"},
+    # Die Variante legt die Laufrichtung bereits fest; eine Eigenschaft
+    # "Layout" gibt es bei der Galerie nicht.
+    ("Gallery", "Vertical"): {"Layout"},
+    ("Gallery", "Horizontal"): {"Layout"},
+}
+
+# Eigenschaften, die ein Control-Typ unabhaengig von der Variante nicht kennt.
+VERBOTEN_JE_TYP = {
+    # Die Anzeigespalte wird nicht ueber "Value" gewaehlt. Stattdessen die
+    # Liste mit ShowColumns auf eine Spalte reduzieren.
+    "Classic/DropDown": {"Value"},
 }
 
 # Die blanken Namen loesen auf die MODERNEN Controls auf. Wer dort die
@@ -128,7 +140,8 @@ def pruefe_varianten(knoten, pfad="", fehler=None):
                         f"(Studio meldet sonst PA1011)."
                     )
 
-                verboten = VERBOTENE_EIGENSCHAFTEN.get((typ, variante or ""), set())
+                verboten = set(VERBOTENE_EIGENSCHAFTEN.get((typ, variante or ""), set()))
+                verboten |= VERBOTEN_JE_TYP.get(typ, set())
                 for e in sorted(eigenschaften & verboten):
                     fehler.append(
                         f"{p}: Eigenschaft {e!r} ist fuer {typ!r} mit Variante "
