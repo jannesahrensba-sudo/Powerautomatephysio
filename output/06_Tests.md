@@ -54,6 +54,54 @@ Zwei Befunde aus dieser Arbeit sind festzuhalten:
   `Control: Component`, das in der Control-Liste nicht enthalten ist. Der
   Prüfer arbeitet also wie beabsichtigt.
 
+### A1b – Control-Varianten (nachtraeglich ergaenzt)
+
+Beim ersten Einfuegen in Power Apps Studio kam:
+
+```
+(22,3) : error PA2109s : Unknown variant 'horizontalAutoLayoutContainer'
+         for control type 'GroupContainer'.
+         Possible suggestions: GridLayout, AutoLayout, ManualLayout.
+(22,3) : warning PA4102 : Early Preview code detected with variant
+         'horizontalAutoLayoutContainer' for control type 'GroupContainer'.
+```
+
+**Ursache:** Die Variantennamen stammten aus den Beispieldateien in
+`microsoft/PowerApps-Tooling` (`Examples/Src/Screens/FormsScreen2.pa.yaml`).
+Diese Beispiele sind im **Early-Preview-Format** geschrieben – jenem Format,
+das die offizielle Dokumentation ausdruecklich als *retired* bezeichnet
+(„The format during preview was temporary and is no longer in use."). Das
+Schema `pa.schema.yaml` prueft Varianten nicht, deshalb fiel es dort nicht auf.
+
+**Merkmal zum Unterscheiden:** Early-Preview-Varianten beginnen klein und sind
+camelCase (`horizontalAutoLayoutContainer`, `galleryVertical`,
+`textualEditCard`). Source-Code-Varianten sind PascalCase (`AutoLayout`,
+`ManualLayout`, `GridLayout`).
+
+**Behoben:**
+
+| Control | vorher | jetzt |
+|---|---|---|
+| `GroupContainer` (55×) | `horizontalAutoLayoutContainer` / `verticalAutoLayoutContainer` | `AutoLayout` |
+| `Gallery` (7×) | `galleryVertical` | *keine Variante* |
+| `Classic/Icon` (1×) | `Home` | *keine Variante* |
+
+Bei den Containern geht dabei nichts verloren: **jeder** Container setzt seine
+Richtung ohnehin explizit ueber `LayoutDirection`. Bei Galerie und Symbol ist
+der gueltige Source-Code-Name nicht belegt; das Schema erlaubt `Variant`
+ausdruecklich wegzulassen („Not all controls require a variant"), dann gilt die
+Standardvariante. Die Ausrichtung der Galerien steuert weiterhin die
+Eigenschaft `Layout`, das Symbol die Eigenschaft `Icon`.
+
+`tools/validate_pa_yaml.py` prueft Varianten seitdem mit – gegen die
+Erlaubtliste fuer `GroupContainer` und gegen das Kleinschreibungs-Merkmal fuer
+alle uebrigen Controls. Ein Gegentest mit der alten Fassung meldet
+erwartungsgemaess 55 Fehler.
+
+> Sollte Studio zu `Gallery` oder `Classic/Icon` doch noch eine Variante
+> verlangen, nennt die Fehlermeldung – wie oben – die gueltigen Alternativen.
+> Diese lassen sich dann in `ERLAUBTE_VARIANTEN` im Pruefwerkzeug eintragen.
+
 ### A2 – Querverweise
 
 | Geprüft | Anzahl | Ergebnis |

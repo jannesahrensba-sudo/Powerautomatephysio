@@ -10,8 +10,9 @@ Quellen (unveraendert mitgeliefert in diesem Ordner):
         microsoft/PowerApps-Tooling, src/schemas/pa-yaml/v3.0/ControlLibraryVDev/
 
 WICHTIG / Grenze dieser Pruefung:
-  Geprueft wird ausschliesslich die YAML-Struktur, die Control-Typen und die
-  Formel-Schreibweise (jede Eigenschaft muss mit "=" beginnen).
+  Geprueft wird ausschliesslich die YAML-Struktur, die Control-Typen, die
+  Control-Varianten und die Formel-Schreibweise (jede Eigenschaft muss mit
+  "=" beginnen).
   NICHT geprueft wird, ob eine Power-Fx-Formel kompiliert, ob eine Spalte in
   SharePoint existiert oder ob eine Eigenschaft fuer genau diesen Control-Typ
   zulaessig ist. Das leistet nur Power Apps Studio selbst.
@@ -47,6 +48,56 @@ def lade_schema() -> dict:
         r"^(([a-zA-Z][a-zA-Z0-9]{1,7})_)?(\w+\.)+(\w+)(\([0-9a-f-]{36}\))?$"
     )
     return schema
+
+
+# Varianten, die Power Apps Studio im SOURCE-CODE-Schema akzeptiert.
+# Die Liste stammt aus der Fehlermeldung von Studio selbst (PA2109s nennt die
+# gueltigen Alternativen). Sie ist bewusst kurz: Eingetragen wird nur, was
+# tatsaechlich belegt ist.
+ERLAUBTE_VARIANTEN = {
+    "GroupContainer": {"GridLayout", "AutoLayout", "ManualLayout"},
+}
+
+
+def pruefe_varianten(knoten, pfad="", fehler=None):
+    """Findet Varianten aus dem alten Early-Preview-Format.
+
+    Studio meldet solche Varianten mit PA2109s ("Unknown variant") und
+    PA4102 ("Early Preview code detected") - und zwar erst beim Einfuegen.
+    Diese Pruefung zieht den Befund nach vorne.
+
+    Merkmal: Early-Preview-Varianten beginnen klein und sind camelCase
+    (horizontalAutoLayoutContainer, galleryVertical, textualEditCard).
+    Source-Code-Varianten sind PascalCase (AutoLayout, ManualLayout).
+    """
+    if fehler is None:
+        fehler = []
+    if isinstance(knoten, list):
+        for eintrag in knoten:
+            if not isinstance(eintrag, dict):
+                continue
+            for name, inhalt in eintrag.items():
+                if not isinstance(inhalt, dict):
+                    continue
+                p = f"{pfad}/{name}"
+                variante = inhalt.get("Variant")
+                if isinstance(variante, str) and variante:
+                    typ = (inhalt.get("Control") or "").split("@")[0]
+                    erlaubt = ERLAUBTE_VARIANTEN.get(typ)
+                    if erlaubt is not None and variante not in erlaubt:
+                        fehler.append(
+                            f"{p}: Variante {variante!r} ist fuer Control-Typ {typ!r} "
+                            f"nicht zulaessig. Erlaubt: {', '.join(sorted(erlaubt))}"
+                        )
+                    elif erlaubt is None and variante[:1].islower():
+                        fehler.append(
+                            f"{p}: Variante {variante!r} sieht nach dem alten "
+                            f"Early-Preview-Format aus (beginnt klein). Studio lehnt das "
+                            f"beim Einfuegen ab. Variante weglassen oder den "
+                            f"Source-Code-Namen verwenden."
+                        )
+                pruefe_varianten(inhalt.get("Children"), p, fehler)
+    return fehler
 
 
 def sammle_controls(knoten, pfad="", treffer=None):
@@ -129,8 +180,13 @@ def main(argv: list[str]) -> int:
             print(f"FEHLER  {pfad}: {f}")
         gesamt_fehler += len(formelfehler)
 
+        variantenfehler = pruefe_varianten(kinder)
+        for f in variantenfehler:
+            print(f"FEHLER  {pfad}: {f}")
+        gesamt_fehler += len(variantenfehler)
+
         controls = sammle_controls(kinder)
-        if schema_ok and not formelfehler:
+        if schema_ok and not formelfehler and not variantenfehler:
             art = "Control-Fragment" if ist_fragment else "vollstaendiger Bildschirm"
             print(f"OK      {pfad}  ({art}, {len(controls)} Controls)")
 

@@ -131,7 +131,7 @@ Screens:
     Children:
       - conPraxisApp:
           Control: GroupContainer
-          Variant: horizontalAutoLayoutContainer
+          Variant: AutoLayout
           Properties:
             Fill: =clrHintergrund
             Height: =Parent.Height
@@ -152,7 +152,7 @@ Screens:
             # ---------------------------------------------------------------
             - conNav:
                 Control: GroupContainer
-                Variant: verticalAutoLayoutContainer
+                Variant: AutoLayout
                 Properties:
                   Fill: =clrAkzentDunkel
                   FillPortions: =0
@@ -200,7 +200,6 @@ Screens:
                   # senkrecht und auf schmalen Geraeten waagerecht laufen kann.
                   - galNav:
                       Control: Gallery
-                      Variant: galleryVertical
                       Properties:
                         Items: |-
                           =Table(
@@ -234,7 +233,6 @@ Screens:
                                 =Select(icoNav)
                         - icoNav:
                             Control: Classic/Icon
-                            Variant: Home
                             Properties:
                               Icon: =ThisItem.Sym
                               Color: =If(ThisItem.Bez = gblAnsicht, clrFlaecheWeiss, clrNavRuhe)
@@ -294,7 +292,7 @@ Screens:
             # ---------------------------------------------------------------
             - conArbeitsbereich:
                 Control: GroupContainer
-                Variant: verticalAutoLayoutContainer
+                Variant: AutoLayout
                 Properties:
                   Fill: =clrHintergrund
                   FillPortions: =1
@@ -307,7 +305,7 @@ Screens:
                   # --- Patientenkopf: immer sichtbar, nie scrollend ---------
                   - conKopf:
                       Control: GroupContainer
-                      Variant: horizontalAutoLayoutContainer
+                      Variant: AutoLayout
                       Properties:
                         Fill: =clrFlaeche
                         FillPortions: =0
@@ -326,7 +324,7 @@ Screens:
                       Children:
                         - conKopfPatient:
                             Control: GroupContainer
-                            Variant: verticalAutoLayoutContainer
+                            Variant: AutoLayout
                             Properties:
                               Fill: =RGBA(0, 0, 0, 0)
                               FillPortions: =1
@@ -376,7 +374,7 @@ Screens:
                                     VerticalAlign: =VerticalAlign.Middle
                         - conKopfRezept:
                             Control: GroupContainer
-                            Variant: verticalAutoLayoutContainer
+                            Variant: AutoLayout
                             Properties:
                               Fill: =If(IsBlank(gblRezept), clrHintergrund, clrAkzentSanft)
                               FillPortions: =0
@@ -478,7 +476,7 @@ Screens:
                   # --- Meldungsleiste: Erfolg, Warnung, Fehler --------------
                   - conMeldung:
                       Control: GroupContainer
-                      Variant: horizontalAutoLayoutContainer
+                      Variant: AutoLayout
                       Properties:
                         Visible: =Not(IsBlank(gblMeldung))
                         Fill: |-
@@ -536,7 +534,7 @@ Screens:
                   # --- Rueckfrage bei ungespeicherten Eingaben --------------
                   - conFrageWechsel:
                       Control: GroupContainer
-                      Variant: horizontalAutoLayoutContainer
+                      Variant: AutoLayout
                       Properties:
                         Visible: =gblFrageWechsel
                         Fill: =clrWarnungSanft
@@ -607,7 +605,7 @@ Screens:
                   # deshalb duerfen alle Ansichten FillPortions = 1 haben.
                   - conInhalt:
                       Control: GroupContainer
-                      Variant: verticalAutoLayoutContainer
+                      Variant: AutoLayout
                       Properties:
                         Fill: =RGBA(0, 0, 0, 0)
                         FillPortions: =1
@@ -622,7 +620,7 @@ Screens:
                         # =====================================================
                         - conViewHeute:
                             Control: GroupContainer
-                            Variant: verticalAutoLayoutContainer
+                            Variant: AutoLayout
                             Properties:
                               Visible: =gblAnsicht = "Heute"
                               Fill: =RGBA(0, 0, 0, 0)
@@ -653,7 +651,7 @@ Screens:
                               # --- Karte: heutige Dokumentationen ------------
                               - conHeuteDoku:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Fill: =clrFlaeche
                                     FillPortions: =0
@@ -706,7 +704,6 @@ Screens:
                                           PaddingLeft: =0
                                     - galHeuteDoku:
                                         Control: Gallery
-                                        Variant: galleryVertical
                                         Properties:
                                           # Zeitraumfilter statt "= Today()", weil die Datumsspalten
                                           # teilweise noch ohne Uhrzeit gefuehrt werden.
@@ -844,7 +841,7 @@ Screens:
                               # --- Karte: offene Aufgaben --------------------
                               - conHeuteAufgaben:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Fill: =clrFlaeche
                                     FillPortions: =0
@@ -878,7 +875,6 @@ Screens:
                                           PaddingLeft: =0
                                     - galHeuteAufgaben:
                                         Control: Gallery
-                                        Variant: galleryVertical
                                         Properties:
                                           Items: |-
                                             =Sort(
@@ -943,7 +939,7 @@ Screens:
                         # =====================================================
                         - conViewPatienten:
                             Control: GroupContainer
-                            Variant: verticalAutoLayoutContainer
+                            Variant: AutoLayout
                             Properties:
                               Visible: =gblAnsicht = "Patienten"
                               Fill: =RGBA(0, 0, 0, 0)
@@ -959,7 +955,7 @@ Screens:
                             Children:
                               - conPatSuchkopf:
                                   Control: GroupContainer
-                                  Variant: horizontalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Fill: =RGBA(0, 0, 0, 0)
                                     FillPortions: =0
@@ -1011,7 +1007,7 @@ Screens:
 
                               - conPatSuche:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Fill: =clrFlaeche
                                     FillPortions: =1
@@ -1072,7 +1068,6 @@ Screens:
                                           PaddingLeft: =0
                                     - galPatienten:
                                         Control: Gallery
-                                        Variant: galleryVertical
                                         Properties:
                                           Items: |-
                                             =If(
@@ -1180,7 +1175,7 @@ Screens:
                         # =====================================================
                         - conViewAkte:
                             Control: GroupContainer
-                            Variant: verticalAutoLayoutContainer
+                            Variant: AutoLayout
                             Properties:
                               Visible: =gblAnsicht = "Patientenakte"
                               Fill: =RGBA(0, 0, 0, 0)
@@ -1210,7 +1205,7 @@ Screens:
                               # --- Karte: Stammdaten ------------------------
                               - conAkteStamm:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Visible: =Not(IsBlank(gblPatient))
                                     Fill: =clrFlaeche
@@ -1245,7 +1240,7 @@ Screens:
                                           PaddingLeft: =0
                                     - conAkteFelder:
                                         Control: GroupContainer
-                                        Variant: horizontalAutoLayoutContainer
+                                        Variant: AutoLayout
                                         Properties:
                                           Fill: =RGBA(0, 0, 0, 0)
                                           FillPortions: =1
@@ -1257,7 +1252,7 @@ Screens:
                                         Children:
                                           - conFeldVorname:
                                               Control: GroupContainer
-                                              Variant: verticalAutoLayoutContainer
+                                              Variant: AutoLayout
                                               Properties:
                                                 Fill: =RGBA(0, 0, 0, 0)
                                                 FillPortions: =0
@@ -1297,7 +1292,7 @@ Screens:
                                                       OnChange: =Set(gblUngespeichert, true)
                                           - conFeldNachname:
                                               Control: GroupContainer
-                                              Variant: verticalAutoLayoutContainer
+                                              Variant: AutoLayout
                                               Properties:
                                                 Fill: =RGBA(0, 0, 0, 0)
                                                 FillPortions: =0
@@ -1337,7 +1332,7 @@ Screens:
                                                       OnChange: =Set(gblUngespeichert, true)
                                           - conFeldGeburt:
                                               Control: GroupContainer
-                                              Variant: verticalAutoLayoutContainer
+                                              Variant: AutoLayout
                                               Properties:
                                                 Fill: =RGBA(0, 0, 0, 0)
                                                 FillPortions: =0
@@ -1373,7 +1368,7 @@ Screens:
                                                       OnChange: =Set(gblUngespeichert, true)
                                           - conFeldNummer:
                                               Control: GroupContainer
-                                              Variant: verticalAutoLayoutContainer
+                                              Variant: AutoLayout
                                               Properties:
                                                 Fill: =RGBA(0, 0, 0, 0)
                                                 FillPortions: =0
@@ -1414,7 +1409,7 @@ Screens:
                                                       OnChange: =Set(gblUngespeichert, true)
                                     - conAkteAktionen:
                                         Control: GroupContainer
-                                        Variant: horizontalAutoLayoutContainer
+                                        Variant: AutoLayout
                                         Properties:
                                           Fill: =RGBA(0, 0, 0, 0)
                                           FillPortions: =0
@@ -1506,7 +1501,7 @@ Screens:
                               # --- Karte: Verlauf ---------------------------
                               - conAkteVerlauf:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Visible: =Not(IsBlank(gblPatient))
                                     Fill: =clrFlaeche
@@ -1552,7 +1547,6 @@ Screens:
                                           PaddingLeft: =0
                                     - galVerlauf:
                                         Control: Gallery
-                                        Variant: galleryVertical
                                         Properties:
                                           Items: |-
                                             =Sort(
@@ -1652,7 +1646,7 @@ Screens:
                         # =====================================================
                         - conViewAufnahme:
                             Control: GroupContainer
-                            Variant: verticalAutoLayoutContainer
+                            Variant: AutoLayout
                             Properties:
                               Visible: =gblAnsicht = "Aufnahme"
                               Fill: =RGBA(0, 0, 0, 0)
@@ -1687,7 +1681,7 @@ Screens:
 
                               - conAufnFortschritt:
                                   Control: GroupContainer
-                                  Variant: horizontalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Fill: =RGBA(0, 0, 0, 0)
                                     FillPortions: =0
@@ -1725,7 +1719,7 @@ Screens:
                               # --- Schritt 1: Patient ------------------------
                               - conAufnSchritt1:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Visible: =gblAufnahmeSchritt = 1
                                     Fill: =clrFlaeche
@@ -1884,7 +1878,7 @@ Screens:
                               # --- Schritt 2: Rezept ------------------------
                               - conAufnSchritt2:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Visible: =gblAufnahmeSchritt = 2
                                     Fill: =clrFlaeche
@@ -1938,7 +1932,7 @@ Screens:
                                           OnChange: =Set(gblUngespeichert, true)
                                     - conAufnZeile2:
                                         Control: GroupContainer
-                                        Variant: horizontalAutoLayoutContainer
+                                        Variant: AutoLayout
                                         Properties:
                                           Fill: =RGBA(0, 0, 0, 0)
                                           FillPortions: =0
@@ -2025,7 +2019,7 @@ Screens:
                                           OnChange: =Set(gblUngespeichert, true)
                                     - conAufnS2Aktionen:
                                         Control: GroupContainer
-                                        Variant: horizontalAutoLayoutContainer
+                                        Variant: AutoLayout
                                         Properties:
                                           Fill: =RGBA(0, 0, 0, 0)
                                           FillPortions: =0
@@ -2119,7 +2113,7 @@ Screens:
                               # --- Schritt 3: Anamnese und Erstbefund -------
                               - conAufnSchritt3:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Visible: =gblAufnahmeSchritt = 3
                                     Fill: =clrFlaeche
@@ -2236,7 +2230,7 @@ Screens:
                                           OnChange: =Set(gblUngespeichert, true)
                                     - conAufnS3Aktionen:
                                         Control: GroupContainer
-                                        Variant: horizontalAutoLayoutContainer
+                                        Variant: AutoLayout
                                         Properties:
                                           Fill: =RGBA(0, 0, 0, 0)
                                           FillPortions: =0
@@ -2319,7 +2313,7 @@ Screens:
                               # --- Schritt 4: Zusammenfassung ---------------
                               - conAufnSchritt4:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Visible: =gblAufnahmeSchritt = 4
                                     Fill: =clrFlaeche
@@ -2388,7 +2382,7 @@ Screens:
                                           VerticalAlign: =VerticalAlign.Middle
                                     - conAufnS4Aktionen:
                                         Control: GroupContainer
-                                        Variant: horizontalAutoLayoutContainer
+                                        Variant: AutoLayout
                                         Properties:
                                           Fill: =RGBA(0, 0, 0, 0)
                                           FillPortions: =0
@@ -2466,7 +2460,7 @@ Screens:
                         # =====================================================
                         - conViewRezepte:
                             Control: GroupContainer
-                            Variant: horizontalAutoLayoutContainer
+                            Variant: AutoLayout
                             Properties:
                               Visible: =gblAnsicht = "Rezepte"
                               Fill: =RGBA(0, 0, 0, 0)
@@ -2483,7 +2477,7 @@ Screens:
                               # --- Liste der Rezepte ------------------------
                               - conRezListe:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Fill: =clrFlaeche
                                     FillPortions: =1
@@ -2536,7 +2530,6 @@ Screens:
                                           PaddingLeft: =0
                                     - galRezepte:
                                         Control: Gallery
-                                        Variant: galleryVertical
                                         Properties:
                                           Items: |-
                                             =Sort(
@@ -2662,7 +2655,7 @@ Screens:
                               # --- Einzelnes Rezept -------------------------
                               - conRezDetail:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Fill: =clrFlaeche
                                     FillPortions: =1
@@ -2751,7 +2744,7 @@ Screens:
                                           VerticalAlign: =VerticalAlign.Middle
                                     - conRezAktionen:
                                         Control: GroupContainer
-                                        Variant: horizontalAutoLayoutContainer
+                                        Variant: AutoLayout
                                         Properties:
                                           Visible: =Not(IsBlank(gblRezept))
                                           Fill: =RGBA(0, 0, 0, 0)
@@ -2859,7 +2852,7 @@ Screens:
                         # =====================================================
                         - conViewDoku:
                             Control: GroupContainer
-                            Variant: verticalAutoLayoutContainer
+                            Variant: AutoLayout
                             Properties:
                               Visible: =gblAnsicht = "Behandlung"
                               Fill: =RGBA(0, 0, 0, 0)
@@ -2889,7 +2882,7 @@ Screens:
                               # --- Hinweis bei freigegebenem Eintrag ---------
                               - conDokuGesperrt:
                                   Control: GroupContainer
-                                  Variant: horizontalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Visible: |-
                                       =Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben"
@@ -2948,7 +2941,7 @@ Screens:
                               # --- Kopfdaten der Behandlung ------------------
                               - conDokuKopf:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Visible: =Not(IsBlank(gblPatient)) And Not(IsBlank(gblRezept))
                                     Fill: =clrFlaeche
@@ -2987,7 +2980,7 @@ Screens:
                                           PaddingLeft: =0
                                     - conDokuKopfZeile:
                                         Control: GroupContainer
-                                        Variant: horizontalAutoLayoutContainer
+                                        Variant: AutoLayout
                                         Properties:
                                           Fill: =RGBA(0, 0, 0, 0)
                                           FillPortions: =0
@@ -3000,7 +2993,7 @@ Screens:
                                         Children:
                                           - conDokuDatum:
                                               Control: GroupContainer
-                                              Variant: verticalAutoLayoutContainer
+                                              Variant: AutoLayout
                                               Properties:
                                                 Fill: =RGBA(0, 0, 0, 0)
                                                 FillPortions: =0
@@ -3038,7 +3031,7 @@ Screens:
                                                       OnChange: =Set(gblUngespeichert, true)
                                           - conDokuTherapeut:
                                               Control: GroupContainer
-                                              Variant: verticalAutoLayoutContainer
+                                              Variant: AutoLayout
                                               Properties:
                                                 Fill: =RGBA(0, 0, 0, 0)
                                                 FillPortions: =0
@@ -3079,7 +3072,7 @@ Screens:
                                                       OnChange: =Set(gblUngespeichert, true)
                                           - conDokuTermin:
                                               Control: GroupContainer
-                                              Variant: verticalAutoLayoutContainer
+                                              Variant: AutoLayout
                                               Properties:
                                                 Fill: =RGBA(0, 0, 0, 0)
                                                 FillPortions: =0
@@ -3118,7 +3111,7 @@ Screens:
                                                       OnChange: =Set(gblUngespeichert, true)
                                     - conDokuMenge:
                                         Control: GroupContainer
-                                        Variant: horizontalAutoLayoutContainer
+                                        Variant: AutoLayout
                                         Properties:
                                           Fill: =RGBA(0, 0, 0, 0)
                                           FillPortions: =0
@@ -3185,7 +3178,7 @@ Screens:
                               # --- Vorherige Dokumentation (nur lesend) ------
                               - conDokuVorherig:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Visible: =Not(IsBlank(gblRezept)) And gblZeigeVorherige
                                     Fill: =clrHintergrund
@@ -3250,7 +3243,7 @@ Screens:
                               # --- Inhalt der Dokumentation -----------------
                               - conDokuInhalt:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Visible: =Not(IsBlank(gblPatient)) And Not(IsBlank(gblRezept))
                                     Fill: =clrFlaeche
@@ -3274,7 +3267,7 @@ Screens:
                                   Children:
                                     - conDokuWerkzeuge:
                                         Control: GroupContainer
-                                        Variant: horizontalAutoLayoutContainer
+                                        Variant: AutoLayout
                                         Properties:
                                           Fill: =RGBA(0, 0, 0, 0)
                                           FillPortions: =0
@@ -3516,7 +3509,7 @@ Screens:
                               # --- Aktionen: Entwurf, Prüfung, Freigabe -----
                               - conDokuAktionen:
                                   Control: GroupContainer
-                                  Variant: horizontalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Visible: =Not(IsBlank(gblPatient)) And Not(IsBlank(gblRezept))
                                     Fill: =clrFlaeche
@@ -3798,7 +3791,7 @@ Screens:
                         # =====================================================
                         - conViewAufgaben:
                             Control: GroupContainer
-                            Variant: verticalAutoLayoutContainer
+                            Variant: AutoLayout
                             Properties:
                               Visible: =gblAnsicht = "Aufgaben"
                               Fill: =RGBA(0, 0, 0, 0)
@@ -3814,7 +3807,7 @@ Screens:
                             Children:
                               - conAufgKopf:
                                   Control: GroupContainer
-                                  Variant: horizontalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Fill: =RGBA(0, 0, 0, 0)
                                     FillPortions: =0
@@ -3850,7 +3843,7 @@ Screens:
 
                               - conAufgListe:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Fill: =clrFlaeche
                                     FillPortions: =1
@@ -3884,7 +3877,6 @@ Screens:
                                           PaddingLeft: =0
                                     - galAufgaben:
                                         Control: Gallery
-                                        Variant: galleryVertical
                                         Properties:
                                           Items: |-
                                             =Sort(
@@ -4066,7 +4058,7 @@ Screens:
                         # =====================================================
                         - conViewEinstellungen:
                             Control: GroupContainer
-                            Variant: verticalAutoLayoutContainer
+                            Variant: AutoLayout
                             Properties:
                               Visible: =gblAnsicht = "Einstellungen"
                               Fill: =RGBA(0, 0, 0, 0)
@@ -4108,7 +4100,7 @@ Screens:
                                     VerticalAlign: =VerticalAlign.Middle
                               - conEinstKarte:
                                   Control: GroupContainer
-                                  Variant: verticalAutoLayoutContainer
+                                  Variant: AutoLayout
                                   Properties:
                                     Fill: =clrFlaeche
                                     FillPortions: =0
