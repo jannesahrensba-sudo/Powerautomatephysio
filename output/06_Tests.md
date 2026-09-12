@@ -37,7 +37,7 @@ Geprüft gegen `pa.schema.yaml` (v3.0) aus `microsoft/PowerApps-Tooling`, die
 Control-Typen zusätzlich gegen die dort hinterlegte Liste der
 Erstanbieter-Controls. Beide Dateien liegen unverändert in `tools/`.
 
-**Ergebnis:** bestanden, 218 Steuerelemente, als Fragment und als vollständiger
+**Ergebnis:** bestanden, 219 Steuerelemente, als Fragment und als vollständiger
 Bildschirm.
 
 Zwei Befunde aus dieser Arbeit sind festzuhalten:
@@ -236,6 +236,52 @@ Beide Regeln sind in `tools/validate_pa_yaml.py` aufgenommen (verbotene
 Eigenschaft je Control-Variante-Kombination sowie je Control-Typ); der
 Gegentest mit je einem künstlich eingebauten Fehler meldet beide.
 
+### A1e – Doppelte Formeln (selbst verursacht)
+
+Der vierte Einfügeversuch zeigte: Die Oberfläche wurde **angelegt** und läuft –
+Navigation, Farben und Layout standen. An rund 16 Steuerelementen hing aber ein
+Fehlerzeichen.
+
+Der zurückgespielte Studio-Code machte die Ursache sichtbar:
+
+```yaml
+DisplayMode: |-
+  =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
+  =If(gblSpeichert Or IsBlank(gblPatient), DisplayMode.Disabled, DisplayMode.Edit)
+```
+
+**Zwei Formeln in einer Eigenschaft.** Das war kein Plattformproblem, sondern
+ein Fehler in einer meiner Massenersetzungen: Sie hängte eine Zeile an *jedes*
+`DisplayMode: |-` an – auch dort, wo bereits eine Formel stand. Betroffen waren
+16 Steuerelemente.
+
+Warum keine Prüfung angeschlagen hat: Das Ergebnis ist **gültiges YAML**, der
+Wert ist ein String, und er beginnt mit `=`. Schemaprüfung, Querverweise und
+Feldabgleich sehen daran nichts. Power Apps merkt es erst beim Einfügen.
+
+**Neue Regel in `tools/validate_pa_yaml.py`:** Ein Blockskalar darf **genau
+eine** Formel enthalten – gezählt werden Zeilen, die auf der obersten Ebene des
+Skalars mit `=` beginnen. Mehrzeilige Formeln wie `OnSelect` bleiben davon
+unberührt, weil dort nur die erste Zeile mit `=` beginnt. Der Gegentest mit
+einer künstlich eingefügten zweiten Formel meldet den Fehler.
+
+**Was der Screenshot ausserdem zeigte:** Der Hinweistext in der Karte
+„Termine und Dokumentationen von heute" verwies auf eine Schaltfläche
+„Termin erfassen", die es nicht gab. Der Auftrag verlangt echte
+Terminerfassung, also wurde sie ergänzt (`btnHeuteTerminNeu`): Sie legt eine
+Dokumentationszeile mit Terminstatus **Geplant** an – geplante Termine
+verbrauchen keine Einheiten. Ohne Patient und Rezept erscheint statt eines
+wirkungslosen Klicks ein Hinweis, wo beides zu wählen ist.
+
+**Bestätigt wurde in diesem Durchlauf ausserdem:** Studio normalisiert den
+eingefügten Code und ergänzt Versionsnummern – `GroupContainer@1.5.0`,
+`Label@2.5.1`, `Gallery@2.15.0`, `Classic/Button@2.2.0`,
+`Classic/TextInput@2.3.2`, `Classic/DropDown@2.3.1`,
+`Classic/DatePicker@2.6.0`, `Classic/CheckBox@2.1.0`, `Classic/Icon@2.5.0`,
+`Rectangle@2.3.0`. Die Wahl der klassischen Controlfamilie war damit richtig.
+Eigenschaften, die dem Standardwert entsprechen, lässt Studio beim Normalisieren
+weg; bei Auswahllisten ergänzt es `Items.Value` selbst.
+
 ### A2 – Querverweise
 
 | Geprüft | Anzahl | Ergebnis |
@@ -289,7 +335,7 @@ Nach dem Einfügen zeigt Studio jeden Formelfehler an. Reihenfolge der Prüfung:
 | # | Prüfung | Erwartet |
 |---|---|---|
 | B1 | Nach dem Einfügen: **App-Prüfung** öffnen | Keine Fehler. Fehler an Spaltennamen sind der erwartete Fall, wenn `Pruefe-Schema.ps1` noch nicht abgearbeitet wurde. |
-| B2 | Baumansicht | `conPraxisApp` mit 217 untergeordneten Steuerelementen |
+| B2 | Baumansicht | `conPraxisApp` mit 218 untergeordneten Steuerelementen |
 | B3 | Fenster auf ~1400 px | Navigation links, 248 px breit |
 | B4 | Fenster auf ~600 px | Navigationsgalerie verschwindet, an ihrer Stelle steht die Auswahlliste `drpNav` |
 | B5 | Vorschau ohne Patient | Kopf zeigt „Kein Patient ausgewählt", die Akte den Hinweistext – keine leeren Flächen |

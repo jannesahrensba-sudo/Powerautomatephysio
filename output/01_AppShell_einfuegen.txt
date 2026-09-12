@@ -608,6 +608,42 @@
                                     FillPortions: =0
                                     Wrap: =true
                                     PaddingLeft: =0
+                              # Echte Terminerfassung: legt eine Zeile mit
+                              # Terminstatus "Geplant" an. Geplante Termine
+                              # verbrauchen keine Einheiten - erst "Durchgeführt".
+                              - btnHeuteTerminNeu:
+                                  Control: Classic/Button
+                                  Properties:
+                                    Text: ="Termin erfassen"
+                                    OnSelect: |-
+                                      =If(
+                                          IsBlank(gblPatient) Or IsBlank(gblRezept),
+                                          Set(gblMeldung, "Für einen Termin werden ein Patient und ein Rezept benötigt. Bitte zuerst im Bereich Patienten einen Patienten öffnen und im Bereich Rezepte ein Rezept auswählen.");
+                                          Set(gblMeldungArt, "Warnung"),
+
+                                          Set(gblDoku, Blank());
+                                          Set(gblKorrekturZu, 0);
+                                          Set(gblDokuMassnahmenText, Blank());
+                                          Set(gblTerminVorauswahl, "Geplant");
+                                          Set(gblUngespeichert, false);
+                                          Set(gblFormularReset, true); Set(gblFormularReset, false);
+                                          Set(gblMeldung, ""); Set(gblMeldungArt, "");
+                                          Set(gblAnsicht, "Behandlung")
+                                      )
+                                    Fill: =clrFlaeche
+                                    Color: =clrAkzent
+                                    BorderColor: =clrAkzent
+                                    BorderThickness: =1
+                                    HoverFill: =clrAkzentSanft
+                                    Size: =fsKlein
+                                    Height: =hTouch
+                                    Width: =200
+                                    FillPortions: =0
+                                    RadiusTopLeft: =radM
+                                    RadiusTopRight: =radM
+                                    RadiusBottomLeft: =radM
+                                    RadiusBottomRight: =radM
+
                               - galHeuteDoku:
                                   Control: Gallery
                                   Variant: Vertical
@@ -1332,7 +1368,6 @@
                                           Text: =If(gblSpeichert, "Speichert ...", "Stammdaten speichern")
                                           # Doppelklickschutz: waehrend des Schreibens gesperrt.
                                           DisplayMode: |-
-                                            =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                             =If(gblSpeichert Or IsBlank(gblPatient), DisplayMode.Disabled, DisplayMode.Edit)
                                           OnSelect: |-
                                             =Set(gblPruefeAkte, true);
@@ -2147,7 +2182,6 @@
                                         Properties:
                                           Text: =If(gblSpeichert, "Speichert ...", "Entwurf speichern und weiter")
                                           DisplayMode: |-
-                                            =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                             =If(gblSpeichert Or IsBlank(gblRezept), DisplayMode.Disabled, DisplayMode.Edit)
                                           OnSelect: |-
                                             =Set(gblSpeichert, true);
@@ -2297,7 +2331,6 @@
                                         Properties:
                                           Text: =If(gblSpeichert, "Speichert ...", "Aufnahme abschließen")
                                           DisplayMode: |-
-                                            =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                             =If(gblSpeichert Or IsBlank(gblRezept), DisplayMode.Disabled, DisplayMode.Edit)
                                           OnSelect: |-
                                             =Set(gblSpeichert, true);
@@ -2640,7 +2673,6 @@
                                         Properties:
                                           Text: ="Behandlung starten"
                                           DisplayMode: |-
-                                            =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                             =If(
                                                 Coalesce(gblRezept.Rezeptstatus.Value, "") in ["Abgeschlossen", "Abgebrochen"],
                                                 DisplayMode.Disabled,
@@ -2648,6 +2680,7 @@
                                             )
                                           OnSelect: |-
                                             =Set(gblDoku, Blank());
+                                            Set(gblTerminVorauswahl, Blank());
                                             Set(gblFormularReset, true); Set(gblFormularReset, false);
                                             Set(gblUngespeichert, false);
                                             Set(gblMeldung, ""); Set(gblMeldungArt, "");
@@ -2971,7 +3004,8 @@
                                                 # Nur "Durchgeführt" verbraucht später Einheiten.
                                                 # Gezaehlt wird ausschliesslich im Flow, nicht hier.
                                                 Items: =Choices(Behandlungsdokumentation.Terminstatus)
-                                                Default: =Coalesce(gblDoku.Terminstatus.Value, "Durchgeführt")
+                                                Default: |-
+                                                  =Coalesce(gblDoku.Terminstatus.Value, gblTerminVorauswahl, "Durchgeführt")
                                                 Reset: =gblFormularReset
                                                 Height: =hEingabe
                                                 FillPortions: =0
@@ -3183,14 +3217,12 @@
                                           BorderThickness: =1
                                           Size: =fsKlein
                                           DisplayMode: |-
-                                            =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                             =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.Disabled, DisplayMode.Edit)
                                     - btnDokuBausteinEinfuegen:
                                         Control: Classic/Button
                                         Properties:
                                           Text: ="Baustein in Maßnahmen einfügen"
                                           DisplayMode: |-
-                                            =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                             =If(
                                                 Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben"
                                                     Or IsBlank(drpDokuBaustein.Selected.Beschreibung),
@@ -3252,7 +3284,6 @@
                                     RadiusBottomRight: =radM
                                     DisplayMode: |-
                                       =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
-                                      =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                     OnChange: =Set(gblUngespeichert, true)
                               - txtDokuMassnahmen:
                                   Control: Classic/TextInput
@@ -3273,7 +3304,6 @@
                                     RadiusBottomRight: =radM
                                     DisplayMode: |-
                                       =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
-                                      =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                     OnChange: =Set(gblUngespeichert, true)
                               - txtDokuReaktion:
                                   Control: Classic/TextInput
@@ -3293,7 +3323,6 @@
                                     RadiusBottomLeft: =radM
                                     RadiusBottomRight: =radM
                                     DisplayMode: |-
-                                      =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                       =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                     OnChange: =Set(gblUngespeichert, true)
                               - btnDokuMehr:
@@ -3336,7 +3365,6 @@
                                     RadiusBottomRight: =radM
                                     DisplayMode: |-
                                       =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
-                                      =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                     OnChange: =Set(gblUngespeichert, true)
                               - txtDokuVorgehen:
                                   Control: Classic/TextInput
@@ -3357,7 +3385,6 @@
                                     RadiusBottomLeft: =radM
                                     RadiusBottomRight: =radM
                                     DisplayMode: |-
-                                      =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                       =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                     OnChange: =Set(gblUngespeichert, true)
                               - lblDokuExport:
@@ -3419,7 +3446,6 @@
                                   Properties:
                                     Text: =If(gblSpeichert, "Speichert ...", "Entwurf speichern")
                                     DisplayMode: |-
-                                      =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                       =If(
                                           gblSpeichert Or Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben",
                                           DisplayMode.Disabled,
@@ -3507,7 +3533,6 @@
                                   Properties:
                                     Text: ="Als geprüft markieren"
                                     DisplayMode: |-
-                                      =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                       =If(
                                           gblSpeichert
                                               Or IsBlank(gblDoku)
@@ -3556,7 +3581,6 @@
                                   Properties:
                                     Text: =If(gblSpeichert, "Speichert ...", "Dokumentation freigeben")
                                     DisplayMode: |-
-                                      =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                       =If(
                                           gblSpeichert
                                               Or IsBlank(gblDoku)
@@ -3637,6 +3661,7 @@
                                           Set(gblDoku, Blank());
                                           Set(gblKorrekturZu, 0);
                                           Set(gblDokuMassnahmenText, Blank());
+                                          Set(gblTerminVorauswahl, Blank());
                                           Set(gblPruefeDoku, false);
                                           Set(gblFormularReset, true); Set(gblFormularReset, false);
                                           Set(gblMeldung, ""); Set(gblMeldungArt, "")
@@ -3832,7 +3857,6 @@
                                         Properties:
                                           Text: ="7 Tage zurückstellen"
                                           DisplayMode: |-
-                                            =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                             =If(gblSpeichert Or Coalesce(ThisItem.Aufgabenstatus.Value, "") = "Erledigt",
                                                 DisplayMode.Disabled, DisplayMode.Edit)
                                           OnSelect: |-
@@ -4103,7 +4127,6 @@
                                   Properties:
                                     Text: =If(gblSpeichert, "Speichert ...", "Einstellungen speichern")
                                     DisplayMode: |-
-                                      =If(Coalesce(gblDoku.Status.Value, "Entwurf") = "Freigegeben", DisplayMode.View, DisplayMode.Edit)
                                       =If(gblSpeichert Or IsBlank(recEinstellungen), DisplayMode.Disabled, DisplayMode.Edit)
                                     OnSelect: |-
                                       =Set(gblSpeichert, true);

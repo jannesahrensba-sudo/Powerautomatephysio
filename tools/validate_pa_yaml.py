@@ -21,6 +21,7 @@ Aufruf:  python3 tools/validate_pa_yaml.py <datei.yaml> [...]
          python3 tools/validate_pa_yaml.py --fragment <datei.yaml>   (Control-Liste ohne Screens:)
 """
 from __future__ import annotations
+import re
 import sys
 import pathlib
 import yaml
@@ -175,6 +176,45 @@ def pruefe_varianten(knoten, pfad="", fehler=None):
     return fehler
 
 
+def pruefe_mehrfachformeln(text: str) -> list[str]:
+    """Findet Eigenschaften, die MEHR ALS EINE Formel enthalten.
+
+    Ein Blockskalar darf genau eine Power-Fx-Formel enthalten. Stehen dort
+    zwei Formeln untereinander, ist das gueltiges YAML und beginnt mit "=" -
+    die Schemapruefung merkt also nichts. Power Apps meldet es erst beim
+    Einfuegen, und in der Oberflaeche steht danach an jedem betroffenen
+    Steuerelement ein Fehler.
+
+    Genau so ein Schaden entstand am 11.09.2026 durch eine Massenersetzung,
+    die eine Zeile an JEDES "DisplayMode: |-" anhaengte - auch dort, wo
+    bereits eine Formel stand. 16 Steuerelemente waren betroffen.
+    """
+    zeilen = text.split("\n")
+    fehler: list[str] = []
+    i = 0
+    while i < len(zeilen):
+        m = re.match(r"^(\s*)([A-Za-z][A-Za-z0-9]*): \|-\s*$", zeilen[i])
+        if not m:
+            i += 1
+            continue
+        einzug, eigenschaft = m.group(1), m.group(2)
+        j, formeln = i + 1, []
+        while j < len(zeilen) and (
+            not zeilen[j].strip() or len(zeilen[j]) - len(zeilen[j].lstrip()) > len(einzug)
+        ):
+            if zeilen[j].lstrip().startswith("="):
+                formeln.append((j + 1, zeilen[j].strip()))
+            j += 1
+        if len(formeln) > 1:
+            orte = ", ".join(f"Zeile {nr}" for nr, _ in formeln)
+            fehler.append(
+                f"Eigenschaft {eigenschaft!r} enthaelt {len(formeln)} Formeln ({orte}). "
+                f"Erlaubt ist genau eine."
+            )
+        i = j
+    return fehler
+
+
 def sammle_controls(knoten, pfad="", treffer=None):
     """Laeuft durch Children-Listen und sammelt (Pfad, Control-Typ)."""
     if treffer is None:
@@ -255,13 +295,18 @@ def main(argv: list[str]) -> int:
             print(f"FEHLER  {pfad}: {f}")
         gesamt_fehler += len(formelfehler)
 
+        mehrfachfehler = pruefe_mehrfachformeln(text)
+        for f in mehrfachfehler:
+            print(f"FEHLER  {pfad}: {f}")
+        gesamt_fehler += len(mehrfachfehler)
+
         variantenfehler = pruefe_varianten(kinder)
         for f in variantenfehler:
             print(f"FEHLER  {pfad}: {f}")
         gesamt_fehler += len(variantenfehler)
 
         controls = sammle_controls(kinder)
-        if schema_ok and not formelfehler and not variantenfehler:
+        if schema_ok and not formelfehler and not variantenfehler and not mehrfachfehler:
             art = "Control-Fragment" if ist_fragment else "vollstaendiger Bildschirm"
             print(f"OK      {pfad}  ({art}, {len(controls)} Controls)")
 

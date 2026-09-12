@@ -103,7 +103,7 @@ um. Dann bleiben alle Formeln gültig.
    öffnet.)
 3. Bestätigen.
 
-Danach steht `conPraxisApp` mit 217 untergeordneten Steuerelementen im Baum.
+Danach steht `conPraxisApp` mit 218 untergeordneten Steuerelementen im Baum.
 
 > Erscheint beim Einfügen nichts, prüfen Sie die
 > **Zwischenablage-Berechtigung** des Browsers für `make.powerapps.com`.

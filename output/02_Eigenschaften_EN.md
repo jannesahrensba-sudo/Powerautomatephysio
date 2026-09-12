@@ -151,7 +151,7 @@ cfgZeilenGrenze = 500;
 
 ```powerfx
 // Nur Oberflaechenzustand. Es werden bewusst KEINE Listen in lokale
-// Sammlungen geladen: eine auf 500/2000 Zeilen begrenzte Kopie waere
+// Sammlungen geladen: eine auf 500/2000 Zeilen begrenzte Kopie wäre
 // unvollstaendig und wuerde wie ein vollstaendiger Bestand aussehen.
 Set(gblAnsicht, "Heute");
 Set(gblPatient, Blank());
@@ -180,6 +180,8 @@ Set(gblPruefeAufn1, false);
 Set(gblPruefeAufn2, false);
 Set(gblPruefeDoku, false);
 Set(gblLadeFehlerHeute, false);
+// Vorauswahl des Terminstatus, wenn ein Termin im Voraus erfasst wird.
+Set(gblTerminVorauswahl, Blank());
 // Bewusst leer: "Therapeut" ist ein Auswahlfeld (Choice) und KEINE
 // Benutzerzuordnung. Der angemeldete Benutzer darf daraus nicht
 // abgeleitet werden. Eine echte Zuordnung wird separat eingerichtet

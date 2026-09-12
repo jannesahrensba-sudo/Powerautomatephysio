@@ -44,7 +44,7 @@ IN_ONSTART_GESETZT = {
     "gblSchreibErgebnis", "gblZaehlerAngefordert", "gblKorrekturZu",
     "gblDokuMehr", "gblZeigeVorherige", "gblDokuMassnahmenText",
     "gblPruefeAkte", "gblPruefeAufn1", "gblPruefeAufn2", "gblPruefeDoku",
-    "gblTherapeutVorauswahl", "gblLadeFehlerHeute",
+    "gblTherapeutVorauswahl", "gblLadeFehlerHeute", "gblTerminVorauswahl",
 }
 
 # Power-Fx-Bezeichner, die vor einem Punkt stehen duerfen, ohne Steuerelement zu sein.

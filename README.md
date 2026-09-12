@@ -13,7 +13,7 @@ bestehenden SharePoint-Datenhaltung.
 ```
 output/
   START_HIER.md                    kürzester vollständiger Einbauweg
-  01_AppShell_einfuegen.yaml/.txt  Oberfläche zum Einfügen (218 Steuerelemente)
+  01_AppShell_einfuegen.yaml/.txt  Oberfläche zum Einfügen (219 Steuerelemente)
   01b_Vollstaendiger_Screen.pa.yaml  derselbe Code als vollständiger Bildschirm
   02_Eigenschaften_DE.md / _EN.md  App-Formeln, deutsche und englische Trennzeichen
   03_Datenmodell.md                Feldmatrix: bestätigt / unklar / fehlt
