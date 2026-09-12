@@ -51,8 +51,14 @@ def main(yaml_pfad: str, json_pfad: str) -> int:
 
     verwendet: dict[str, str] = {}
 
+    # Zeichenketten ausblenden, BEVOR nach Spalten in einfachen
+    # Anfuehrungszeichen gesucht wird. Sonst gelten auch SVG-Attribute wie
+    # stroke='#9C9C9C' oder d='M22 13 L68 10' als Spaltennamen - einfache
+    # Anfuehrungszeichen INNERHALB eines Power-Fx-Strings sind nie Spalten.
+    ohne_strings = re.sub(r'"(?:[^"]|"")*"', '""', code)
+
     # 1) Spalten in einfachen Anfuehrungszeichen, z. B. 'Diagnose laut Rezept'
-    for name in re.findall(r"'([A-Za-zÄÖÜäöüß][A-Za-z0-9 ÄÖÜäöüß]*)'", code):
+    for name in re.findall(r"'([A-Za-zÄÖÜäöüß][A-Za-z0-9 ÄÖÜäöüß]*)'", ohne_strings):
         verwendet.setdefault(name, "in Anfuehrungszeichen")
 
     # 2) Eigenschaften von Datensatzvariablen, z. B. gblRezept.Behandlungseinheiten

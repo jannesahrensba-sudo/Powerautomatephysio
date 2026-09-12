@@ -4,13 +4,32 @@ Eine zusammenhängende **Power Apps Canvas App** für Patientenaufnahme,
 Patientenakte, Rezepte, Behandlungsdokumentation und Praxisaufgaben – auf der
 bestehenden SharePoint-Datenhaltung.
 
+## Zwei Fassungen
+
+| Ordner | Für wen |
+|---|---|
+| **[`v2/`](v2/START_HIER.md)** | **Die einfache Fassung. Hier anfangen.** Ein Ablauf: Heute → Patient aufrufen → Vorbereitung → Dokumentation. 77 Steuerelemente, 16 Spalten, keine Flows. |
+| [`output/`](output/START_HIER.md) | Die ausführliche Fassung mit Aufnahme-Assistent, Rezeptverwaltung, Aufgaben, Einheitenzählung und Power-Automate-Flows. 219 Steuerelemente. |
+
+Beide nutzen dieselben SharePoint-Listen. Die einfache Fassung schreibt nur
+eine Teilmenge der Spalten – ein späterer Umstieg ist deshalb möglich, ohne
+Daten zu verlieren.
+
 ## Einstieg
 
-→ **[`output/START_HIER.md`](output/START_HIER.md)**
+→ **[`v2/START_HIER.md`](v2/START_HIER.md)**
 
 ## Aufbau
 
 ```
+v2/                                einfache Fassung – hier anfangen
+  START_HIER.md                    Einbauweg in 5 Schritten
+  01_AppShell_einfuegen.yaml/.txt  Oberfläche zum Einfügen (77 Steuerelemente)
+  02_Eigenschaften_DE.md / _EN.md  App-Formeln, beide Trennzeichenfassungen
+  03_Spalten.md / .json            die 16 benötigten Spalten
+  04_Spalten_anlegen.ps1           legt fehlende Spalten an, prüft zuerst
+  Logo_Vorschau.png                so sieht das eingebettete Logo aus
+
 output/
   START_HIER.md                    kürzester vollständiger Einbauweg
   01_AppShell_einfuegen.yaml/.txt  Oberfläche zum Einfügen (219 Steuerelemente)
@@ -34,9 +53,14 @@ pip install pyyaml jsonschema
 
 python3 tools/validate_pa_yaml.py --fragment output/01_AppShell_einfuegen.yaml
 python3 tools/validate_pa_yaml.py           output/01b_Vollstaendiger_Screen.pa.yaml
-python3 tools/pruefe_referenzen.py          output/01_AppShell_einfuegen.yaml
+python3 tools/pruefe_referenzen.py          output/01_AppShell_einfuegen.yaml output/02_Eigenschaften_EN.md
 python3 tools/pruefe_felder.py              output/01_AppShell_einfuegen.yaml output/03_Schema_Mapping.json
 python3 tools/pruefe_auswahlwerte.py        output/01_AppShell_einfuegen.yaml output/04_Setup/Schema-Ergaenzungen.json
+
+# einfache Fassung
+python3 tools/validate_pa_yaml.py --fragment v2/01_AppShell_einfuegen.yaml
+python3 tools/pruefe_referenzen.py          v2/01_AppShell_einfuegen.yaml v2/02_Eigenschaften_EN.md
+python3 tools/pruefe_felder.py              v2/01_AppShell_einfuegen.yaml v2/03_Spalten.json
 ```
 
 Geprüft wird gegen das offizielle Power-Apps-Schema `pa.schema.yaml` (v3.0)

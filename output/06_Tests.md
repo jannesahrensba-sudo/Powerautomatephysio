@@ -26,7 +26,7 @@ Alle Prüfwerkzeuge liegen in `tools/` und sind wiederholbar:
 ```
 python3 tools/validate_pa_yaml.py --fragment output/01_AppShell_einfuegen.yaml
 python3 tools/validate_pa_yaml.py           output/01b_Vollstaendiger_Screen.pa.yaml
-python3 tools/pruefe_referenzen.py          output/01_AppShell_einfuegen.yaml
+python3 tools/pruefe_referenzen.py          output/01_AppShell_einfuegen.yaml output/02_Eigenschaften_EN.md
 python3 tools/pruefe_felder.py              output/01_AppShell_einfuegen.yaml output/03_Schema_Mapping.json
 python3 tools/pruefe_auswahlwerte.py        output/01_AppShell_einfuegen.yaml output/04_Setup/Schema-Ergaenzungen.json
 ```

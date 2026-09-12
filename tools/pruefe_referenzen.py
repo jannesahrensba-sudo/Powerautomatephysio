@@ -19,33 +19,29 @@ import re
 import sys
 import pathlib
 
-# In App.Formulas definierte benannte Formeln (02_Eigenschaften_DE.md / _EN.md).
-BENANNTE_FORMELN = {
-    # Farben
-    "clrAkzent", "clrAkzentDunkel", "clrAkzentSanft", "clrHintergrund",
-    "clrFlaeche", "clrFlaecheWeiss", "clrText", "clrTextLeise", "clrRahmen",
-    "clrNavRuhe", "clrErfolg", "clrErfolgSanft", "clrWarnung", "clrWarnungSanft",
-    "clrFehler", "clrFehlerSanft",
-    # Abstaende, Radien, Groessen
-    "spXS", "spS", "spM", "spL", "radM", "radL", "hTouch", "hEingabe",
-    # Breakpoints und Schriftgroessen
-    "bpBreit", "bpMittel", "fsKlein", "fsNormal", "fsGross", "fsTitel",
-    # Konfiguration aus der Einstellungsliste
-    "recEinstellungen", "cfgZeilenGrenze", "cfgRestschwelle", "cfgInaktivTage",
-    "cfgAbrechnungsschwelle", "cfgMailIntern", "cfgVersandAktiv", "cfgVortagAktiv",
-}
+def lies_definitionen(pfad: pathlib.Path) -> tuple[set[str], set[str]]:
+    """Liest die benannten Formeln und die OnStart-Variablen aus der
+    Eigenschaften-Datei.
 
-# In App.OnStart gesetzte Variablen, die nicht zwingend im YAML gesetzt werden.
-IN_ONSTART_GESETZT = {
-    "gblAnsicht", "gblPatient", "gblRezept", "gblDoku", "gblAufgabe",
-    "gblSpeichert", "gblUngespeichert", "gblMeldung", "gblMeldungArt",
-    "gblAufnahmeSchritt", "gblAufnahmePatientNeu", "gblFormularReset",
-    "gblResetMassnahmen", "gblFrageWechsel", "gblWechselZiel", "gblFehlerText",
-    "gblSchreibErgebnis", "gblZaehlerAngefordert", "gblKorrekturZu",
-    "gblDokuMehr", "gblZeigeVorherige", "gblDokuMassnahmenText",
-    "gblPruefeAkte", "gblPruefeAufn1", "gblPruefeAufn2", "gblPruefeDoku",
-    "gblTherapeutVorauswahl", "gblLadeFehlerHeute", "gblTerminVorauswahl",
-}
+    Dadurch pflegt sich der Pruefer selbst: Wird in App.Formulas eine Farbe
+    ergaenzt oder entfernt, muss hier nichts nachgetragen werden. Genau diese
+    Doppelpflege war vorher eine Fehlerquelle.
+    """
+    text = pfad.read_text(encoding="utf-8")
+    bloecke = re.findall(r"```powerfx\n(.*?)\n```", text, re.S)
+    formeln: set[str] = set()
+    variablen: set[str] = set()
+    for b in bloecke:
+        ohne_kommentar = "\n".join(
+            z for z in b.split("\n") if not z.lstrip().startswith("//")
+        )
+        # "name = ausdruck;" am Zeilenanfang -> benannte Formel
+        formeln |= set(re.findall(r"^\s*([A-Za-z][A-Za-z0-9]*)\s*=", ohne_kommentar, re.M))
+        variablen |= set(re.findall(r"Set\(\s*(gbl[A-Za-z0-9_]*)", ohne_kommentar))
+    # Zuweisungen innerhalb von Set(...) sind keine benannten Formeln.
+    formeln -= variablen
+    return formeln, variablen
+
 
 # Power-Fx-Bezeichner, die vor einem Punkt stehen duerfen, ohne Steuerelement zu sein.
 KEINE_STEUERELEMENTE = {
@@ -60,8 +56,9 @@ KEINE_STEUERELEMENTE = {
 }
 
 
-def main(pfad_text: str) -> int:
+def main(pfad_text: str, eigenschaften_text: str) -> int:
     pfad = pathlib.Path(pfad_text)
+    BENANNTE_FORMELN, IN_ONSTART_GESETZT = lies_definitionen(pathlib.Path(eigenschaften_text))
     text = pfad.read_text(encoding="utf-8")
 
     # Kommentarzeilen ausblenden, damit Beispiele in Kommentaren nichts ausloesen.
@@ -135,4 +132,4 @@ def main(pfad_text: str) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1]))
+    raise SystemExit(main(sys.argv[1], sys.argv[2]))
