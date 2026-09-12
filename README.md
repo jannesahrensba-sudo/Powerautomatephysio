@@ -7,7 +7,7 @@ Behandlungsdokumentation – auf der bestehenden SharePoint-Datenhaltung.
 
 | App | Macht | Schreibt in |
 |---|---|---|
-| **[`erstaufnahme/`](erstaufnahme/START_HIER.md)** | Befund und Anamnese bei der Erstaufnahme, Unterlagen als Foto anhängen | `Rezept` |
+| **[`erstaufnahme/`](erstaufnahme/START_HIER.md)** | Befund und Anamnese bei der Erstaufnahme | `Rezepte` |
 | **[`v3/`](v3/START_HIER.md)** | Patient aufrufen, Vorbereitung, Behandlung dokumentieren | `Behandlungsdokumentation` |
 
 Die Aufnahme-App schreibt genau die Felder, aus denen die Behandlungs-App den
@@ -38,13 +38,12 @@ Aufnahme-App: → **[`erstaufnahme/START_HIER.md`](erstaufnahme/START_HIER.md)**
 ## Aufbau
 
 ```
-erstaufnahme/                      Erstaufnahme: Befund, Anamnese, Anlagen
-  START_HIER.md                    Einbauweg in 6 Schritten
-  01_AppShell_einfuegen.yaml/.txt  Oberfläche zum Einfügen (54 Steuerelemente)
+erstaufnahme/                      Erstaufnahme: Befund und Anamnese
+  START_HIER.md                    Einbauweg in 5 Schritten
+  01_AppShell_einfuegen.yaml/.txt  Oberfläche zum Einfügen (42 Steuerelemente)
   02_Eigenschaften_DE.md / _EN.md  App-Formeln, beide Trennzeichenfassungen
   03_Spalten.md / .json            welche Spalten gebraucht werden
-  04_Spalten_anlegen.ps1           prüft auch, ob Anlagen erlaubt sind
-  05_Anlagen/                      das Anlagen-Formular, Klick für Klick
+  04_Spalten_anlegen.ps1           legt fehlende Spalten an, prüft zuerst
 
 v3/                                Behandlungs-App – aktuelle Fassung
   START_HIER.md                    Einbauweg in 5 Schritten
@@ -116,12 +115,6 @@ Einzelheiten und die vollständige Testliste: [`output/06_Tests.md`](output/06_T
 Die Flow-Dateien in `output/05_Flows/` sind **Referenzdefinitionen im
 Peek-code-Format, kein geprüftes Importpaket.** Sie wurden nicht importiert
 und nicht ausgeführt.
-
-Das Anlagen-Formular der Aufnahme-App (`erstaufnahme/05_Anlagen/`) ist
-**nicht gebaut und nicht getestet.** Es wird bewusst über die
-Studio-Oberfläche angelegt statt per Code eingefügt – das Anlagen-Steuerelement
-existiert nur innerhalb eines Formulars, und Formular-Datenkarten von Hand als
-YAML zu schreiben ist die fehleranfälligste Stelle im Projekt.
 
 Für den optionalen Zusatz in `v3/06_Textpruefung_KI/` liegt **bewusst keine
 Importdatei** bei: Die Aktionen des AI-Builder-Connectors unterscheiden sich

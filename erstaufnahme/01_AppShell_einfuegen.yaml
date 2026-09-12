@@ -6,14 +6,13 @@
 # Felder, aus denen die Behandlungs-App den Befund bereits liest.
 # An der Behandlungs-App ist KEINE Aenderung noetig.
 #
-# Ablauf:  1 Patient  ->  2 Befund und Anamnese  ->  3 Anlagen
+# Ablauf:  1 Patient  ->  2 Befund und Anamnese
 #
 # So gehen Sie vor:
 #   1. Zwei SharePoint-Listen als Datenquellen hinzufuegen:
 #      Patientenstamm und Rezepte.
 #   2. Die App-Eigenschaften aus 02_Eigenschaften_DE.md setzen.
 #   3. Diesen Code auf den Bildschirm scrAufnahme einfuegen.
-#   4. Das Anlagen-Formular ergaenzen - siehe 05_Anlagen/README.md.
 #
 # Die Datenquelle heisst REZEPT (Einzahl), so wie in Ihrer laufenden
 # App. Heisst sie bei Ihnen anders, benennen Sie die Datenquelle in
@@ -191,9 +190,8 @@
                   Visible: =conApp.Width < bpSchritte
                   Text: |-
                     =If(
-                        gblSchritt = "Patienten", "Schritt 1 von 3  ·  Patient",
-                        gblSchritt = "Befund",    "Schritt 2 von 3  ·  Befund und Anamnese",
-                        gblSchritt = "Anlagen",   "Schritt 3 von 3  ·  Anlagen",
+                        gblSchritt = "Patienten", "Schritt 1 von 2  ·  Patient",
+                        gblSchritt = "Befund",    "Schritt 2 von 2  ·  Befund und Anamnese",
                         ""
                     )
                   Color: =clrGold
@@ -236,31 +234,6 @@
                   Text: ="2  Befund und Anamnese"
                   Color: =If(gblSchritt = "Befund", clrGold, clrTextHell)
                   FontWeight: =If(gblSchritt = "Befund", FontWeight.Semibold, FontWeight.Normal)
-                  Size: =fsKlein
-                  Height: =32
-                  Width: =200
-                  FillPortions: =0
-                  Wrap: =false
-                  PaddingLeft: =0
-            - lblSchrittTrenner2:
-                Control: Label
-                Properties:
-                  Visible: =conApp.Width >= bpSchritte
-                  Text: ="-"
-                  Color: =clrTextHell
-                  Size: =fsKlein
-                  Height: =32
-                  Width: =24
-                  FillPortions: =0
-                  Wrap: =false
-                  PaddingLeft: =0
-            - lblSchritt3:
-                Control: Label
-                Properties:
-                  Visible: =conApp.Width >= bpSchritte
-                  Text: ="3  Anlagen"
-                  Color: =If(gblSchritt = "Anlagen", clrGold, clrTextHell)
-                  FontWeight: =If(gblSchritt = "Anlagen", FontWeight.Semibold, FontWeight.Normal)
                   Size: =fsKlein
                   Height: =32
                   FillPortions: =1
@@ -768,9 +741,15 @@
                                         Set(gblMeldungArt, "Fehler"),
 
                                         Set(gblPruefen, false);
-                                        Set(gblMeldung, "Aufnahme gespeichert. Jetzt können die Unterlagen dazu.");
+                                        Set(gblPatient, Blank());
+                                        Set(gblLetztesRezept, Blank());
+                                        Set(gblTxtD, ""); Set(gblTxtB, ""); Set(gblTxtA, "");
+                                        Set(gblReset, true); Set(gblReset, false);
+                                        Set(gblMeldung,
+                                            "Aufnahme gespeichert als Nr. " & gblAufnahme.ID &
+                                            ". Der Befund steht ab sofort in der Behandlungs-App.");
                                         Set(gblMeldungArt, "Erfolg");
-                                        Set(gblSchritt, "Anlagen")
+                                        Set(gblSchritt, "Patienten")
                                     );
                                     Set(gblSpeichert, false)
                                 )
@@ -780,336 +759,6 @@
                               PressedFill: =clrGoldHell
                               DisabledFill: =clrRahmen
                               DisabledColor: =clrTextLeise
-                              BorderThickness: =0
-                              Size: =fsGross
-                              FontWeight: =FontWeight.Semibold
-                              Height: =64
-                              FillPortions: =1
-                              RadiusTopLeft: =radM
-                              RadiusTopRight: =radM
-                              RadiusBottomLeft: =radM
-                              RadiusBottomRight: =radM
-
-            # -----------------------------------------------------------
-            # SCHRITT 3 - Anlagen
-            #
-            # Hier kommt das Anlagen-Formular hinein. Es wird NICHT per
-            # Code eingefuegt, sondern ueber die Studio-Oberflaeche
-            # angelegt - das Anlagen-Steuerelement gibt es nur in einem
-            # Formular. Anleitung: 05_Anlagen/README.md
-            # -----------------------------------------------------------
-            - conAnlagen:
-                Control: GroupContainer
-                Variant: AutoLayout
-                Properties:
-                  Visible: =gblSchritt = "Anlagen"
-                  Fill: =RGBA(0, 0, 0, 0)
-                  FillPortions: =1
-                  LayoutDirection: =LayoutDirection.Vertical
-                  LayoutAlignItems: =LayoutAlignItems.Stretch
-                  LayoutGap: =spM
-                  LayoutOverflowY: =LayoutOverflow.Scroll
-                  PaddingTop: =spL
-                  PaddingBottom: =spL
-                  PaddingLeft: =spL
-                  PaddingRight: =spL
-                Children:
-                  - conAnlagenKopf:
-                      Control: GroupContainer
-                      Variant: AutoLayout
-                      Properties:
-                        Fill: =clrDunkel
-                        FillPortions: =0
-                        Height: =92
-                        LayoutDirection: =LayoutDirection.Vertical
-                        LayoutAlignItems: =LayoutAlignItems.Stretch
-                        LayoutGap: =2
-                        PaddingTop: =spM
-                        PaddingBottom: =spM
-                        PaddingLeft: =spL
-                        PaddingRight: =spL
-                        RadiusTopLeft: =radL
-                        RadiusTopRight: =radL
-                        RadiusBottomLeft: =radL
-                        RadiusBottomRight: =radL
-                      Children:
-                        - lblAnlagenTitel:
-                            Control: Label
-                            Properties:
-                              Text: ="Unterlagen anhängen"
-                              Color: =clrWeiss
-                              Size: =fsGross
-                              FontWeight: =FontWeight.Semibold
-                              Height: =30
-                              FillPortions: =0
-                              Wrap: =false
-                              PaddingLeft: =0
-                        - lblAnlagenUnter:
-                            Control: Label
-                            Properties:
-                              Text: |-
-                                =Trim(Coalesce(gblPatient.Vorname, "") & " " & Coalesce(gblPatient.Nachname, "")) &
-                                 If(
-                                     IsBlank(gblAufnahme.ID),
-                                     "   ·   noch nicht gespeichert",
-                                     "   ·   gespeichert als Nr. " & gblAufnahme.ID
-                                 )
-                              Color: =clrTextHell
-                              Size: =fsKlein
-                              Height: =22
-                              FillPortions: =0
-                              Wrap: =false
-                              PaddingLeft: =0
-
-                  - lblAnlagenHinweis:
-                      Control: Label
-                      Properties:
-                        Text: |-
-                          ="Anzuhängen sind das unterschriebene Dokument und das Rezept. " &
-                           "Tippen Sie auf ""Datei anfügen"" und wählen Sie die Kamera. " &
-                           "Nutzen Sie am Telefon den Dokumentenmodus der Kamera - der entzerrt die Aufnahme. " &
-                           "Die Aufnahme ist bereits gespeichert; Unterlagen können Sie auch später nachreichen."
-                        Color: =clrTextLeise
-                        Size: =fsKlein
-                        Height: =110
-                        FillPortions: =0
-                        PaddingLeft: =0
-
-                  # --- Reservierter Platz fuer das Anlagen-Formular ----
-                  - conAnlagenPlatz:
-                      Control: GroupContainer
-                      Variant: AutoLayout
-                      Properties:
-                        Fill: =clrFlaeche
-                        FillPortions: =0
-                        Height: =380
-                        LayoutDirection: =LayoutDirection.Vertical
-                        LayoutAlignItems: =LayoutAlignItems.Stretch
-                        LayoutGap: =spS
-                        BorderColor: =clrRahmen
-                        BorderThickness: =1
-                        PaddingTop: =spM
-                        PaddingBottom: =spM
-                        PaddingLeft: =spM
-                        PaddingRight: =spM
-                        RadiusTopLeft: =radL
-                        RadiusTopRight: =radL
-                        RadiusBottomLeft: =radL
-                        RadiusBottomRight: =radL
-                      Children:
-                        # Das Anlagen-Formular. Die Datenkarte darunter hat
-                        # Studio erzeugt - nicht von Hand umbauen.
-                        #
-                        # Item bindet ueber die Zeilennummer, nicht ueber den
-                        # Rueckgabewert von Patch: ein Formular will eine echte
-                        # Zeile der Datenquelle.
-                        #
-                        # ACHTUNG beim Eintragen in Studio: In der Formelleiste
-                        # steht das fuehrende "=" schon da. Tippen Sie also
-                        # LookUp(...) OHNE Gleichheitszeichen, sonst entsteht
-                        # "==LookUp(...)" und die Funktion wird rot.
-                        - frmAnlagen:
-                            Control: Form
-                            Variant: Classic
-                            Layout: Vertical
-                            Properties:
-                              DataSource: =Rezepte
-                              # Dasselbe Abfragemuster, das in Ihrer
-                              # Behandlungs-App nachweislich laeuft: die
-                              # juengste Zeile des Patienten. Nach dem
-                              # Speichern ist das genau die eben angelegte.
-                              #
-                              # Haengt nur an gblPatient - der ist gesetzt,
-                              # solange oben rechts der Name steht. Eine
-                              # Bindung an gblAufnahme waere eine Annahme
-                              # mehr, die schiefgehen kann.
-                              Item: |-
-                                =First(
-                                    Sort(
-                                        Filter(Rezepte, PatientID = gblPatient.ID),
-                                        ID,
-                                        SortOrder.Descending
-                                    )
-                                )
-                              DefaultMode: =FormMode.Edit
-                              # Erst wenn der Upload durch ist, wird
-                              # aufgeraeumt und weitergesprungen. Stuende das
-                              # hinter SubmitForm in der Schaltflaeche, waere
-                              # gblAufnahme schon leer, waehrend noch
-                              # hochgeladen wird - das Formular verloere
-                              # mitten im Senden seine Zeile.
-                              OnSuccess: |-
-                                =Set(gblPatient, Blank());
-                                Set(gblLetztesRezept, Blank());
-                                Set(gblAufnahme, Blank());
-                                Set(gblTxtD, ""); Set(gblTxtB, ""); Set(gblTxtA, "");
-                                Set(gblPruefen, false);
-                                Set(gblReset, true); Set(gblReset, false);
-                                Set(gblMeldung, "Aufnahme abgeschlossen. Der Befund steht ab sofort in der Behandlungs-App.");
-                                Set(gblMeldungArt, "Erfolg");
-                                Set(gblSchritt, "Patienten")
-                              # Schlaegt der Upload fehl, bleibt der Therapeut
-                              # auf Schritt 3 und kann es erneut versuchen.
-                              # Die Aufnahme selbst ist laengst gespeichert.
-                              OnFailure: |-
-                                =Set(gblMeldung,
-                                    "Die Unterlagen konnten nicht hochgeladen werden. Die Aufnahme selbst ist gespeichert. " &
-                                    frmAnlagen.Error);
-                                Set(gblMeldungArt, "Fehler")
-                            Children:
-                              - Anlagen_DataCard1:
-                                  Control: TypedDataCard
-                                  Variant: ClassicAttachmentsEdit
-                                  Properties:
-                                    DataField: ="{Attachments}"
-                                    Default: =ThisItem.Anlagen
-                                    DisplayName: =DataSourceInfo([@Rezepte], DataSourceInfo.DisplayName, '{Attachments}')
-                                    Required: =false
-                                    Update: =DataCardValue11.Attachments
-                                    # Studio hatte hier eine feste Breite von
-                                    # 1272 stehen - die laeuft am Handy aus dem
-                                    # Bild.
-                                    Width: =Parent.Width
-                                    WidthFit: =true
-                                    X: =0
-                                    Y: =0
-                                  Children:
-                                    - DataCardKey11:
-                                        Control: Label
-                                        MetadataKey: FieldName
-                                        Properties:
-                                          Text: =Parent.DisplayName
-                                          Color: =clrText
-                                          Size: =fsKlein
-                                          FontWeight: =FontWeight.Semibold
-                                          AutoHeight: =true
-                                          Height: =30
-                                          BorderStyle: =BorderStyle.None
-                                          PaddingLeft: =0
-                                          Width: =Parent.Width - 2 * spM
-                                          Wrap: =false
-                                          X: =spM
-                                          Y: =spS
-                                    - DataCardValue11:
-                                        Control: Attachments
-                                        MetadataKey: FieldValue
-                                        Properties:
-                                          Items: =Parent.Default
-                                          DisplayMode: =Parent.DisplayMode
-                                          BorderColor: =If(IsBlank(Parent.Error), clrRahmen, clrFehler)
-                                          BorderStyle: =BorderStyle.None
-                                          Color: =clrText
-                                          Fill: =clrFlaeche
-                                          HoverColor: =clrText
-                                          HoverFill: =clrGoldSanft
-                                          ItemColor: =clrText
-                                          ItemFill: =clrGoldSanft
-                                          ItemHoverColor: =clrText
-                                          ItemHoverFill: =clrGoldSanft
-                                          ItemSpacing: =12
-                                          NoAttachmentsColor: =clrTextLeise
-                                          PaddingTop: =5
-                                          PaddingBottom: =5
-                                          PaddingLeft: =5
-                                          PaddingRight: =5
-                                          PressedColor: =clrDunkel
-                                          PressedFill: =clrGold
-                                          Tooltip: =Parent.DisplayName
-                                          Width: =Parent.Width - 2 * spM
-                                          X: =spM
-                                          Y: =DataCardKey11.Y + DataCardKey11.Height + 5
-                                    - ErrorMessage11:
-                                        Control: Label
-                                        MetadataKey: ErrorMessage
-                                        Properties:
-                                          Text: =Parent.Error
-                                          Color: =clrFehler
-                                          Size: =fsKlein
-                                          FontWeight: =FontWeight.Semibold
-                                          AutoHeight: =true
-                                          Height: =10
-                                          BorderStyle: =BorderStyle.None
-                                          Live: =Live.Assertive
-                                          PaddingTop: =0
-                                          PaddingBottom: =0
-                                          PaddingLeft: =0
-                                          PaddingRight: =0
-                                          Visible: =Parent.DisplayMode = DisplayMode.Edit
-                                          Width: =Parent.Width - 2 * spM
-                                          X: =spM
-                                          Y: =DataCardValue11.Y + DataCardValue11.Height
-                                    - StarVisible11:
-                                        Control: Label
-                                        MetadataKey: FieldRequired
-                                        Properties:
-                                          Text: ="*"
-                                          Align: =Align.Center
-                                          Color: =clrText
-                                          FontWeight: =FontWeight.Semibold
-                                          BorderStyle: =BorderStyle.None
-                                          Height: =DataCardKey11.Height
-                                          PaddingLeft: =0
-                                          Visible: =And(Parent.Required, Parent.DisplayMode = DisplayMode.Edit)
-                                          Width: =spM
-                                          Wrap: =false
-                                          Y: =DataCardKey11.Y
-
-                  # --- Aktionen ----------------------------------------
-                  - conAnlagenAktionen:
-                      Control: GroupContainer
-                      Variant: AutoLayout
-                      Properties:
-                        Fill: =RGBA(0, 0, 0, 0)
-                        FillPortions: =0
-                        Height: =72
-                        LayoutDirection: =LayoutDirection.Horizontal
-                        LayoutAlignItems: =LayoutAlignItems.Center
-                        LayoutGap: =spS
-                      Children:
-                        - btnAnlagenZurueck:
-                            Control: Classic/Button
-                            Properties:
-                              Text: ="Zurück zum Befund"
-                              OnSelect: |-
-                                =Set(gblMeldung, ""); Set(gblMeldungArt, "");
-                                Set(gblSchritt, "Befund")
-                              Fill: =clrFlaeche
-                              Color: =clrText
-                              BorderColor: =clrRahmen
-                              BorderThickness: =1
-                              Size: =fsNormal
-                              Height: =64
-                              Width: =220
-                              FillPortions: =0
-                              RadiusTopLeft: =radM
-                              RadiusTopRight: =radM
-                              RadiusBottomLeft: =radM
-                              RadiusBottomRight: =radM
-                        - btnAnlagenFertig:
-                            Control: Classic/Button
-                            Properties:
-                              Text: ="Aufnahme abschließen"
-                              # Nur absenden. Das Aufraeumen und der Sprung
-                              # zurueck stehen in frmAnlagen.OnSuccess - erst
-                              # wenn der Upload wirklich durch ist.
-                              #
-                              # Der Zweig ohne gespeicherte Zeile ist die
-                              # Notbremse: SubmitForm tut dann naemlich nichts,
-                              # OnSuccess feuert nicht, und die Schaltflaeche
-                              # waere ohne diesen Zweig wirkungslos.
-                              OnSelect: |-
-                                =If(
-                                    IsBlank(gblAufnahme.ID),
-                                    Set(gblMeldung, "Es ist keine Aufnahme offen.");
-                                    Set(gblMeldungArt, "Warnung");
-                                    Set(gblSchritt, "Patienten"),
-
-                                    SubmitForm(frmAnlagen)
-                                )
-                              Fill: =clrGold
-                              Color: =clrDunkel
-                              HoverFill: =clrGoldHell
-                              PressedFill: =clrGoldHell
                               BorderThickness: =0
                               Size: =fsGross
                               FontWeight: =FontWeight.Semibold

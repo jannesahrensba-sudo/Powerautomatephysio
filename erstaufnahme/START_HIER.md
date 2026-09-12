@@ -3,13 +3,13 @@
 Die zweite App. Sie macht **eine Sache**:
 
 ```
-Patient wählen  →  Befund und Anamnese  →  Unterlagen anhängen
+Patient wählen  →  Befund und Anamnese
 ```
 
 Danach steht der Befund in der **Behandlungs-App** – beim nächsten Termin
 unter „Vorbereitung", genau da, wo der Therapeut ohnehin hinschaut.
 
-Rechnen Sie mit **30 bis 40 Minuten**, davon 15 für das Anlagen-Formular.
+Rechnen Sie mit **20 bis 25 Minuten**.
 
 ---
 
@@ -45,10 +45,15 @@ nichts – sie wird die aktuelle.
 |---|---|
 | **1 Patient** | Suchfeld, Trefferliste mit Name und Geburtsdatum, je Zeile „Aufnehmen". |
 | **2 Befund und Anamnese** | Diagnose laut Rezept, Erstbefund, Anamnese. Liegt schon eine Aufnahme vor, bietet die App an, sie als Ausgangspunkt zu übernehmen. „Aufnahme speichern". |
-| **3 Anlagen** | Unterschriebenes Dokument und Rezept anhängen – über die Kamera. „Aufnahme abschließen". |
 
-Gespeichert wird nach Schritt 2. Die Unterlagen können auch später
-nachgereicht werden, ohne dass der Befund verloren geht.
+Nach dem Speichern springt die App zurück zu Schritt 1 und ist bereit für den
+nächsten Patienten.
+
+> **Anlagen gibt es hier nicht mehr.** Behandlungsvertrag und
+> Datenschutzerklärung erfasst die **Anmelde-App** digital – dort füllt der
+> Patient am iPad aus und unterschreibt auf dem Bildschirm, kein Papier, kein
+> Abfotografieren. Das Rezeptfoto liegt ebenfalls dort. Siehe
+> [`../anmeldung/START_HIER.md`](../anmeldung/START_HIER.md).
 
 ---
 
@@ -63,10 +68,6 @@ cd erstaufnahme
 Die Vorschau lesen, dann ohne `-WhatIf` ausführen. Das Skript legt nur
 **Fehlendes** an und fasst Vorhandenes nicht an. Haben Sie das Skript der
 Behandlungs-App schon laufen lassen, meldet dieses hier nur noch „vorhanden".
-
-Es prüft außerdem, ob **Anlagen** an der Liste `Rezept` erlaubt sind – ohne
-das funktioniert Schritt 3 nicht. Geändert wird die Einstellung nicht; das
-ist eine bewusste Entscheidung.
 
 Welche Spalten gebraucht werden, steht in `03_Spalten.md`.
 
@@ -94,29 +95,9 @@ Fehler.
 Rechtsklick auf `scrAufnahme` → **Code einfügen** → vollständigen Inhalt von
 `01_AppShell_einfuegen.yaml` einfügen.
 
-Danach steht `conApp` mit 58 untergeordneten Steuerelementen im Baum – das
-**Anlagen-Formular ist darin enthalten**, Sie müssen es nicht mehr von Hand
-anlegen.
+Danach steht `conApp` mit 41 untergeordneten Steuerelementen im Baum.
 
-## Schritt 5 – Anlagen erlauben (2 Minuten)
-
-Die einzige Voraussetzung, die außerhalb der App liegt: In SharePoint muss die
-Liste **Rezepte** Anlagen zulassen.
-
-Zahnrad → **Listeneinstellungen** → **Erweiterte Einstellungen** →
-**Anlagen** → *Anlagen zu dieser Liste zulassen*. Das ist der Standard.
-Danach in Studio **Daten → Rezepte → Aktualisieren**.
-
-Das prüft auch `04_Spalten_anlegen.ps1` aus Schritt 1 – geändert wird die
-Einstellung dort aber nicht.
-
-> **Zeigt Schritt 3 „Keine anzuzeigenden Elemente"?** Dann findet das Formular
-> keinen Datensatz. Der Kopf von Schritt 3 verrät, wo es hakt: Steht dort eine
-> Nummer, liegt es am Formular; steht „noch nicht gespeichert", an Schritt 2.
-> Fehlersuche in
-> [`05_Anlagen/README.md`](05_Anlagen/README.md#fehlersuche).
-
-## Schritt 6 – Durchspielen (8 Minuten)
+## Schritt 5 – Durchspielen (8 Minuten)
 
 Legen Sie einen Testpatienten mit erkennbarem Namen an, etwa `ZZ-Test`.
 
@@ -125,8 +106,7 @@ Legen Sie einen Testpatienten mit erkennbarem Namen an, etwa `ZZ-Test`.
 | Vorschau starten | Anthrazitfarbene Kopfleiste, darunter die Patientensuche |
 | Patient suchen und „Aufnehmen" | Schritt 2 mit Namen und Geburtsdatum im dunklen Kopf |
 | Ohne Text speichern | Hinweis „Bitte Erstbefund und Anamnese ausfüllen.", beide Felder rot umrandet |
-| Beides ausfüllen, speichern | Grüne Meldung, Schritt 3 erscheint |
-| Unterlage anhängen, abschließen | Zurück zu Schritt 1 mit grüner Meldung |
+| Beides ausfüllen, speichern | Grüne Meldung mit der Nummer, zurück zu Schritt 1 |
 | **In der Behandlungs-App denselben Patienten aufrufen** | **Diagnose, Erstbefund und Anamnese stehen unter „Befund und Anamnese"** |
 | Denselben Patienten nochmal aufnehmen | Der goldene Kasten „Vorherige übernehmen" erscheint |
 | „Vorherige übernehmen" | Alle drei Felder gefüllt, Meldung „Übernommen" |
@@ -172,9 +152,8 @@ Im Kopf steht statt „physio / HUMAN PERFORMANCE" der Titel **„Erstaufnahme"*
 - **Kein Bearbeiten bestehender Aufnahmen.** Jede Aufnahme ist ein neuer
   Eintrag. Korrekturen macht man in SharePoint.
 - **Keine Behandlungsdokumentation.** Dafür ist die andere App da.
-- **Kein Dokumentenscanner.** Den gibt es in Canvas Apps nicht – die App
-  nutzt die Kamera des Geräts, deren Dokumentenmodus das Entzerren
-  übernimmt.
+- **Keine Anlagen.** Vertrag und Datenschutzerklärung laufen digital über die
+  Anmelde-App, das Rezeptfoto ebenfalls dort.
 
 ## Geprüft und nicht geprüft
 
@@ -183,12 +162,9 @@ Im Kopf steht statt „physio / HUMAN PERFORMANCE" der Titel **„Erstaufnahme"*
 | Struktur, Control-Typen, Varianten, Verweise, Spaltenabgleich | **ausgeführt, bestanden** |
 | Power-Apps-Kompilierung | **nicht ausgeführt** – kein Studio-Zugang |
 | Test im Tenant, auf Geräten | **nicht ausgeführt** – kein Tenant-Zugang |
-| Formular, Upload, `OnSuccess`/`OnFailure` | **nicht ausgeführt** – kein Studio-Zugang |
 | `04_Spalten_anlegen.ps1` | **nicht ausgeführt** – keine PowerShell verfügbar; deshalb `-WhatIf` zuerst |
 
 Die Control-Typen und Varianten sind dieselben, die in Ihrer laufenden
 Behandlungs-App durchgelaufen sind – `Classic/Button`, `Classic/TextInput`,
 `Gallery`/`Vertical`, `GroupContainer`/`AutoLayout`, `Label`, `Rectangle`,
-`Image`. Dazu `Form`, `TypedDataCard` und `Attachments` für die Anlagen –
-**die stammen aus Ihrem eigenen Studio-Export**, sind also in Ihrem Tenant
-erzeugt worden und nicht von mir erfunden.
+`Image`. Es ist kein Steuerelement dabei, das Ihr Studio noch nie gesehen hat.

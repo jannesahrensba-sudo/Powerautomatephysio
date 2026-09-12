@@ -12,9 +12,6 @@
     "bestaetigt_auftrag": "im Auftrag ausdruecklich benannt",
     "unbestaetigt": "plausibel, aber nicht belegt"
   },
-  "listeneinstellungen": {
-    "Rezepte": "Anlagen muessen in den Listeneinstellungen ERLAUBT sein (SharePoint-Standard: erlaubt). Das ist keine Spalte, sondern eine Einstellung der Liste - siehe 05_Anlagen/README.md."
-  },
   "listen": {
     "Patientenstamm": [
       {
@@ -99,21 +96,13 @@
         "status": "unbestaetigt",
         "befund": "Wird in der Behandlungs-App unter Befund und Anamnese angezeigt.",
         "erforderliche_aenderung": "Anlegen, falls nicht vorhanden (Mehrere Textzeilen, Nur-Text)."
-      },
-      {
-        "anzeigename": "Anlagen",
-        "interner_name": "{Attachments}",
-        "typ": "Anlagen (Listeneinstellung)",
-        "lookup_ziel": null,
-        "status": "unbestaetigt",
-        "befund": "Keine Spalte, sondern die Anlagensammlung der Liste. Power Fx spricht sie unter dem deutschen Anzeigenamen 'Anlagen' an, das Formular ueber den internen Schluessel '{Attachments}'. Anlegen kann man sie nicht - sie muss in den Listeneinstellungen erlaubt sein.",
-        "erforderliche_aenderung": "Keine Spalte anlegen. In den Listeneinstellungen unter Erweiterte Einstellungen pruefen, dass Anlagen erlaubt sind."
       }
     ]
   },
   "nicht_geschrieben": [
     "Wer die Aufnahme gemacht hat, steht automatisch in der Systemspalte 'Erstellt von'. Dafuer ist keine eigene Spalte noetig.",
     "Das Aufnahmedatum steht automatisch in 'Erstellt'.",
-    "Status, Freigabe, Terminstatus und Einheitenzaehler bleiben unangetastet."
+    "Status, Freigabe, Terminstatus und Einheitenzaehler bleiben unangetastet.",
+    "Anlagen: Diese App haengt keine Dateien mehr an. Der Vertrag und die Datenschutzerklaerung werden in der Anmelde-App digital erfasst."
   ]
 }

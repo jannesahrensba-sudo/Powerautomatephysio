@@ -14,9 +14,6 @@
     ohnehin braucht. Haben Sie das Skript der Behandlungs-App schon laufen
     lassen, meldet dieses hier nur noch "vorhanden".
 
-    Anlagen sind KEINE Spalte, sondern eine Listeneinstellung. Das Skript
-    prueft sie deshalb nur und aendert sie nicht - siehe 05_Anlagen/README.md.
-
     Fuehren Sie das Skript zuerst mit -WhatIf aus und lesen Sie die Vorschau.
 
 .PARAMETER SiteUrl
@@ -139,23 +136,3 @@ Write-Host "Hinweise   : $($hinweise.Count)" -ForegroundColor $(if ($hinweise.Co
 foreach ($h in $hinweise) { Write-Host "  - $h" -ForegroundColor Yellow }
 
 Disconnect-PnPOnline
-
-# ---------------------------------------------------------------------
-# Anlagen sind eine Listeneinstellung, keine Spalte. Nur pruefen, nicht
-# aendern - das Einschalten ist eine bewusste Entscheidung.
-# ---------------------------------------------------------------------
-try {
-    $liste = Get-PnPList -Identity 'Rezepte' -ErrorAction Stop
-    if ($liste.EnableAttachments) {
-        Write-Host "  Anlagen        : erlaubt" -ForegroundColor Green
-    }
-    else {
-        Write-Host "  Anlagen        : NICHT erlaubt" -ForegroundColor Yellow
-        Write-Host "    Ohne Anlagen kann die App keine Unterlagen anhaengen." -ForegroundColor Yellow
-        Write-Host "    Listeneinstellungen -> Erweiterte Einstellungen -> Anlagen." -ForegroundColor Yellow
-    }
-}
-catch {
-    Write-Host "  Anlagen        : Liste 'Rezepte' nicht gefunden." -ForegroundColor Red
-    Write-Host "    Heisst sie bei Ihnen anders, oben im Skript anpassen." -ForegroundColor Red
-}
