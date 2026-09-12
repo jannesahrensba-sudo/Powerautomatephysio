@@ -1,0 +1,38 @@
+{
+  "titel": "Spalten der Erstaufnahme-App",
+  "stand": "2026-09-12",
+  "quellenlage": {
+    "hinweis": "Diese App legt KEINE neue Spalte an. Sie schreibt genau die Felder, die die Behandlungs-App bereits liest.",
+    "belegt_durch": "Der von Ihnen eingefuegte Studio-Code der Behandlungs-App liest gblRezept.'Diagnose laut Rezept', gblRezept.Erstbefund und gblRezept.Anamnese und filtert Rezept ueber PatientID.",
+    "nicht_geprueft": "Die Spalten der Liste Rezept sind nicht gegen die Liste selbst geprueft. Fehlt eine, zeigt Studio direkt nach dem Einfuegen einen Formelfehler an der betroffenen Stelle."
+  },
+  "statuslegende": {
+    "system": "Systemspalte von SharePoint",
+    "bestaetigt": "im Tenant nachweislich gelesen",
+    "bestaetigt_auftrag": "im Auftrag ausdruecklich benannt",
+    "unbestaetigt": "plausibel, aber nicht belegt"
+  },
+  "listeneinstellungen": {
+    "Rezept": "Anlagen muessen in den Listeneinstellungen ERLAUBT sein (SharePoint-Standard: erlaubt). Das ist keine Spalte, sondern eine Einstellung der Liste - siehe 05_Anlagen/README.md."
+  },
+  "listen": {
+    "Patientenstamm": [
+      { "anzeigename": "ID", "interner_name": "ID", "typ": "Zahl (System)", "lookup_ziel": null, "status": "system", "befund": "Technischer Schluessel.", "erforderliche_aenderung": "keine" },
+      { "anzeigename": "Vorname", "interner_name": "Vorname", "typ": "Text", "lookup_ziel": null, "status": "bestaetigt", "befund": "Suche und Anzeige. Wird in der Behandlungs-App korrekt angezeigt.", "erforderliche_aenderung": "keine" },
+      { "anzeigename": "Nachname", "interner_name": "Nachname", "typ": "Text", "lookup_ziel": null, "status": "bestaetigt", "befund": "Suche und Anzeige.", "erforderliche_aenderung": "keine" },
+      { "anzeigename": "Geburtsdatum", "interner_name": "Geburtsdatum", "typ": "Datum", "lookup_ziel": null, "status": "bestaetigt", "befund": "Unterscheidet gleiche Namen.", "erforderliche_aenderung": "keine" }
+    ],
+    "Rezept": [
+      { "anzeigename": "ID", "interner_name": "ID", "typ": "Zahl (System)", "lookup_ziel": null, "status": "system", "befund": "Die Behandlungs-App sortiert danach absteigend und nimmt das juengste Rezept.", "erforderliche_aenderung": "keine" },
+      { "anzeigename": "PatientID", "interner_name": "PatientID", "typ": "Zahl", "lookup_ziel": null, "status": "unbestaetigt", "befund": "Verbindet das Rezept mit dem Patienten. OHNE diese Spalte findet die Behandlungs-App den Befund nicht.", "erforderliche_aenderung": "Anlegen, falls nicht vorhanden (Zahl)." },
+      { "anzeigename": "Diagnose laut Rezept", "interner_name": "DiagnoselautRezept", "typ": "Text", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "Anzeigename und interner Name weichen ab. Power Fx nutzt den Anzeigenamen in einfachen Anfuehrungszeichen.", "erforderliche_aenderung": "Anlegen, falls nicht vorhanden (Text)." },
+      { "anzeigename": "Erstbefund", "interner_name": "Erstbefund", "typ": "Mehrzeiliger Text", "lookup_ziel": null, "status": "unbestaetigt", "befund": "Wird in der Behandlungs-App unter Befund und Anamnese angezeigt.", "erforderliche_aenderung": "Anlegen, falls nicht vorhanden (Mehrere Textzeilen, Nur-Text)." },
+      { "anzeigename": "Anamnese", "interner_name": "Anamnese", "typ": "Mehrzeiliger Text", "lookup_ziel": null, "status": "unbestaetigt", "befund": "Wird in der Behandlungs-App unter Befund und Anamnese angezeigt.", "erforderliche_aenderung": "Anlegen, falls nicht vorhanden (Mehrere Textzeilen, Nur-Text)." }
+    ]
+  },
+  "nicht_geschrieben": [
+    "Wer die Aufnahme gemacht hat, steht automatisch in der Systemspalte 'Erstellt von'. Dafuer ist keine eigene Spalte noetig.",
+    "Das Aufnahmedatum steht automatisch in 'Erstellt'.",
+    "Status, Freigabe, Terminstatus und Einheitenzaehler bleiben unangetastet."
+  ]
+}

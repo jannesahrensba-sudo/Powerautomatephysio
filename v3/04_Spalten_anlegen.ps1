@@ -46,8 +46,8 @@ $spalten = @(
     @{ Liste = 'Behandlungsdokumentation'; Anzeige = 'Heimuebungen';     Intern = 'Heimuebungen';     Typ = 'Note'     }
 )
 
-# Spalten, auf die gefiltert wird - ohne Index bricht die Abfrage ab
-# 5000 Listenelementen ab.
+# Spalten, auf die gefiltert wird. Ohne Index bricht die Abfrage ab,
+# sobald die Liste 5000 Elemente ueberschreitet.
 $indizes = @(
     @{ Liste = 'Behandlungsdokumentation'; Intern = 'PatientID' }
     @{ Liste = 'Rezepte';                  Intern = 'PatientID' }

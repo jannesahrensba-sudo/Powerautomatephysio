@@ -32,7 +32,9 @@ KEINE_SPALTEN = {
 
 # Datensatzvariablen, deren Eigenschaften SharePoint-Spalten sind.
 DATENSATZ_VARIABLEN = ("gblPatient", "gblRezept", "gblDoku", "gblAufgabe",
-                       "recEinstellungen", "ThisItem", "gblSchreibErgebnis")
+                       "recEinstellungen", "ThisItem", "gblSchreibErgebnis",
+                       # Erstaufnahme-App
+                       "gblLetztesRezept", "gblAufnahme")
 
 
 def main(yaml_pfad: str, json_pfad: str) -> int:

@@ -1,0 +1,972 @@
+# ---------------------------------------------------------------------
+# Physio Human Performance - Erstaufnahme
+#
+# Zweite App neben der Behandlungs-App. Sie schreibt Diagnose,
+# Erstbefund und Anamnese in die Liste "Rezept" - also genau in die
+# Felder, aus denen die Behandlungs-App den Befund bereits liest.
+# An der Behandlungs-App ist KEINE Aenderung noetig.
+#
+# Ablauf:  1 Patient  ->  2 Befund und Anamnese  ->  3 Anlagen
+#
+# So gehen Sie vor:
+#   1. Zwei SharePoint-Listen als Datenquellen hinzufuegen:
+#      Patientenstamm und Rezept.
+#   2. Die App-Eigenschaften aus 02_Eigenschaften_DE.md setzen.
+#   3. Diesen Code auf den Bildschirm scrAufnahme einfuegen.
+#   4. Das Anlagen-Formular ergaenzen - siehe 05_Anlagen/README.md.
+#
+# Die Datenquelle heisst REZEPT (Einzahl), so wie in Ihrer laufenden
+# App. Heisst sie bei Ihnen anders, benennen Sie die Datenquelle in
+# der App um - dann bleiben alle Formeln gueltig.
+# ---------------------------------------------------------------------
+
+- conApp:
+    Control: GroupContainer
+    Variant: AutoLayout
+    Properties:
+      Fill: =clrHintergrund
+      Width: =Parent.Width
+      Height: =Parent.Height
+      LayoutDirection: =LayoutDirection.Vertical
+      LayoutAlignItems: =LayoutAlignItems.Stretch
+    Children:
+
+      # ===============================================================
+      # KOPFLEISTE
+      # ===============================================================
+      - conKopf:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            Fill: =clrDunkel
+            FillPortions: =0
+            # Schmal: kleinere Hoehe, engere Abstaende. Sonst passen
+            # Logo, Schaltflaeche und Rand nicht nebeneinander.
+            Height: =If(conApp.Width >= bpMarke, 84, 72)
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutGap: =If(conApp.Width >= bpMarke, spM, spS)
+            PaddingLeft: =If(conApp.Width >= bpMarke, spL, spM)
+            PaddingRight: =If(conApp.Width >= bpMarke, spL, spM)
+          Children:
+
+            # --- Logo: Knotengrafik als eingebettetes SVG ------------
+            - imgLogo:
+                Control: Image
+                Properties:
+                  Image: |-
+                    ="data:image/svg+xml;utf8, " & EncodeUrl(
+                        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 106'>" &
+                        "<g stroke='#ADADAD' stroke-width='4.5' fill='none' stroke-linecap='round' stroke-linejoin='round'>" &
+                        "<path d='M22 13 L68 10'/><path d='M22 13 L8 31'/><path d='M68 10 L70 27'/>" &
+                        "<path d='M68 10 L91 39'/><path d='M70 27 L91 39'/><path d='M70 27 L41 44'/>" &
+                        "<path d='M8 31 L41 44'/><path d='M8 31 L9 73'/><path d='M41 44 L43 63'/>" &
+                        "<path d='M43 63 L78 67'/><path d='M43 63 L9 73'/><path d='M78 67 L91 39'/>" &
+                        "<path d='M78 67 L81 93'/><path d='M9 73 L36 97'/><path d='M36 97 L43 63'/>" &
+                        "<path d='M36 97 L81 93'/><path d='M68 10 L41 44'/><path d='M9 73 L78 67'/>" &
+                        "<path d='M22 13 L41 44'/>" &
+                        "</g>" &
+                        "<g fill='#6E6E6E'>" &
+                        "<circle cx='22' cy='13' r='5'/><circle cx='68' cy='10' r='8'/>" &
+                        "<circle cx='70' cy='27' r='5'/><circle cx='8'  cy='31' r='7'/>" &
+                        "<circle cx='91' cy='39' r='6'/><circle cx='41' cy='44' r='5'/>" &
+                        "<circle cx='43' cy='63' r='6'/><circle cx='78' cy='67' r='6'/>" &
+                        "<circle cx='9'  cy='73' r='8'/><circle cx='36' cy='97' r='6'/>" &
+                        "<circle cx='81' cy='93' r='9'/>" &
+                        "</g></svg>"
+                    )
+                  Height: =If(conApp.Width >= bpMarke, 52, 40)
+                  Width: =If(conApp.Width >= bpMarke, 52, 40)
+                  FillPortions: =0
+                  ImagePosition: =ImagePosition.Fit
+
+            - conWortmarke:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  Fill: =RGBA(0, 0, 0, 0)
+                  FillPortions: =0
+                  Width: =240
+                  Height: =56
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Start
+                  LayoutGap: =0
+                  Visible: =conApp.Width >= bpMarke
+                Children:
+                  - lblMarke:
+                      Control: Label
+                      Properties:
+                        Text: ="Erstaufnahme"
+                        Color: =clrWeiss
+                        Size: =26
+                        Height: =34
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                        PaddingTop: =0
+                        PaddingBottom: =0
+                        VerticalAlign: =VerticalAlign.Bottom
+                  - lblMarkeZusatz:
+                      Control: Label
+                      Properties:
+                        Text: ="PHYSIO HUMAN PERFORMANCE"
+                        Color: =clrTextHell
+                        Size: =fsKlein
+                        Height: =20
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                        PaddingTop: =0
+                        VerticalAlign: =VerticalAlign.Top
+
+            # --- Aktueller Patient, schiebt die Schaltflaeche nach rechts
+            - lblKopfPatient:
+                Control: Label
+                Properties:
+                  Text: |-
+                    =If(
+                        IsBlank(gblPatient) Or conApp.Width < bpName,
+                        "",
+                        Trim(Coalesce(gblPatient.Vorname, "") & " " & Coalesce(gblPatient.Nachname, ""))
+                    )
+                  Color: =clrWeiss
+                  Size: =fsNormal
+                  FontWeight: =FontWeight.Semibold
+                  Align: =Align.Right
+                  VerticalAlign: =VerticalAlign.Middle
+                  FillPortions: =1
+                  Height: =56
+                  Wrap: =false
+                  PaddingRight: =spM
+
+            - btnKopfNeu:
+                Control: Classic/Button
+                Properties:
+                  Text: ="Neue Aufnahme"
+                  OnSelect: |-
+                    =Set(gblPatient, Blank());
+                    Set(gblLetztesRezept, Blank());
+                    Set(gblAufnahme, Blank());
+                    Set(gblTxtD, ""); Set(gblTxtB, ""); Set(gblTxtA, "");
+                    Set(gblPruefen, false);
+                    Set(gblReset, true); Set(gblReset, false);
+                    Set(gblMeldung, ""); Set(gblMeldungArt, "");
+                    Set(gblSchritt, "Patienten")
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Color: =clrTextHell
+                  BorderColor: =clrGold
+                  BorderThickness: =1
+                  HoverFill: =clrGoldHell
+                  HoverColor: =clrDunkel
+                  Size: =fsKlein
+                  Height: =hTouch
+                  Width: =If(conApp.Width >= bpMarke, 160, 128)
+                  FillPortions: =0
+                  RadiusTopLeft: =radM
+                  RadiusTopRight: =radM
+                  RadiusBottomLeft: =radM
+                  RadiusBottomRight: =radM
+
+      # ===============================================================
+      # SCHRITTANZEIGE
+      # ===============================================================
+      - conSchritte:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            Fill: =clrDunkelTief
+            FillPortions: =0
+            Height: =44
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutGap: =spS
+            PaddingLeft: =If(conApp.Width >= bpSchritte, spL, spM)
+            PaddingRight: =If(conApp.Width >= bpSchritte, spL, spM)
+          Children:
+            # Schmal passen drei Schritte nebeneinander nicht hin.
+            # Statt zu kuerzen nennt eine Zeile den aktuellen Stand.
+            - lblSchrittKompakt:
+                Control: Label
+                Properties:
+                  Visible: =conApp.Width < bpSchritte
+                  Text: |-
+                    =If(
+                        gblSchritt = "Patienten", "Schritt 1 von 3  ·  Patient",
+                        gblSchritt = "Befund",    "Schritt 2 von 3  ·  Befund und Anamnese",
+                        gblSchritt = "Anlagen",   "Schritt 3 von 3  ·  Anlagen",
+                        ""
+                    )
+                  Color: =clrGold
+                  Size: =fsKlein
+                  FontWeight: =FontWeight.Semibold
+                  VerticalAlign: =VerticalAlign.Middle
+                  Height: =32
+                  FillPortions: =1
+                  Wrap: =false
+                  PaddingLeft: =0
+            - lblSchritt1:
+                Control: Label
+                Properties:
+                  Visible: =conApp.Width >= bpSchritte
+                  Text: ="1  Patient"
+                  Color: =If(gblSchritt = "Patienten", clrGold, clrTextHell)
+                  FontWeight: =If(gblSchritt = "Patienten", FontWeight.Semibold, FontWeight.Normal)
+                  Size: =fsKlein
+                  Height: =32
+                  Width: =100
+                  FillPortions: =0
+                  Wrap: =false
+                  PaddingLeft: =0
+            - lblSchrittTrenner1:
+                Control: Label
+                Properties:
+                  Visible: =conApp.Width >= bpSchritte
+                  Text: ="-"
+                  Color: =clrTextHell
+                  Size: =fsKlein
+                  Height: =32
+                  Width: =24
+                  FillPortions: =0
+                  Wrap: =false
+                  PaddingLeft: =0
+            - lblSchritt2:
+                Control: Label
+                Properties:
+                  Visible: =conApp.Width >= bpSchritte
+                  Text: ="2  Befund und Anamnese"
+                  Color: =If(gblSchritt = "Befund", clrGold, clrTextHell)
+                  FontWeight: =If(gblSchritt = "Befund", FontWeight.Semibold, FontWeight.Normal)
+                  Size: =fsKlein
+                  Height: =32
+                  Width: =200
+                  FillPortions: =0
+                  Wrap: =false
+                  PaddingLeft: =0
+            - lblSchrittTrenner2:
+                Control: Label
+                Properties:
+                  Visible: =conApp.Width >= bpSchritte
+                  Text: ="-"
+                  Color: =clrTextHell
+                  Size: =fsKlein
+                  Height: =32
+                  Width: =24
+                  FillPortions: =0
+                  Wrap: =false
+                  PaddingLeft: =0
+            - lblSchritt3:
+                Control: Label
+                Properties:
+                  Visible: =conApp.Width >= bpSchritte
+                  Text: ="3  Anlagen"
+                  Color: =If(gblSchritt = "Anlagen", clrGold, clrTextHell)
+                  FontWeight: =If(gblSchritt = "Anlagen", FontWeight.Semibold, FontWeight.Normal)
+                  Size: =fsKlein
+                  Height: =32
+                  FillPortions: =1
+                  Wrap: =false
+                  PaddingLeft: =0
+
+      # ===============================================================
+      # MELDUNGSLEISTE
+      # ===============================================================
+      - conMeldung:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            Visible: =Not(IsBlank(gblMeldung))
+            Fill: |-
+              =Switch(gblMeldungArt,
+                  "Erfolg", clrErfolgSanft,
+                  "Warnung", clrWarnungSanft,
+                  "Fehler", clrFehlerSanft,
+                  clrGoldSanft)
+            FillPortions: =0
+            Height: =56
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutGap: =spM
+            PaddingLeft: =spL
+            PaddingRight: =spL
+          Children:
+            - lblMeldung:
+                Control: Label
+                Properties:
+                  Text: =gblMeldung
+                  Color: |-
+                    =Switch(gblMeldungArt,
+                        "Erfolg", clrErfolg,
+                        "Warnung", clrWarnung,
+                        "Fehler", clrFehler,
+                        clrText)
+                  Size: =fsNormal
+                  Height: =44
+                  FillPortions: =1
+                  Live: =Live.Polite
+                  PaddingLeft: =0
+            - btnMeldungZu:
+                Control: Classic/Button
+                Properties:
+                  Text: ="OK"
+                  OnSelect: =Set(gblMeldung, ""); Set(gblMeldungArt, "")
+                  Fill: =clrFlaeche
+                  Color: =clrText
+                  BorderColor: =clrRahmen
+                  BorderThickness: =1
+                  Size: =fsKlein
+                  Height: =hTouch
+                  Width: =80
+                  FillPortions: =0
+                  RadiusTopLeft: =radM
+                  RadiusTopRight: =radM
+                  RadiusBottomLeft: =radM
+                  RadiusBottomRight: =radM
+
+      # ===============================================================
+      # INHALT - drei Ansichten, immer genau eine sichtbar
+      # ===============================================================
+      - conInhalt:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            Fill: =RGBA(0, 0, 0, 0)
+            FillPortions: =1
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+          Children:
+
+            # -----------------------------------------------------------
+            # SCHRITT 1 - Patient waehlen
+            # -----------------------------------------------------------
+            - conPat:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  Visible: =gblSchritt = "Patienten"
+                  Fill: =RGBA(0, 0, 0, 0)
+                  FillPortions: =1
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutGap: =spM
+                  PaddingTop: =spL
+                  PaddingBottom: =spL
+                  PaddingLeft: =spL
+                  PaddingRight: =spL
+                Children:
+                  - lblPatTitel:
+                      Control: Label
+                      Properties:
+                        Text: ="Wen nehmen Sie auf?"
+                        Color: =clrText
+                        Size: =fsTitel
+                        FontWeight: =FontWeight.Semibold
+                        Height: =42
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - txtSuche:
+                      Control: Classic/TextInput
+                      Properties:
+                        Default: =""
+                        Reset: =gblReset
+                        HintText: ="Nachname oder Vorname eingeben"
+                        DelayOutput: =true
+                        Height: =60
+                        FillPortions: =0
+                        BorderColor: =clrRahmen
+                        BorderThickness: =1
+                        Size: =fsGross
+                        PaddingLeft: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+                  - lblPatHinweis:
+                      Control: Label
+                      Properties:
+                        Text: |-
+                          =If(
+                              CountRows(galPatienten.AllItems) = 0,
+                              "Kein Treffer. Bitte Schreibweise prüfen.",
+                              CountRows(galPatienten.AllItems) & " Treffer"
+                          )
+                        Color: =clrTextLeise
+                        Size: =fsKlein
+                        Height: =22
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - galPatienten:
+                      Control: Gallery
+                      Variant: Vertical
+                      Properties:
+                        Items: |-
+                          =If(
+                              Len(txtSuche.Text) = 0,
+                              Sort(Patientenstamm, Nachname, SortOrder.Ascending),
+                              Sort(
+                                  Filter(
+                                      Patientenstamm,
+                                      StartsWith(Nachname, txtSuche.Text) Or StartsWith(Vorname, txtSuche.Text)
+                                  ),
+                                  Nachname,
+                                  SortOrder.Ascending
+                              )
+                          )
+                        FillPortions: =1
+                        TemplateSize: =84
+                        TemplatePadding: =0
+                      Children:
+                        - rectPatZeile:
+                            Control: Rectangle
+                            Properties:
+                              Fill: =clrFlaeche
+                              Width: =Parent.TemplateWidth
+                              Height: =Parent.TemplateHeight - 8
+                              OnSelect: =Select(Parent)
+                        - lblPatName:
+                            Control: Label
+                            Properties:
+                              Text: =Trim(Coalesce(ThisItem.Nachname, "") & ", " & Coalesce(ThisItem.Vorname, ""))
+                              Color: =clrText
+                              Size: =fsGross
+                              FontWeight: =FontWeight.Semibold
+                              X: =spM
+                              Y: =12
+                              Width: =Parent.TemplateWidth - 220
+                              Height: =28
+                              Wrap: =false
+                              PaddingLeft: =0
+                              OnSelect: =Select(Parent)
+                        - lblPatGeburt:
+                            Control: Label
+                            Properties:
+                              Text: |-
+                                =If(IsBlank(ThisItem.Geburtsdatum), "Geburtsdatum nicht hinterlegt",
+                                    "geb. " & Text(ThisItem.Geburtsdatum, DateTimeFormat.ShortDate))
+                              Color: =clrTextLeise
+                              Size: =fsKlein
+                              X: =spM
+                              Y: =42
+                              Width: =Parent.TemplateWidth - 220
+                              Height: =22
+                              Wrap: =false
+                              PaddingLeft: =0
+                              OnSelect: =Select(Parent)
+                        - btnPatWaehlen:
+                            Control: Classic/Button
+                            Properties:
+                              Text: ="Aufnehmen"
+                              OnSelect: |-
+                                =Set(gblPatient, ThisItem);
+                                // Letztes Rezept merken - daraus laesst sich der
+                                // Befund uebernehmen, wenn es ein Folgerezept ist.
+                                Set(
+                                    gblLetztesRezept,
+                                    First(Sort(Filter(Rezept, PatientID = ThisItem.ID), ID, SortOrder.Descending))
+                                );
+                                Set(gblAufnahme, Blank());
+                                Set(gblTxtD, ""); Set(gblTxtB, ""); Set(gblTxtA, "");
+                                Set(gblPruefen, false);
+                                Set(gblReset, true); Set(gblReset, false);
+                                Set(gblMeldung, ""); Set(gblMeldungArt, "");
+                                Set(gblSchritt, "Befund")
+                              Fill: =clrGold
+                              Color: =clrDunkel
+                              HoverFill: =clrGoldHell
+                              BorderThickness: =0
+                              Size: =fsNormal
+                              X: =Parent.TemplateWidth - 196
+                              Y: =14
+                              Width: =180
+                              Height: =hTouch
+                              RadiusTopLeft: =radM
+                              RadiusTopRight: =radM
+                              RadiusBottomLeft: =radM
+                              RadiusBottomRight: =radM
+
+            # -----------------------------------------------------------
+            # SCHRITT 2 - Befund und Anamnese
+            # Alle Kinder mit fester Hoehe und FillPortions 0, damit der
+            # Inhalt ueberlaeuft und LayoutOverflowY greifen kann.
+            # -----------------------------------------------------------
+            - conBefund:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  Visible: =gblSchritt = "Befund"
+                  Fill: =RGBA(0, 0, 0, 0)
+                  FillPortions: =1
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutGap: =spM
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  PaddingTop: =spL
+                  PaddingBottom: =spL
+                  PaddingLeft: =spL
+                  PaddingRight: =spL
+                Children:
+                  - conBefundKopf:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =clrDunkel
+                        FillPortions: =0
+                        Height: =92
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutGap: =2
+                        PaddingTop: =spM
+                        PaddingBottom: =spM
+                        PaddingLeft: =spL
+                        PaddingRight: =spL
+                        RadiusTopLeft: =radL
+                        RadiusTopRight: =radL
+                        RadiusBottomLeft: =radL
+                        RadiusBottomRight: =radL
+                      Children:
+                        - lblBefundKopfTitel:
+                            Control: Label
+                            Properties:
+                              Text: |-
+                                =Trim(Coalesce(gblPatient.Vorname, "") & " " & Coalesce(gblPatient.Nachname, ""))
+                              Color: =clrWeiss
+                              Size: =fsGross
+                              FontWeight: =FontWeight.Semibold
+                              Height: =30
+                              FillPortions: =0
+                              Wrap: =false
+                              PaddingLeft: =0
+                        - lblBefundKopfUnter:
+                            Control: Label
+                            Properties:
+                              Text: |-
+                                =If(IsBlank(gblPatient.Geburtsdatum), "Geburtsdatum nicht hinterlegt",
+                                    "geb. " & Text(gblPatient.Geburtsdatum, DateTimeFormat.ShortDate)) &
+                                 "   ·   " & Text(Today(), DateTimeFormat.LongDate)
+                              Color: =clrTextHell
+                              Size: =fsKlein
+                              Height: =22
+                              FillPortions: =0
+                              Wrap: =false
+                              PaddingLeft: =0
+
+                  # --- Folgerezept: Befund uebernehmen statt abtippen ---
+                  - conVorlage:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        # Nur wenn es zu diesem Patienten schon etwas gibt.
+                        Visible: =Not(IsBlank(gblLetztesRezept))
+                        Fill: =clrGoldSanft
+                        FillPortions: =0
+                        Height: =96
+                        LayoutDirection: =If(conApp.Width >= bpBreit, LayoutDirection.Horizontal, LayoutDirection.Vertical)
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutGap: =spS
+                        PaddingTop: =spS
+                        PaddingBottom: =spS
+                        PaddingLeft: =spM
+                        PaddingRight: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+                      Children:
+                        - lblVorlageText:
+                            Control: Label
+                            Properties:
+                              Text: ="Zu diesem Patienten liegt bereits eine Aufnahme vor. Sie können sie als Ausgangspunkt übernehmen und anpassen."
+                              Color: =clrText
+                              Size: =fsKlein
+                              FillPortions: =1
+                              Height: =40
+                              PaddingLeft: =0
+                        - btnVorlage:
+                            Control: Classic/Button
+                            Properties:
+                              Text: ="Vorherige übernehmen"
+                              OnSelect: |-
+                                =Set(gblTxtD, Coalesce(gblLetztesRezept.'Diagnose laut Rezept', ""));
+                                Set(gblTxtB, Coalesce(gblLetztesRezept.Erstbefund, ""));
+                                Set(gblTxtA, Coalesce(gblLetztesRezept.Anamnese, ""));
+                                Set(gblReset, true); Set(gblReset, false);
+                                Set(gblMeldung, "Übernommen. Bitte durchgehen und aktualisieren.");
+                                Set(gblMeldungArt, "Erfolg")
+                              Fill: =clrFlaeche
+                              Color: =clrText
+                              BorderColor: =clrGold
+                              BorderThickness: =1
+                              Size: =fsKlein
+                              Height: =hTouch
+                              Width: =220
+                              FillPortions: =0
+                              RadiusTopLeft: =radM
+                              RadiusTopRight: =radM
+                              RadiusBottomLeft: =radM
+                              RadiusBottomRight: =radM
+
+                  # --- Diagnose laut Rezept ----------------------------
+                  - lblFeldDiagnose:
+                      Control: Label
+                      Properties:
+                        Text: ="Diagnose laut Rezept"
+                        Color: =clrTextLeise
+                        Size: =fsNormal
+                        Height: =26
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - txtDiagnose:
+                      Control: Classic/TextInput
+                      Properties:
+                        Default: =gblTxtD
+                        Reset: =gblReset
+                        HintText: ="Was steht auf dem Rezept?"
+                        Height: =60
+                        FillPortions: =0
+                        BorderColor: =clrRahmen
+                        BorderThickness: =1
+                        Size: =fsNormal
+                        PaddingLeft: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+
+                  # --- Erstbefund --------------------------------------
+                  - lblFeldBefund:
+                      Control: Label
+                      Properties:
+                        Text: ="Erstbefund *"
+                        Color: =clrText
+                        Size: =fsNormal
+                        FontWeight: =FontWeight.Semibold
+                        Height: =26
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - txtErstbefund:
+                      Control: Classic/TextInput
+                      Properties:
+                        Default: =gblTxtB
+                        Reset: =gblReset
+                        HintText: ="Was haben Sie erhoben? Bewegungsausmaß, Schmerz, Belastbarkeit."
+                        Mode: =TextMode.MultiLine
+                        Height: =170
+                        FillPortions: =0
+                        BorderColor: =If(gblPruefen And IsBlank(Trim(Self.Text)), clrFehler, clrRahmen)
+                        BorderThickness: =1
+                        Size: =fsNormal
+                        PaddingLeft: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+
+                  # --- Anamnese ----------------------------------------
+                  - lblFeldAnamnese:
+                      Control: Label
+                      Properties:
+                        Text: ="Anamnese *"
+                        Color: =clrText
+                        Size: =fsNormal
+                        FontWeight: =FontWeight.Semibold
+                        Height: =26
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - txtAnamnese:
+                      Control: Classic/TextInput
+                      Properties:
+                        Default: =gblTxtA
+                        Reset: =gblReset
+                        HintText: ="Was berichtet der Patient? Beschwerdebeginn, Verlauf, Vorerkrankungen."
+                        Mode: =TextMode.MultiLine
+                        Height: =170
+                        FillPortions: =0
+                        BorderColor: =If(gblPruefen And IsBlank(Trim(Self.Text)), clrFehler, clrRahmen)
+                        BorderThickness: =1
+                        Size: =fsNormal
+                        PaddingLeft: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+
+                  # --- Aktionen ----------------------------------------
+                  - conBefundAktionen:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =RGBA(0, 0, 0, 0)
+                        FillPortions: =0
+                        Height: =72
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutGap: =spS
+                      Children:
+                        - btnBefundZurueck:
+                            Control: Classic/Button
+                            Properties:
+                              Text: ="Zurück"
+                              DisplayMode: =If(gblSpeichert, DisplayMode.Disabled, DisplayMode.Edit)
+                              OnSelect: |-
+                                =Set(gblPruefen, false);
+                                Set(gblMeldung, ""); Set(gblMeldungArt, "");
+                                Set(gblSchritt, "Patienten")
+                              Fill: =clrFlaeche
+                              Color: =clrText
+                              BorderColor: =clrRahmen
+                              BorderThickness: =1
+                              Size: =fsNormal
+                              Height: =64
+                              Width: =150
+                              FillPortions: =0
+                              RadiusTopLeft: =radM
+                              RadiusTopRight: =radM
+                              RadiusBottomLeft: =radM
+                              RadiusBottomRight: =radM
+                        - btnBefundSpeichern:
+                            Control: Classic/Button
+                            Properties:
+                              Text: =If(gblSpeichert, "Speichert ...", "Aufnahme speichern")
+                              # Doppelklickschutz waehrend des Schreibens.
+                              DisplayMode: |-
+                                =If(gblSpeichert Or IsBlank(gblPatient), DisplayMode.Disabled, DisplayMode.Edit)
+                              OnSelect: |-
+                                =Set(gblPruefen, true);
+                                If(
+                                    IsBlank(Trim(txtErstbefund.Text)) Or IsBlank(Trim(txtAnamnese.Text)),
+                                    Set(gblMeldung, "Bitte Erstbefund und Anamnese ausfüllen.");
+                                    Set(gblMeldungArt, "Warnung"),
+
+                                    Set(gblSpeichert, true);
+                                    Set(gblFehlerText, "");
+                                    // Nur der Schreibvorgang wird abgesichert,
+                                    // nicht die ganze Befehlskette.
+                                    Set(
+                                        gblAufnahme,
+                                        IfError(
+                                            Patch(
+                                                Rezept,
+                                                Defaults(Rezept),
+                                                {
+                                                    PatientID: gblPatient.ID,
+                                                    'Diagnose laut Rezept': Trim(txtDiagnose.Text),
+                                                    Erstbefund: Trim(txtErstbefund.Text),
+                                                    Anamnese: Trim(txtAnamnese.Text)
+                                                }
+                                            ),
+                                            Set(gblFehlerText, FirstError.Message); Blank()
+                                        )
+                                    );
+                                    // Geprüft wird das Ergebnis, nicht der Kettenabschluss.
+                                    If(
+                                        IsBlank(gblAufnahme) Or IsBlank(gblAufnahme.ID),
+                                        Set(gblMeldung, "Speichern fehlgeschlagen. Ihre Eingaben bleiben stehen. " & gblFehlerText);
+                                        Set(gblMeldungArt, "Fehler"),
+
+                                        Set(gblPruefen, false);
+                                        Set(gblMeldung, "Aufnahme gespeichert. Jetzt können die Unterlagen dazu.");
+                                        Set(gblMeldungArt, "Erfolg");
+                                        Set(gblSchritt, "Anlagen")
+                                    );
+                                    Set(gblSpeichert, false)
+                                )
+                              Fill: =clrGold
+                              Color: =clrDunkel
+                              HoverFill: =clrGoldHell
+                              PressedFill: =clrGoldHell
+                              DisabledFill: =clrRahmen
+                              DisabledColor: =clrTextLeise
+                              BorderThickness: =0
+                              Size: =fsGross
+                              FontWeight: =FontWeight.Semibold
+                              Height: =64
+                              FillPortions: =1
+                              RadiusTopLeft: =radM
+                              RadiusTopRight: =radM
+                              RadiusBottomLeft: =radM
+                              RadiusBottomRight: =radM
+
+            # -----------------------------------------------------------
+            # SCHRITT 3 - Anlagen
+            #
+            # Hier kommt das Anlagen-Formular hinein. Es wird NICHT per
+            # Code eingefuegt, sondern ueber die Studio-Oberflaeche
+            # angelegt - das Anlagen-Steuerelement gibt es nur in einem
+            # Formular. Anleitung: 05_Anlagen/README.md
+            # -----------------------------------------------------------
+            - conAnlagen:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  Visible: =gblSchritt = "Anlagen"
+                  Fill: =RGBA(0, 0, 0, 0)
+                  FillPortions: =1
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutGap: =spM
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  PaddingTop: =spL
+                  PaddingBottom: =spL
+                  PaddingLeft: =spL
+                  PaddingRight: =spL
+                Children:
+                  - conAnlagenKopf:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =clrDunkel
+                        FillPortions: =0
+                        Height: =92
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutGap: =2
+                        PaddingTop: =spM
+                        PaddingBottom: =spM
+                        PaddingLeft: =spL
+                        PaddingRight: =spL
+                        RadiusTopLeft: =radL
+                        RadiusTopRight: =radL
+                        RadiusBottomLeft: =radL
+                        RadiusBottomRight: =radL
+                      Children:
+                        - lblAnlagenTitel:
+                            Control: Label
+                            Properties:
+                              Text: ="Unterlagen anhängen"
+                              Color: =clrWeiss
+                              Size: =fsGross
+                              FontWeight: =FontWeight.Semibold
+                              Height: =30
+                              FillPortions: =0
+                              Wrap: =false
+                              PaddingLeft: =0
+                        - lblAnlagenUnter:
+                            Control: Label
+                            Properties:
+                              Text: |-
+                                =Trim(Coalesce(gblPatient.Vorname, "") & " " & Coalesce(gblPatient.Nachname, "")) &
+                                 "   ·   Aufnahme gespeichert"
+                              Color: =clrTextHell
+                              Size: =fsKlein
+                              Height: =22
+                              FillPortions: =0
+                              Wrap: =false
+                              PaddingLeft: =0
+
+                  - lblAnlagenHinweis:
+                      Control: Label
+                      Properties:
+                        Text: |-
+                          ="Anzuhängen sind das unterschriebene Dokument und das Rezept. " &
+                           "Tippen Sie auf ""Datei anfügen"" und wählen Sie die Kamera. " &
+                           "Nutzen Sie am Telefon den Dokumentenmodus der Kamera - der entzerrt die Aufnahme. " &
+                           "Die Aufnahme ist bereits gespeichert; Unterlagen können Sie auch später nachreichen."
+                        Color: =clrTextLeise
+                        Size: =fsKlein
+                        Height: =110
+                        FillPortions: =0
+                        PaddingLeft: =0
+
+                  # --- Reservierter Platz fuer das Anlagen-Formular ----
+                  - conAnlagenPlatz:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =clrFlaeche
+                        FillPortions: =0
+                        Height: =380
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutGap: =spS
+                        BorderColor: =clrRahmen
+                        BorderThickness: =1
+                        PaddingTop: =spM
+                        PaddingBottom: =spM
+                        PaddingLeft: =spM
+                        PaddingRight: =spM
+                        RadiusTopLeft: =radL
+                        RadiusTopRight: =radL
+                        RadiusBottomLeft: =radL
+                        RadiusBottomRight: =radL
+                      Children:
+                        # Diese Beschriftung loeschen Sie, sobald das
+                        # Formular drin ist. Sie ist nur der Wegweiser.
+                        - lblAnlagenPlatzhalter:
+                            Control: Label
+                            Properties:
+                              Text: |-
+                                ="Hier fehlt noch das Anlagen-Formular." & Char(10) & Char(10) &
+                                 "Einfügen → Formular bearbeiten, Datenquelle Rezept, " &
+                                 "nur das Feld Anlagen anzeigen, Item auf gblAufnahme setzen." & Char(10) & Char(10) &
+                                 "Klick für Klick steht das in 05_Anlagen/README.md. " &
+                                 "Danach diese Beschriftung löschen."
+                              Color: =clrTextLeise
+                              Size: =fsNormal
+                              Align: =Align.Center
+                              VerticalAlign: =VerticalAlign.Middle
+                              FillPortions: =1
+                              PaddingLeft: =spM
+                              PaddingRight: =spM
+
+                  # --- Aktionen ----------------------------------------
+                  - conAnlagenAktionen:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =RGBA(0, 0, 0, 0)
+                        FillPortions: =0
+                        Height: =72
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutGap: =spS
+                      Children:
+                        - btnAnlagenZurueck:
+                            Control: Classic/Button
+                            Properties:
+                              Text: ="Zurück zum Befund"
+                              OnSelect: |-
+                                =Set(gblMeldung, ""); Set(gblMeldungArt, "");
+                                Set(gblSchritt, "Befund")
+                              Fill: =clrFlaeche
+                              Color: =clrText
+                              BorderColor: =clrRahmen
+                              BorderThickness: =1
+                              Size: =fsNormal
+                              Height: =64
+                              Width: =220
+                              FillPortions: =0
+                              RadiusTopLeft: =radM
+                              RadiusTopRight: =radM
+                              RadiusBottomLeft: =radM
+                              RadiusBottomRight: =radM
+                        - btnAnlagenFertig:
+                            Control: Classic/Button
+                            Properties:
+                              Text: ="Aufnahme abschließen"
+                              OnSelect: |-
+                                =Set(gblPatient, Blank());
+                                Set(gblLetztesRezept, Blank());
+                                Set(gblAufnahme, Blank());
+                                Set(gblTxtD, ""); Set(gblTxtB, ""); Set(gblTxtA, "");
+                                Set(gblPruefen, false);
+                                Set(gblReset, true); Set(gblReset, false);
+                                Set(gblMeldung, "Aufnahme abgeschlossen. Der Befund steht ab sofort in der Behandlungs-App.");
+                                Set(gblMeldungArt, "Erfolg");
+                                Set(gblSchritt, "Patienten")
+                              Fill: =clrGold
+                              Color: =clrDunkel
+                              HoverFill: =clrGoldHell
+                              PressedFill: =clrGoldHell
+                              BorderThickness: =0
+                              Size: =fsGross
+                              FontWeight: =FontWeight.Semibold
+                              Height: =64
+                              FillPortions: =1
+                              RadiusTopLeft: =radM
+                              RadiusTopRight: =radM
+                              RadiusBottomLeft: =radM
+                              RadiusBottomRight: =radM

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Prueft die 16 Spalten der einfachen Fassung und legt fehlende an.
+    Prueft die Spalten der Erstaufnahme-App und legt fehlende an.
 
 .DESCRIPTION
     Grundsaetze:
@@ -9,6 +9,13 @@
       * NICHTS LOESCHEN, NICHTS UMBENENNEN, KEINEN TYP AENDERN.
       * KEINE DATEN ANFASSEN.
       * WIEDERHOLBAR. Ein zweiter Lauf aendert nichts mehr.
+
+    Diese App legt KEINE neue Spalte an, die die Behandlungs-App nicht
+    ohnehin braucht. Haben Sie das Skript der Behandlungs-App schon laufen
+    lassen, meldet dieses hier nur noch "vorhanden".
+
+    Anlagen sind KEINE Spalte, sondern eine Listeneinstellung. Das Skript
+    prueft sie deshalb nur und aendert sie nicht - siehe 05_Anlagen/README.md.
 
     Fuehren Sie das Skript zuerst mit -WhatIf aus und lesen Sie die Vorschau.
 
@@ -36,22 +43,17 @@ Connect-PnPOnline -Url $SiteUrl -Interactive
 
 # Liste, Anzeigename, interner Name, Typ
 $spalten = @(
-    @{ Liste = 'Rezepte';                  Anzeige = 'PatientID';        Intern = 'PatientID';        Typ = 'Number'   }
-    @{ Liste = 'Rezepte';                  Anzeige = 'Erstbefund';       Intern = 'Erstbefund';       Typ = 'Note'     }
-    @{ Liste = 'Rezepte';                  Anzeige = 'Anamnese';         Intern = 'Anamnese';         Typ = 'Note'     }
-    @{ Liste = 'Behandlungsdokumentation'; Anzeige = 'PatientID';        Intern = 'PatientID';        Typ = 'Number'   }
-    @{ Liste = 'Behandlungsdokumentation'; Anzeige = 'Behandlungsdatum'; Intern = 'Behandlungsdatum'; Typ = 'DateTime' }
-    @{ Liste = 'Behandlungsdokumentation'; Anzeige = 'Massnahmen';       Intern = 'Massnahmen';       Typ = 'Note'     }
-    @{ Liste = 'Behandlungsdokumentation'; Anzeige = 'Reaktion';         Intern = 'Reaktion';         Typ = 'Note'     }
-    @{ Liste = 'Behandlungsdokumentation'; Anzeige = 'Heimuebungen';     Intern = 'Heimuebungen';     Typ = 'Note'     }
+    @{ Liste = 'Rezept'; Anzeige = 'PatientID';            Intern = 'PatientID';           Typ = 'Number' }
+    @{ Liste = 'Rezept'; Anzeige = 'Diagnose laut Rezept'; Intern = 'DiagnoselautRezept';  Typ = 'Text'   }
+    @{ Liste = 'Rezept'; Anzeige = 'Erstbefund';           Intern = 'Erstbefund';          Typ = 'Note'   }
+    @{ Liste = 'Rezept'; Anzeige = 'Anamnese';             Intern = 'Anamnese';            Typ = 'Note'   }
 )
 
 # Spalten, auf die gefiltert wird. Ohne Index bricht die Abfrage ab,
 # sobald die Liste 5000 Elemente ueberschreitet.
 $indizes = @(
-    @{ Liste = 'Behandlungsdokumentation'; Intern = 'PatientID' }
-    @{ Liste = 'Rezepte';                  Intern = 'PatientID' }
-    @{ Liste = 'Patientenstamm';           Intern = 'Nachname'  }
+    @{ Liste = 'Rezept';         Intern = 'PatientID' }
+    @{ Liste = 'Patientenstamm'; Intern = 'Nachname'  }
 )
 
 $angelegt = 0; $vorhanden = 0
@@ -137,3 +139,23 @@ Write-Host "Hinweise   : $($hinweise.Count)" -ForegroundColor $(if ($hinweise.Co
 foreach ($h in $hinweise) { Write-Host "  - $h" -ForegroundColor Yellow }
 
 Disconnect-PnPOnline
+
+# ---------------------------------------------------------------------
+# Anlagen sind eine Listeneinstellung, keine Spalte. Nur pruefen, nicht
+# aendern - das Einschalten ist eine bewusste Entscheidung.
+# ---------------------------------------------------------------------
+try {
+    $liste = Get-PnPList -Identity 'Rezept' -ErrorAction Stop
+    if ($liste.EnableAttachments) {
+        Write-Host "  Anlagen        : erlaubt" -ForegroundColor Green
+    }
+    else {
+        Write-Host "  Anlagen        : NICHT erlaubt" -ForegroundColor Yellow
+        Write-Host "    Ohne Anlagen kann die App keine Unterlagen anhaengen." -ForegroundColor Yellow
+        Write-Host "    Listeneinstellungen -> Erweiterte Einstellungen -> Anlagen." -ForegroundColor Yellow
+    }
+}
+catch {
+    Write-Host "  Anlagen        : Liste 'Rezept' nicht gefunden." -ForegroundColor Red
+    Write-Host "    Heisst sie bei Ihnen anders, oben im Skript anpassen." -ForegroundColor Red
+}
