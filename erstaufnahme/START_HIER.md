@@ -105,6 +105,12 @@ in Studio sind zuverlässiger.
 Bis dahin ist die App **voll benutzbar** – nur Schritt 3 zeigt einen
 Platzhalter statt des Anhang-Feldes.
 
+> **Zeigt Schritt 3 „Keine anzuzeigenden Elemente"?** Dann steht das Formular,
+> findet aber keinen Datensatz – fast immer, weil die Eigenschaft `Item` leer
+> ist. Der Kopf von Schritt 3 verrät, wo es hakt: Steht dort eine Nummer, liegt
+> es am Formular; steht „noch nicht gespeichert", an der App. Beides in
+> [`05_Anlagen/README.md`](05_Anlagen/README.md#fehlersuche).
+
 ## Schritt 6 – Durchspielen (8 Minuten)
 
 Legen Sie einen Testpatienten mit erkennbarem Namen an, etwa `ZZ-Test`.

@@ -116,27 +116,29 @@ fsTitel  = 28;
 ### `App.OnStart`
 
 ```powerfx
-// Nur Oberflaechenzustand.
+// UI state only.
 //
-// gblPatient, gblLetztesRezept und gblAufnahme stehen hier ABSICHTLICH
-// nicht: Eine Variable, die nie gesetzt wurde, ist in Power Apps bereits
-// leer. Es sind Datensaetze, keine Texte - ihren Typ bekommen sie von
-// der Stelle, an der sie tatsaechlich befuellt werden. Ein Set(..., "")
-// wuerde sie zu Text machen und jeden Zugriff wie gblPatient.Vorname
-// unmoeglich machen.
-Set(gblSchritt; "Patienten");
-Set(gblSpeichert; false);
-Set(gblPruefen; false);
-Set(gblReset; false);
-Set(gblMeldung; "");
-Set(gblMeldungArt; "");
-Set(gblFehlerText; "");
+// gblPatient, gblLetztesRezept and gblAufnahme are DELIBERATELY absent:
+// a variable that was never set is already blank in Power Apps. They are
+// records, not text - they get their type from the place that actually
+// fills them. A Set(..., "") would make them text and break every
+// access such as gblPatient.Vorname.
+Set(gblSchritt, "Patienten");
+Set(gblSpeichert, false);
+Set(gblPruefen, false);
+Set(gblReset, false);
+Set(gblMeldung, "");
+Set(gblMeldungArt, "");
+Set(gblFehlerText, "");
+// Row number of the assessment just saved. A number, not a record -
+// the attachment form binds to it via LookUp.
+Set(gblAufnahmeID, 0);
 // Text buffers for the three input fields. They are text, not
 // records - so "" is correct and necessary here, because Default
 // points at them.
-Set(gblTxtD; "");
-Set(gblTxtB; "");
-Set(gblTxtA; "");
+Set(gblTxtD, "");
+Set(gblTxtB, "");
+Set(gblTxtA, "");
 ```
 
 ---

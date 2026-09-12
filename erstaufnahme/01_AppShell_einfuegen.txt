@@ -146,7 +146,7 @@
                   OnSelect: |-
                     =Set(gblPatient, Blank());
                     Set(gblLetztesRezept, Blank());
-                    Set(gblAufnahme, Blank());
+                    Set(gblAufnahme, Blank()); Set(gblAufnahmeID, 0);
                     Set(gblTxtD, ""); Set(gblTxtB, ""); Set(gblTxtA, "");
                     Set(gblPruefen, false);
                     Set(gblReset, true); Set(gblReset, false);
@@ -465,7 +465,7 @@
                                     gblLetztesRezept,
                                     First(Sort(Filter(Rezept, PatientID = ThisItem.ID), ID, SortOrder.Descending))
                                 );
-                                Set(gblAufnahme, Blank());
+                                Set(gblAufnahme, Blank()); Set(gblAufnahmeID, 0);
                                 Set(gblTxtD, ""); Set(gblTxtB, ""); Set(gblTxtA, "");
                                 Set(gblPruefen, false);
                                 Set(gblReset, true); Set(gblReset, false);
@@ -768,6 +768,11 @@
                                         Set(gblMeldungArt, "Fehler"),
 
                                         Set(gblPruefen, false);
+                                        // Nur die Nummer merken, nicht den Datensatz.
+                                        // Das Anlagen-Formular holt sich die Zeile damit
+                                        // frisch aus der Liste - verlaesslicher, als den
+                                        // Rueckgabewert von Patch an ein Formular zu binden.
+                                        Set(gblAufnahmeID, gblAufnahme.ID);
                                         Set(gblMeldung, "Aufnahme gespeichert. Jetzt können die Unterlagen dazu.");
                                         Set(gblMeldungArt, "Erfolg");
                                         Set(gblSchritt, "Anlagen")
@@ -849,7 +854,11 @@
                             Properties:
                               Text: |-
                                 =Trim(Coalesce(gblPatient.Vorname, "") & " " & Coalesce(gblPatient.Nachname, "")) &
-                                 "   ·   Aufnahme gespeichert"
+                                 If(
+                                     gblAufnahmeID > 0,
+                                     "   ·   gespeichert als Nr. " & gblAufnahmeID,
+                                     "   ·   noch nicht gespeichert"
+                                 )
                               Color: =clrTextHell
                               Size: =fsKlein
                               Height: =22
@@ -900,8 +909,9 @@
                             Properties:
                               Text: |-
                                 ="Hier fehlt noch das Anlagen-Formular." & Char(10) & Char(10) &
-                                 "Einfügen → Formular bearbeiten, Datenquelle Rezept, " &
-                                 "nur das Feld Anlagen anzeigen, Item auf gblAufnahme setzen." & Char(10) & Char(10) &
+                                 "Einfügen → Formular bearbeiten, DataSource Rezept, " &
+                                 "Item auf LookUp(Rezept; ID = gblAufnahmeID), " &
+                                 "nur das Feld Anlagen anzeigen." & Char(10) & Char(10) &
                                  "Klick für Klick steht das in 05_Anlagen/README.md. " &
                                  "Danach diese Beschriftung löschen."
                               Color: =clrTextLeise
@@ -950,7 +960,7 @@
                               OnSelect: |-
                                 =Set(gblPatient, Blank());
                                 Set(gblLetztesRezept, Blank());
-                                Set(gblAufnahme, Blank());
+                                Set(gblAufnahme, Blank()); Set(gblAufnahmeID, 0);
                                 Set(gblTxtD, ""); Set(gblTxtB, ""); Set(gblTxtA, "");
                                 Set(gblPruefen, false);
                                 Set(gblReset, true); Set(gblReset, false);

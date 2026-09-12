@@ -131,6 +131,9 @@ Set(gblReset; false);;
 Set(gblMeldung; "");;
 Set(gblMeldungArt; "");;
 Set(gblFehlerText; "");;
+// Nummer der gerade gespeicherten Aufnahme. Eine Zahl, kein
+// Datensatz - das Anlagen-Formular bindet ueber LookUp darauf.
+Set(gblAufnahmeID; 0);;
 // Textpuffer der drei Eingabefelder. Sie sind Text, kein Datensatz -
 // "" ist hier also richtig und noetig, weil Default darauf zeigt.
 Set(gblTxtD; "");;
