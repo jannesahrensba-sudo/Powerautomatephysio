@@ -44,15 +44,20 @@ Verwechslung beim Abtippen aus Dokumentation.
 
 ```powerfx
 DataSource   = Rezepte
-Item         = LookUp(Rezepte; ID = gblAufnahme.ID)
+Item         = First(Sort(Filter(Rezepte; PatientID = gblPatient.ID); ID; SortOrder.Descending))
 DefaultMode  = FormMode.Edit
 ```
 
-Nach dem Speichern in Schritt 2 steht in `gblAufnahme` die gerade angelegte
-Zeile. Das Formular nimmt daraus nur die **Nummer** und holt sich die Zeile
-frisch aus der Liste. Das ist verlässlicher, als den Rückgabewert von `Patch`
-direkt zu binden: ein Formular will eine echte Zeile der Datenquelle, nicht
-ein Abbild aus dem Moment des Schreibens.
+Das ist **dasselbe Abfragemuster, das in Ihrer Behandlungs-App nachweislich
+läuft** – dort holt `btnPatWaehlen` genauso das jüngste Rezept des Patienten.
+Nach dem Speichern in Schritt 2 ist die jüngste Zeile genau die eben
+angelegte.
+
+Die Bindung hängt damit nur an `gblPatient` – und der ist gesetzt, solange
+oben rechts der Patientenname steht. Eine Bindung an `gblAufnahme` wäre eine
+Annahme mehr, die schiefgehen kann: Der Rückgabewert von `Patch` ist ein
+Abbild aus dem Moment des Schreibens, ein Formular will eine echte Zeile der
+Datenquelle.
 
 ## Warum das Aufräumen im Formular steht, nicht in der Schaltfläche
 
@@ -100,6 +105,51 @@ sonst kennt die App die neue Einstellung nicht.
 ---
 
 ## Fehlersuche
+
+### Zuerst: Im Editor ist diese Meldung normal
+
+**Im Studio-Editor sind alle globalen Variablen leer.** Kein Patient gewählt,
+keine Aufnahme gespeichert – also findet `Item` keine Zeile, und das Formular
+sagt völlig zu Recht „Keine anzuzeigenden Elemente".
+
+Aussagekräftig ist nur die **Vorschau**: auf Wiedergeben drücken und Schritt 1
+bis 3 durchspielen. Wenn die Meldung *dort* nach dem Speichern noch steht,
+liegt wirklich ein Fehler vor.
+
+(Studio behält Variablenwerte nach einem Vorschaulauf teilweise im Editor –
+deshalb kann die grüne Meldung aus Schritt 2 dort stehen, während das Formular
+trotzdem nichts findet. Verlassen Sie sich nicht darauf.)
+
+### Dann: Werte ablesen statt raten
+
+`Diagnose_einfuegen.yaml` in diesem Ordner ist ein Streifen mit fünf Zeilen,
+den Sie in `conAnlagen` einfügen. Er zeigt in der Vorschau, was wirklich in
+den Variablen steht:
+
+```
+1  Patient: Nr. 7
+2  Gespeicherte Aufnahme: Nr. 42
+3  Zeilen in Rezepte: 128
+4  Formular findet: Nr. 42
+5  Anlagen an dieser Zeile: 0
+```
+
+So lesen Sie das Ergebnis:
+
+| Auffällig | Bedeutung | Wo suchen |
+|---|---|---|
+| **1 ist LEER** | Kein Patient gewählt. Sie sind im Editor, nicht in der Vorschau. | Vorschau starten |
+| **2 ist LEER** | Das Speichern hat keine Zeile angelegt. | Schritt 2, `Patch` |
+| **3 ist 0 oder rot** | Die Datenquelle `Rezepte` ist nicht verbunden oder leer. | Daten → Rezepte |
+| **4 ist NICHTS**, 1 und 2 gefüllt | Die Zeile existiert, aber `PatientID` wurde nicht geschrieben – dann findet auch die Behandlungs-App den Befund nie. | Spalte `PatientID` in der Liste |
+| **4 zeigt eine Nummer, Formular sagt trotzdem nichts** | `Item` am Formular ist nicht die Formel aus Zeile 4. | `Item` am Formular |
+| **5 rot markiert an `.Anlagen`** | Anlagen sind an der Liste abgeschaltet. | Schritt 0 |
+
+Zeile 4 ist die wichtigste: Sie rechnet **genau die Formel**, die am Formular
+unter `Item` steht. Findet sie eine Nummer und das Formular zeigt trotzdem
+nichts, dann steht am Formular etwas anderes als gedacht.
+
+Nach der Diagnose `conDiagnose` im Baum löschen.
 
 ### Der Kopf von Schritt 3 sagt Ihnen, wo es hängt
 

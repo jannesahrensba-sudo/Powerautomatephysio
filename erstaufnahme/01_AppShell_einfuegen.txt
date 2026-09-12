@@ -914,7 +914,23 @@
                             Layout: Vertical
                             Properties:
                               DataSource: =Rezepte
-                              Item: =LookUp(Rezepte, ID = gblAufnahme.ID)
+                              # Dasselbe Abfragemuster, das in Ihrer
+                              # Behandlungs-App nachweislich laeuft: die
+                              # juengste Zeile des Patienten. Nach dem
+                              # Speichern ist das genau die eben angelegte.
+                              #
+                              # Haengt nur an gblPatient - der ist gesetzt,
+                              # solange oben rechts der Name steht. Eine
+                              # Bindung an gblAufnahme waere eine Annahme
+                              # mehr, die schiefgehen kann.
+                              Item: |-
+                                =First(
+                                    Sort(
+                                        Filter(Rezepte, PatientID = gblPatient.ID),
+                                        ID,
+                                        SortOrder.Descending
+                                    )
+                                )
                               DefaultMode: =FormMode.Edit
                               # Erst wenn der Upload durch ist, wird
                               # aufgeraeumt und weitergesprungen. Stuende das
