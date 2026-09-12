@@ -28,6 +28,7 @@ v2/                                einfache Fassung – hier anfangen
   02_Eigenschaften_DE.md / _EN.md  App-Formeln, beide Trennzeichenfassungen
   03_Spalten.md / .json            die 16 benötigten Spalten
   04_Spalten_anlegen.ps1           legt fehlende Spalten an, prüft zuerst
+  05_Fehlerbehebung/               wenn Studio Spalten rot markiert
   Logo_Vorschau.png                so sieht das eingebettete Logo aus
 
 output/

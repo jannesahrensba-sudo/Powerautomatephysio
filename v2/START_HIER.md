@@ -45,6 +45,11 @@ bisher nur `Patientenstamm` – die Patientenliste wurde im Tenant korrekt
 angezeigt. Die übrigen Namen sind plausibel, aber nicht geprüft; fehlt eine,
 meldet Power Apps das direkt nach dem Einfügen an der betroffenen Stelle.
 
+> **Wenn Power Apps Spaltennamen rot unterringelt:** Das sind keine Fehler im
+> Code, sondern fehlende Spalten in SharePoint. Diagnose und beide Lösungswege
+> stehen in **[`05_Fehlerbehebung/`](05_Fehlerbehebung/README.md)** – inklusive
+> einer Klick-für-Klick-Anleitung ohne PowerShell.
+
 ## Schritt 2 – Leere App anlegen (2 Minuten)
 
 1. **Erstellen → Leere App → Canvas-App (leer)**, Format **Tablet**.
@@ -89,6 +94,16 @@ Legen Sie einen Testpatienten mit erkennbarem Namen an, etwa `ZZ-Test`.
 | Denselben Patienten erneut aufrufen | Termin ist jetzt Nr. 2, der Eintrag steht unter „Bisherige Dokumentationen" |
 
 ---
+
+## Wenn etwas rot markiert ist
+
+`05_Fehlerbehebung/` erklärt die häufigste Ursache (fehlende Spalten) und
+enthält:
+
+- `README.md` – was die Markierungen bedeuten und was zu tun ist
+- `Spalten_manuell_anlegen.md` – Klick für Klick in SharePoint, ohne PowerShell
+- `Formeln_je_Steuerelement_DE.md` / `_EN.md` – jede betroffene Formel einzeln,
+  falls eine Spalte bei Ihnen anders heißt
 
 ## Logo
 

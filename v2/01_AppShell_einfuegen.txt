@@ -212,7 +212,7 @@
             - lblSchrittTrenner1:
                 Control: Label
                 Properties:
-                  Text: ="—"
+                  Text: ="-"
                   Color: =clrTextHell
                   Size: =fsKlein
                   VerticalAlign: =VerticalAlign.Middle
@@ -237,7 +237,7 @@
             - lblSchrittTrenner2:
                 Control: Label
                 Properties:
-                  Text: ="—"
+                  Text: ="-"
                   Color: =clrTextHell
                   Size: =fsKlein
                   VerticalAlign: =VerticalAlign.Middle
@@ -863,11 +863,11 @@
                                           IsBlank(gblRezept),
                                           "Zu diesem Patienten ist kein Rezept hinterlegt. Befund und Anamnese können deshalb nicht angezeigt werden.",
                                           "Diagnose" & Char(10) &
-                                          Coalesce(gblRezept.'Diagnose laut Rezept', "– nicht hinterlegt –") & Char(10) & Char(10) &
+                                          Coalesce(gblRezept.'Diagnose laut Rezept', "nicht hinterlegt") & Char(10) & Char(10) &
                                           "Erstbefund" & Char(10) &
-                                          Coalesce(gblRezept.Erstbefund, "– nicht hinterlegt –") & Char(10) & Char(10) &
+                                          Coalesce(gblRezept.Erstbefund, "nicht hinterlegt") & Char(10) & Char(10) &
                                           "Anamnese" & Char(10) &
-                                          Coalesce(gblRezept.Anamnese, "– nicht hinterlegt –")
+                                          Coalesce(gblRezept.Anamnese, "nicht hinterlegt")
                                       )
                                     Color: =If(IsBlank(gblRezept), clrWarnung, clrText)
                                     Size: =fsNormal
@@ -1046,8 +1046,8 @@
                                   Control: Label
                                   Properties:
                                     Text: |-
-                                      ="Maßnahmen: " & Coalesce(ThisItem.Massnahmen, "–") & Char(10) &
-                                       "Reaktion: " & Coalesce(ThisItem.Reaktion, "–") &
+                                      ="Maßnahmen: " & Coalesce(ThisItem.Massnahmen, "nicht erfasst") & Char(10) &
+                                       "Reaktion: " & Coalesce(ThisItem.Reaktion, "nicht erfasst") &
                                        If(IsBlank(ThisItem.Heimuebungen), "",
                                           Char(10) & "Heimübungen: " & ThisItem.Heimuebungen)
                                     Color: =clrText
@@ -1103,7 +1103,7 @@
                             Control: Label
                             Properties:
                               Text: |-
-                                ="Behandlung dokumentieren – " &
+                                ="Behandlung dokumentieren - " &
                                  Trim(Coalesce(gblPatient.Vorname, "") & " " & Coalesce(gblPatient.Nachname, ""))
                               Color: =clrWeiss
                               Size: =fsGross
@@ -1250,7 +1250,7 @@
                         - btnDokuSpeichern:
                             Control: Classic/Button
                             Properties:
-                              Text: =If(gblSpeichert, "Speichert …", "Behandlung speichern")
+                              Text: =If(gblSpeichert, "Speichert ...", "Behandlung speichern")
                               # Doppelklickschutz: waehrend des Schreibens gesperrt.
                               DisplayMode: |-
                                 =If(gblSpeichert Or IsBlank(gblPatient), DisplayMode.Disabled, DisplayMode.Edit)
