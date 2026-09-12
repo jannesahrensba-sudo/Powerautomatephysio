@@ -1,8 +1,8 @@
 # Wenn Power Apps etwas rot markiert
 
-> **Sind es nur noch zwei Meldungen rund um `Rezepte`?**
-> → **[`Die_letzten_zwei_Fehler_DE.md`](Die_letzten_zwei_Fehler_DE.md)**
-> (oder `_EN.md`). Beide haben dieselbe Ursache und sind in zwei Minuten weg.
+> **Hängt eine Meldung an der Liste `Rezepte`?**
+> → **[`Meldungen_zu_Rezepte.md`](Meldungen_zu_Rezepte.md)**
+> Dort steht auch, warum `RezeptID` ganz entfallen ist.
 
 ## Die roten Unterringelungen – was sie bedeuten
 

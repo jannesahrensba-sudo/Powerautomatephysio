@@ -22,7 +22,6 @@ Liste öffnen → rechts **+ Spalte hinzufügen** → Typ wählen → Name eintr
 | Name genau so eingeben | Typ in SharePoint | Wofür |
 |---|---|---|
 | `PatientID` | **Zahl** | Verbindet die Dokumentation mit dem Patienten. Trägt die Terminzählung, den Verlauf und die Heute-Liste. |
-| `RezeptID` | **Zahl** | Bezug zum Rezept. Bleibt leer, wenn keines hinterlegt ist. |
 | `Behandlungsdatum` | **Datum und Uhrzeit** → Anzeige **Nur Datum** | Für die Heute-Liste und den Verlauf. |
 | `Massnahmen` | **Mehrere Textzeilen** | Durchgeführte Maßnahmen. |
 | `Reaktion` | **Mehrere Textzeilen** | Reaktion und Ergebnis. |

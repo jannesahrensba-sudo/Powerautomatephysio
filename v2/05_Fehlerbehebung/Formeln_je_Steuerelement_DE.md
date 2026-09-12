@@ -33,7 +33,7 @@ Betroffen: **12 Formeln** in **12 Steuerelementen**.
 | `galVerlauf` | `Items` | `PatientID` |
 | `lblVerlaufKopf` | `Text` | `Behandlungsdatum`, `Therapeut` |
 | `lblVerlaufText` | `Text` | `Heimuebungen`, `Massnahmen`, `Reaktion` |
-| `btnDokuSpeichern` | `OnSelect` | `Behandlungsdatum`, `Heimuebungen`, `Massnahmen`, `PatientID`, `Reaktion`, `RezeptID`, `Therapeut` |
+| `btnDokuSpeichern` | `OnSelect` | `Behandlungsdatum`, `Heimuebungen`, `Massnahmen`, `PatientID`, `Reaktion`, `Therapeut` |
 
 ---
 
@@ -173,7 +173,7 @@ Control `Label`, verwendet `Heimuebungen`, `Massnahmen`, `Reaktion`
 
 ## `btnDokuSpeichern` · Eigenschaft `OnSelect`
 
-Control `Classic/Button`, verwendet `Behandlungsdatum`, `Heimuebungen`, `Massnahmen`, `PatientID`, `Reaktion`, `RezeptID`, `Therapeut`
+Control `Classic/Button`, verwendet `Behandlungsdatum`, `Heimuebungen`, `Massnahmen`, `PatientID`, `Reaktion`, `Therapeut`
 
 ```powerfx
 =Set(gblPruefen; true);;
@@ -194,7 +194,6 @@ If(
                 Defaults(Behandlungsdokumentation);
                 {
                     PatientID: gblPatient.ID;
-                    RezeptID: If(IsBlank(gblRezept); Blank(); gblRezept.ID);
                     Behandlungsdatum: Today();
                     Therapeut: { Value: gblTherapeut };
                     Massnahmen: Trim(txtMassnahmen.Text);

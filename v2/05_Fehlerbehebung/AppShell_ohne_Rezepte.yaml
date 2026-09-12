@@ -9,11 +9,10 @@
 # "Screens:"-Wrapper - genau das erwartet "Code einfuegen".
 #
 # NOTWEG-FASSUNG OHNE REZEPTLISTE
-# Diese Datei ist inhaltsgleich mit 01_AppShell_einfuegen.yaml, nur ohne
-# jeden Zugriff auf die Liste "Rezepte". Damit entfaellt die Befundkarte -
-# alles andere bleibt: Terminzaehlung, Verlauf, Dokumentation, Heute-Liste.
+# Inhaltsgleich mit 01_AppShell_einfuegen.yaml, nur ohne jeden Zugriff auf
+# die Liste "Rezepte". Damit entfaellt die Befundkarte - alles andere bleibt:
+# Terminzaehlung, Verlauf, Dokumentation, Heute-Liste.
 # Nehmen Sie diese Fassung nur, wenn Sie ohne Rezepte starten wollen.
-# Sonst ist 01_AppShell_einfuegen.yaml die richtige Datei.
 #
 # VORHER setzen (sonst zeigen fast alle Formeln Fehler):
 #   1. ZWEI SharePoint-Listen als Datenquellen hinzufuegen:
@@ -741,7 +740,11 @@
                       Variant: AutoLayout
                       Properties:
                         Fill: =RGBA(0, 0, 0, 0)
-                        FillPortions: =1
+                        # Breit: teilt sich die Flaeche mit dem Verlauf.
+                        # Schmal: behaelt die eigene Hoehe, damit der
+                        # Inhaltsbereich ueberlaeuft und scrollen kann.
+                        FillPortions: =If(conApp.Width >= bpBreit, 1, 0)
+                        Height: =104 + 300 + 128 + 64 + 3 * spM
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =spM
@@ -952,7 +955,7 @@
                       Variant: AutoLayout
                       Properties:
                         Fill: =clrFlaeche
-                        FillPortions: =1
+                        FillPortions: =If(conApp.Width >= bpBreit, 1, 0)
                         Height: =If(conApp.Width >= bpBreit, conAkte.Height - 2 * spL, 420)
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch

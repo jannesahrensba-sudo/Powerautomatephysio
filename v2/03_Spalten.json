@@ -118,15 +118,6 @@
         "erforderliche_aenderung": "Anlegen, falls nicht vorhanden (Zahl), und indizieren."
       },
       {
-        "anzeigename": "RezeptID",
-        "interner_name": "RezeptID",
-        "typ": "Zahl",
-        "lookup_ziel": null,
-        "status": "unbestaetigt",
-        "befund": "Optional. Bleibt leer, wenn kein Rezept hinterlegt ist.",
-        "erforderliche_aenderung": "Anlegen, falls nicht vorhanden (Zahl)."
-      },
-      {
         "anzeigename": "Behandlungsdatum",
         "interner_name": "Behandlungsdatum",
         "typ": "Datum",

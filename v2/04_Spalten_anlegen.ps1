@@ -40,7 +40,6 @@ $spalten = @(
     @{ Liste = 'Rezepte';                  Anzeige = 'Erstbefund';       Intern = 'Erstbefund';       Typ = 'Note'     }
     @{ Liste = 'Rezepte';                  Anzeige = 'Anamnese';         Intern = 'Anamnese';         Typ = 'Note'     }
     @{ Liste = 'Behandlungsdokumentation'; Anzeige = 'PatientID';        Intern = 'PatientID';        Typ = 'Number'   }
-    @{ Liste = 'Behandlungsdokumentation'; Anzeige = 'RezeptID';         Intern = 'RezeptID';         Typ = 'Number'   }
     @{ Liste = 'Behandlungsdokumentation'; Anzeige = 'Behandlungsdatum'; Intern = 'Behandlungsdatum'; Typ = 'DateTime' }
     @{ Liste = 'Behandlungsdokumentation'; Anzeige = 'Massnahmen';       Intern = 'Massnahmen';       Typ = 'Note'     }
     @{ Liste = 'Behandlungsdokumentation'; Anzeige = 'Reaktion';         Intern = 'Reaktion';         Typ = 'Note'     }

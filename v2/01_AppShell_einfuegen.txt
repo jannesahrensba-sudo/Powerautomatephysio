@@ -739,7 +739,11 @@
                       Variant: AutoLayout
                       Properties:
                         Fill: =RGBA(0, 0, 0, 0)
-                        FillPortions: =1
+                        # Breit: teilt sich die Flaeche mit dem Verlauf.
+                        # Schmal: behaelt die eigene Hoehe, damit der
+                        # Inhaltsbereich ueberlaeuft und scrollen kann.
+                        FillPortions: =If(conApp.Width >= bpBreit, 1, 0)
+                        Height: =104 + 300 + 128 + 64 + 3 * spM
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =spM
@@ -961,7 +965,7 @@
                       Variant: AutoLayout
                       Properties:
                         Fill: =clrFlaeche
-                        FillPortions: =1
+                        FillPortions: =If(conApp.Width >= bpBreit, 1, 0)
                         Height: =If(conApp.Width >= bpBreit, conAkte.Height - 2 * spL, 420)
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
@@ -1273,7 +1277,6 @@
                                                 Defaults(Behandlungsdokumentation),
                                                 {
                                                     PatientID: gblPatient.ID,
-                                                    RezeptID: If(IsBlank(gblRezept), Blank(), gblRezept.ID),
                                                     Behandlungsdatum: Today(),
                                                     Therapeut: { Value: gblTherapeut },
                                                     Massnahmen: Trim(txtMassnahmen.Text),

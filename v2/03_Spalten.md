@@ -41,7 +41,6 @@ Diese Fassung kommt mit so wenigen Spalten wie moeglich aus. Bestaetigt ist bish
 |---|---|---|---|---|
 | [S] | `ID` | `ID` | Zahl (System) | Technischer Schluessel. |
 | [?] | `PatientID` | `PatientID` | Zahl | Traegt den gesamten Ablauf: Terminzaehlung, Verlauf und die Heute-Liste. |
-| [?] | `RezeptID` | `RezeptID` | Zahl | Optional. Bleibt leer, wenn kein Rezept hinterlegt ist. |
 | [?] | `Behandlungsdatum` | `Behandlungsdatum` | Datum | Die App filtert ueber einen Tageszeitraum, damit eine Uhrzeit nicht stoert. |
 | [B] | `Therapeut` | `Therapeut` | Auswahl | Auftrag Befund 7: Auswahlfeld, KEIN Personenfeld. Die App liest die tatsaechlich hinterlegten Werte mit Choices(). |
 | [?] | `Massnahmen` | `Massnahmen` | Mehrzeiliger Text | Durchgefuehrte Massnahmen. |
@@ -56,5 +55,10 @@ Diese Fassung kommt mit so wenigen Spalten wie moeglich aus. Bestaetigt ist bish
 ## Was diese Fassung bewusst nicht schreibt
 
 Status, Freigabe, Terminstatus, Einheitenzähler und Aufgaben bleiben außen vor.
-Sie behalten ihre SharePoint-Standardwerte. Das ist Absicht: Die App soll
-zuerst im Alltag laufen, bevor Feinheiten dazukommen.
+Sie behalten ihre SharePoint-Standardwerte.
+
+**Auch `RezeptID` wird nicht geschrieben.** Die Dokumentation hängt am
+Patienten, nicht am Rezept – Terminzählung, Verlauf und Heute-Liste laufen
+alle über `PatientID`. Ein Feld zu schreiben, das niemand liest, wäre
+unnötiger Ballast. Die ausführliche Fassung in `output/` verknüpft dagegen
+mit dem Rezept, weil sie Einheiten je Rezept zählt.
