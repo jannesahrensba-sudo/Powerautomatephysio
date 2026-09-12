@@ -1,0 +1,241 @@
+# ---------------------------------------------------------------------
+# Zusatz: Textpruefung per KI
+#
+# Diese Steuerelemente gehoeren in conDoku, direkt VOR conDokuAktionen.
+# In Power Apps Studio: conDoku im Baum auswaehlen, Rechtsklick ->
+# Code einfuegen, dann diesen Inhalt einfuegen. Die neuen Elemente
+# landen am Ende von conDoku; ziehen Sie conDokuAktionen im Baum
+# danach wieder nach unten.
+#
+# Voraussetzung: der Flow Doku_Korrektur ist gebaut und der App als
+# Datenquelle hinzugefuegt. Ohne ihn zeigt btnKIPruefen einen Fehler.
+#
+# Die Variable gblKorrektur steht ABSICHTLICH nicht in App.OnStart:
+# Sie ist ein Datensatz, kein Text. Sie bekommt ihren Typ von der
+# Stelle, an der der Flow sie befuellt.
+# ---------------------------------------------------------------------
+
+- btnKIPruefen:
+    Control: Classic/Button
+    Properties:
+      Text: =If(gblKIlaeuft, "Prüft ...", "Text prüfen")
+      # Nur sinnvoll, wenn ueberhaupt etwas dasteht.
+      DisplayMode: |-
+        =If(
+            gblKIlaeuft Or gblSpeichert Or
+            (IsBlank(Trim(txtMassnahmen.Text)) And IsBlank(Trim(txtReaktion.Text))),
+            DisplayMode.Disabled,
+            DisplayMode.Edit
+        )
+      OnSelect: |-
+        =Set(gblKIlaeuft, true);
+        Set(gblKIfehler, "");
+        // Faellt die Pruefung aus, wird das gemeldet - aber sie haelt
+        // niemanden auf. Speichern bleibt jederzeit moeglich.
+        Set(
+            gblKorrektur,
+            IfError(
+                Doku_Korrektur.Run(txtMassnahmen.Text, txtReaktion.Text, txtHeim.Text),
+                Set(gblKIfehler, FirstError.Message); Blank()
+            )
+        );
+        Set(gblKIlaeuft, false);
+        If(
+            !IsBlank(gblKIfehler),
+            Set(gblMeldung, "Die Textprüfung ist gerade nicht erreichbar. Sie können normal weiterarbeiten und speichern. " & gblKIfehler);
+            Set(gblMeldungArt, "Warnung")
+        )
+      Fill: =clrFlaeche
+      Color: =clrText
+      BorderColor: =clrRahmen
+      BorderThickness: =1
+      DisabledFill: =clrHintergrund
+      DisabledColor: =clrTextLeise
+      Size: =fsNormal
+      Height: =56
+      FillPortions: =0
+      RadiusTopLeft: =radM
+      RadiusTopRight: =radM
+      RadiusBottomLeft: =radM
+      RadiusBottomRight: =radM
+
+- conKI:
+    Control: GroupContainer
+    Variant: AutoLayout
+    Properties:
+      # Erscheint erst, wenn ein Vorschlag da ist.
+      Visible: =!IsBlank(gblKorrektur)
+      Fill: =clrGoldSanft
+      FillPortions: =0
+      Height: =562
+      LayoutDirection: =LayoutDirection.Vertical
+      LayoutAlignItems: =LayoutAlignItems.Stretch
+      LayoutGap: =spS
+      PaddingTop: =spM
+      PaddingBottom: =spM
+      PaddingLeft: =spM
+      PaddingRight: =spM
+      RadiusTopLeft: =radM
+      RadiusTopRight: =radM
+      RadiusBottomLeft: =radM
+      RadiusBottomRight: =radM
+    Children:
+      - lblKITitel:
+          Control: Label
+          Properties:
+            Text: ="Vorschlag der Textprüfung"
+            Color: =clrText
+            Size: =fsNormal
+            FontWeight: =FontWeight.Semibold
+            Height: =26
+            FillPortions: =0
+            Wrap: =false
+            PaddingLeft: =0
+      - lblKIHinweis:
+          Control: Label
+          Properties:
+            Text: ="Bitte durchlesen. Übernommen wird nur, was Sie bestätigen - der Vorschlag wird nie automatisch gespeichert."
+            Color: =clrTextLeise
+            Size: =fsKlein
+            Height: =44
+            FillPortions: =0
+            PaddingLeft: =0
+
+      - lblKIMKopf:
+          Control: Label
+          Properties:
+            Text: ="Durchgeführte Maßnahmen"
+            Color: =clrTextLeise
+            Size: =fsKlein
+            FontWeight: =FontWeight.Semibold
+            Height: =22
+            FillPortions: =0
+            Wrap: =false
+            PaddingLeft: =0
+      - lblKIMText:
+          Control: Label
+          Properties:
+            Text: =Coalesce(gblKorrektur.massnahmen, "kein Vorschlag")
+            Color: =clrText
+            Size: =fsNormal
+            Height: =100
+            FillPortions: =0
+            PaddingLeft: =0
+      - btnKIM:
+          Control: Classic/Button
+          Properties:
+            Text: ="Maßnahmen übernehmen"
+            DisplayMode: |-
+              =If(IsBlank(gblKorrektur.massnahmen), DisplayMode.Disabled, DisplayMode.Edit)
+            # Gleicher Weg wie bei den Textbausteinen: Puffer setzen,
+            # dann das Feld zuruecksetzen, damit Default neu gelesen wird.
+            OnSelect: |-
+              =Set(gblTxtM, gblKorrektur.massnahmen);
+              Set(gblResetM, true); Set(gblResetM, false)
+            Fill: =clrFlaeche
+            Color: =clrText
+            BorderColor: =clrRahmen
+            BorderThickness: =1
+            DisabledFill: =clrHintergrund
+            DisabledColor: =clrTextLeise
+            Size: =fsKlein
+            Height: =48
+            FillPortions: =0
+            RadiusTopLeft: =radM
+            RadiusTopRight: =radM
+            RadiusBottomLeft: =radM
+            RadiusBottomRight: =radM
+
+      - lblKIRKopf:
+          Control: Label
+          Properties:
+            Text: ="Reaktion und Ergebnis"
+            Color: =clrTextLeise
+            Size: =fsKlein
+            FontWeight: =FontWeight.Semibold
+            Height: =22
+            FillPortions: =0
+            Wrap: =false
+            PaddingLeft: =0
+      - lblKIRText:
+          Control: Label
+          Properties:
+            Text: =Coalesce(gblKorrektur.reaktion, "kein Vorschlag")
+            Color: =clrText
+            Size: =fsNormal
+            Height: =100
+            FillPortions: =0
+            PaddingLeft: =0
+      - btnKIR:
+          Control: Classic/Button
+          Properties:
+            Text: ="Reaktion übernehmen"
+            DisplayMode: |-
+              =If(IsBlank(gblKorrektur.reaktion), DisplayMode.Disabled, DisplayMode.Edit)
+            OnSelect: |-
+              =Set(gblTxtR, gblKorrektur.reaktion);
+              Set(gblResetR, true); Set(gblResetR, false)
+            Fill: =clrFlaeche
+            Color: =clrText
+            BorderColor: =clrRahmen
+            BorderThickness: =1
+            DisabledFill: =clrHintergrund
+            DisabledColor: =clrTextLeise
+            Size: =fsKlein
+            Height: =48
+            FillPortions: =0
+            RadiusTopLeft: =radM
+            RadiusTopRight: =radM
+            RadiusBottomLeft: =radM
+            RadiusBottomRight: =radM
+
+      - conKIAktionen:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            Fill: =RGBA(0, 0, 0, 0)
+            FillPortions: =0
+            Height: =56
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutGap: =spS
+          Children:
+            - btnKIVerwerfen:
+                Control: Classic/Button
+                Properties:
+                  Text: ="Verwerfen"
+                  OnSelect: =Set(gblKorrektur, Blank())
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Color: =clrTextLeise
+                  BorderColor: =clrRahmen
+                  BorderThickness: =1
+                  Size: =fsKlein
+                  Height: =48
+                  FillPortions: =1
+                  RadiusTopLeft: =radM
+                  RadiusTopRight: =radM
+                  RadiusBottomLeft: =radM
+                  RadiusBottomRight: =radM
+            - btnKIAlle:
+                Control: Classic/Button
+                Properties:
+                  Text: ="Alle übernehmen"
+                  OnSelect: |-
+                    =Set(gblTxtM, Coalesce(gblKorrektur.massnahmen, txtMassnahmen.Text));
+                    Set(gblTxtR, Coalesce(gblKorrektur.reaktion, txtReaktion.Text));
+                    Set(gblResetM, true); Set(gblResetM, false);
+                    Set(gblResetR, true); Set(gblResetR, false);
+                    Set(gblKorrektur, Blank())
+                  Fill: =clrGold
+                  Color: =clrDunkel
+                  HoverFill: =clrGoldHell
+                  PressedFill: =clrGoldHell
+                  BorderThickness: =0
+                  Size: =fsKlein
+                  FontWeight: =FontWeight.Semibold
+                  Height: =48
+                  FillPortions: =1
+                  RadiusTopLeft: =radM
+                  RadiusTopRight: =radM
+                  RadiusBottomLeft: =radM
+                  RadiusBottomRight: =radM
