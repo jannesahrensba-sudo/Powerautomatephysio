@@ -52,6 +52,10 @@ Formular auswählen, rechts im Eigenschaftenbereich:
 
 In einem Studio mit englischen Trennzeichen: `=LookUp(Rezept, ID = gblAufnahmeID)`
 
+> **`Rezept`, Einzahl.** Die SharePoint-Liste heißt vielleicht „Rezepte" –
+> maßgeblich ist der Name im Bereich **Daten** dieser App. Ein `Rezepte`
+> hier macht `LookUp` rot.
+
 **`Item` ist die Eigenschaft, an der es fast immer scheitert.** Bleibt sie
 leer, zeigt das Formular im Bearbeiten-Modus „Keine anzuzeigenden Elemente" –
 und zwar völlig unabhängig davon, ob die Aufnahme gespeichert wurde.
@@ -128,6 +132,19 @@ einfügen.
 ### „Keine anzuzeigenden Elemente" – Formular findet nichts
 
 Der Reihe nach, die häufigste Ursache zuerst:
+
+0. **`Rezepte` statt `Rezept` getippt.** Ein Buchstabe, und `LookUp` wird
+   rot – nicht der Name, sondern die **Funktion**: Power Apps meldet einen
+   ungültigen Parameter, wenn das erste Argument keine gültige Tabelle ist.
+
+   Die Datenquelle heißt in beiden Apps **`Rezept`**, Einzahl. Die
+   SharePoint-Liste dahinter mag „Rezepte" heißen – maßgeblich ist der Name
+   im Bereich **Daten** dieser App, nicht der Listenname.
+
+   Gegenprobe, falls Sie unsicher sind: Wenn Ihr Speichern in Schritt 2
+   funktioniert hat, ist `Rezept` der richtige Name. Die Formel dahinter
+   lautet `Patch(Rezept; Defaults(Rezept); …)` – hieße die Datenquelle
+   anders, wäre schon die gescheitert.
 
 1. **`Item` ist leer.** Die mit Abstand häufigste Ursache. Formular
    auswählen, in der Eigenschaftenliste links oben `Item` wählen und
