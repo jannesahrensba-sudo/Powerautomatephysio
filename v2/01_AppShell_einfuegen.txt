@@ -410,7 +410,7 @@
                               OnSelect: |-
                                 =Set(gblPatient, Blank());
                                 Set(gblRezept, Blank());
-                                Set(gblTherapeut, Blank());
+                                Set(gblTherapeut, "");
                                 Set(gblReset, true); Set(gblReset, false);
                                 Set(gblMeldung, ""); Set(gblMeldungArt, "");
                                 Set(gblSchritt, "Patienten")
@@ -694,7 +694,7 @@
                                     gblRezept,
                                     First(Sort(Filter(Rezepte, PatientID = ThisItem.ID), ID, SortOrder.Descending))
                                 );
-                                Set(gblTherapeut, Blank());
+                                Set(gblTherapeut, "");
                                 Set(gblReset, true); Set(gblReset, false);
                                 Set(gblMeldung, ""); Set(gblMeldungArt, "");
                                 Set(gblSchritt, "Akte")

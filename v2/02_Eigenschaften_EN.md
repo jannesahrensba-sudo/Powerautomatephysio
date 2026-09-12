@@ -119,15 +119,19 @@ fsRiesig = 40;
 ```powerfx
 // Nur Oberflaechenzustand. Es werden bewusst keine Listen in
 // lokale Sammlungen geladen.
+//
+// gblPatient, gblRezept und gblErgebnis stehen hier ABSICHTLICH nicht:
+// Eine Variable, die nie gesetzt wurde, ist in Power Apps bereits leer.
+// Es sind Datensaetze, keine Texte - ihren Typ bekommen sie von der
+// Stelle, an der sie tatsaechlich befuellt werden. Ein Set(..., "")
+// wuerde sie zu Text machen und jeden Zugriff wie gblPatient.Vorname
+// unmoeglich machen.
 Set(gblSchritt, "Heute");
-Set(gblPatient, Blank());
-Set(gblRezept, Blank());
-Set(gblTherapeut, Blank());
+Set(gblTherapeut, "");
 Set(gblSpeichert, false);
 Set(gblMeldung, "");
 Set(gblMeldungArt, "");
 Set(gblFehlerText, "");
-Set(gblErgebnis, Blank());
 Set(gblReset, false);
 Set(gblPruefen, false);
 ```
