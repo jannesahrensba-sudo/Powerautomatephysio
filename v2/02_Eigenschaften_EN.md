@@ -107,6 +107,18 @@ hEingabe = 52;
 // Ab dieser Breite steht der Inhalt zweispaltig.
 bpBreit = 900;
 
+// Header and step indicator. These are computed from the actual
+// widths, not guessed:
+//   header with wordmark    = 48 padding + 52 Logo + 200 Marke + 110 + 130
+//                            + 4 gaps of 16   =  604
+//   header without wordmark = 32 padding + 40 Logo +  88 + 104
+//                            + 3 gaps of  8   =  288
+//   step indicator          = 48 padding + 120 + 24 + 160 + Rest + 4 gaps of 8 = 376+
+// bpMarke sits above 604 so the patient name still has room.
+bpMarke   = 760;
+bpName    = 520;
+bpSchritte = 560;
+
 fsKlein  = 13;
 fsNormal = 16;
 fsGross  = 20;

@@ -107,6 +107,18 @@ hEingabe = 52;;
 // Ab dieser Breite steht der Inhalt zweispaltig.
 bpBreit = 900;;
 
+// Kopfleiste und Schrittanzeige. Die Werte sind aus den tatsaechlichen
+// Breiten gerechnet, nicht geschaetzt:
+//   Kopf mit Wortmarke  = 48 Rand + 52 Logo + 200 Marke + 110 + 130
+//                         + 4 Abstaende a 16  =  604
+//   Kopf ohne Wortmarke = 32 Rand + 40 Logo +  88 + 104
+//                         + 3 Abstaende a  8  =  288
+//   Schrittanzeige      = 48 Rand + 120 + 24 + 160 + Rest + 4 a 8 = 376+
+// bpMarke liegt ueber 604, damit der Patientenname noch Platz hat.
+bpMarke   = 760;;
+bpName    = 520;;
+bpSchritte = 560;;
+
 fsKlein  = 13;;
 fsNormal = 16;;
 fsGross  = 20;;

@@ -77,7 +77,7 @@ fehlen die Farben und alles zeigt Fehler.
 Rechtsklick auf `scrPraxis` → **Code einfügen** → vollständigen Inhalt von
 `01_AppShell_einfuegen.yaml` einfügen.
 
-Danach steht `conApp` mit 80 untergeordneten Steuerelementen im Baum.
+Danach steht `conApp` mit 81 untergeordneten Steuerelementen im Baum.
 
 > Erscheint beim Einfügen nichts: Zwischenablage-Berechtigung des Browsers
 > für `make.powerapps.com` prüfen.
@@ -140,6 +140,27 @@ per KI liegt als optionaler Zusatz in
 [`06_Textpruefung_KI/`](06_Textpruefung_KI/README.md) – mit Kosten,
 Lizenzbedarf und einer Datenschutz-Checkliste, weil dabei
 Gesundheitsdaten die Praxis verlassen.
+
+## Auf dem Handy
+
+Kopfleiste und Schrittanzeige richten sich nach der Breite. Die Haltepunkte
+stehen in `App.Formulas`:
+
+| Ab Breite | Was dazukommt |
+|---|---|
+| unter 520 | Logo, „Heute", „Patienten" – und eine Zeile „Schritt 2 von 3 · Vorbereitung" |
+| ab `bpName` = 520 | zusätzlich der Patientenname in der Kopfleiste |
+| ab `bpSchritte` = 560 | die dreiteilige Schrittanzeige statt der einen Zeile |
+| ab `bpMarke` = 760 | der Schriftzug „physio / HUMAN PERFORMANCE", größeres Logo, weitere Abstände |
+| ab `bpBreit` = 900 | Vorbereitung zweispaltig |
+
+Die Werte sind aus den tatsächlichen Breiten gerechnet, nicht geschätzt – die
+Rechnung steht als Kommentar in `App.Formulas`. Nachgeprüft für jede Breite
+ab 320 Punkten: nichts läuft über.
+
+> **Wenn Sie die Schriftgrößen ändern**, stimmen die Haltepunkte nicht mehr.
+> Größere Schrift braucht breitere Schaltflächen – dann `bpMarke` und
+> `bpSchritte` entsprechend hochsetzen.
 
 ## Logo
 

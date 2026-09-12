@@ -44,12 +44,15 @@
           Properties:
             Fill: =clrDunkel
             FillPortions: =0
-            Height: =84
+            # Schmal: kleinere Hoehe, engere Abstaende. Ohne das passen
+            # Logo, Schaltflaechen und Rand nicht nebeneinander und die
+            # rechte Schaltflaeche laeuft aus dem Bild.
+            Height: =If(conApp.Width >= bpMarke, 84, 72)
             LayoutDirection: =LayoutDirection.Horizontal
             LayoutAlignItems: =LayoutAlignItems.Center
-            LayoutGap: =spM
-            PaddingLeft: =spL
-            PaddingRight: =spL
+            LayoutGap: =If(conApp.Width >= bpMarke, spM, spS)
+            PaddingLeft: =If(conApp.Width >= bpMarke, spL, spM)
+            PaddingRight: =If(conApp.Width >= bpMarke, spL, spM)
           Children:
 
             # --- Logo: Knotengrafik als eingebettetes SVG ------------
@@ -80,8 +83,8 @@
                         "<circle cx='81' cy='93' r='9'/>" &
                         "</g></svg>"
                     )
-                  Height: =52
-                  Width: =52
+                  Height: =If(conApp.Width >= bpMarke, 52, 40)
+                  Width: =If(conApp.Width >= bpMarke, 52, 40)
                   FillPortions: =0
                   ImagePosition: =ImagePosition.Fit
 
@@ -96,7 +99,10 @@
                   LayoutDirection: =LayoutDirection.Vertical
                   LayoutAlignItems: =LayoutAlignItems.Start
                   LayoutGap: =0
-                  Visible: =conApp.Width >= 560
+                  # 560 war zu niedrig gegriffen: mit Wortmarke braucht
+                  # die Leiste 604 Punkte, darunter wurde "HUMAN
+                  # PERFORMANCE" abgeschnitten.
+                  Visible: =conApp.Width >= bpMarke
                 Children:
                   - lblMarke:
                       Control: Label
@@ -128,9 +134,12 @@
             - lblKopfPatient:
                 Control: Label
                 Properties:
+                  # Bleibt immer als Fuellelement stehen - es schiebt die
+                  # Schaltflaechen nach rechts. Nur der Text weicht, wenn
+                  # er ohnehin keinen Platz mehr haette.
                   Text: |-
                     =If(
-                        IsBlank(gblPatient),
+                        IsBlank(gblPatient) Or conApp.Width < bpName,
                         "",
                         Trim(Coalesce(gblPatient.Vorname, "") & " " & Coalesce(gblPatient.Nachname, ""))
                     )
@@ -158,7 +167,7 @@
                   HoverColor: =clrDunkel
                   Size: =fsKlein
                   Height: =hTouch
-                  Width: =110
+                  Width: =If(conApp.Width >= bpMarke, 110, 88)
                   FillPortions: =0
                   RadiusTopLeft: =radM
                   RadiusTopRight: =radM
@@ -179,7 +188,7 @@
                   HoverColor: =clrDunkel
                   Size: =fsKlein
                   Height: =hTouch
-                  Width: =130
+                  Width: =If(conApp.Width >= bpMarke, 130, 104)
                   FillPortions: =0
                   RadiusTopLeft: =radM
                   RadiusTopRight: =radM
@@ -199,13 +208,37 @@
             LayoutDirection: =LayoutDirection.Horizontal
             LayoutAlignItems: =LayoutAlignItems.Center
             LayoutGap: =spS
-            PaddingLeft: =spL
-            PaddingRight: =spL
+            PaddingLeft: =If(conApp.Width >= bpSchritte, spL, spM)
+            PaddingRight: =If(conApp.Width >= bpSchritte, spL, spM)
             Visible: =gblSchritt <> "Heute"
           Children:
+            # Schmal passen drei Schritte nebeneinander nicht hin -
+            # "3 Dokumentation" wurde abgeschnitten. Statt zu kuerzen
+            # nennt eine Zeile den aktuellen Stand vollstaendig.
+            - lblSchrittKompakt:
+                Control: Label
+                Properties:
+                  Visible: =conApp.Width < bpSchritte
+                  Text: |-
+                    =If(
+                        gblSchritt = "Patienten", "Schritt 1 von 3  ·  Patient aufrufen",
+                        gblSchritt = "Akte",      "Schritt 2 von 3  ·  Vorbereitung",
+                        gblSchritt = "Doku",      "Schritt 3 von 3  ·  Dokumentation",
+                        ""
+                    )
+                  Color: =clrGold
+                  Size: =fsKlein
+                  FontWeight: =FontWeight.Semibold
+                  VerticalAlign: =VerticalAlign.Middle
+                  Height: =32
+                  FillPortions: =1
+                  Wrap: =false
+                  PaddingLeft: =0
+
             - lblSchritt1:
                 Control: Label
                 Properties:
+                  Visible: =conApp.Width >= bpSchritte
                   Text: ="1  Patient"
                   Color: =If(gblSchritt = "Patienten", clrGold, clrTextHell)
                   Size: =fsKlein
@@ -219,6 +252,7 @@
             - lblSchrittTrenner1:
                 Control: Label
                 Properties:
+                  Visible: =conApp.Width >= bpSchritte
                   Text: ="-"
                   Color: =clrTextHell
                   Size: =fsKlein
@@ -231,6 +265,7 @@
             - lblSchritt2:
                 Control: Label
                 Properties:
+                  Visible: =conApp.Width >= bpSchritte
                   Text: ="2  Vorbereitung"
                   Color: =If(gblSchritt = "Akte", clrGold, clrTextHell)
                   Size: =fsKlein
@@ -244,6 +279,7 @@
             - lblSchrittTrenner2:
                 Control: Label
                 Properties:
+                  Visible: =conApp.Width >= bpSchritte
                   Text: ="-"
                   Color: =clrTextHell
                   Size: =fsKlein
@@ -256,6 +292,7 @@
             - lblSchritt3:
                 Control: Label
                 Properties:
+                  Visible: =conApp.Width >= bpSchritte
                   Text: ="3  Dokumentation"
                   Color: =If(gblSchritt = "Doku", clrGold, clrTextHell)
                   Size: =fsKlein

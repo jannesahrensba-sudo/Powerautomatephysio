@@ -8,8 +8,8 @@ bestehenden SharePoint-Datenhaltung.
 
 | Ordner | Für wen |
 |---|---|
-| **[`v3/`](v3/START_HIER.md)** | **Aktuell. Hier anfangen.** Wie V2, zusätzlich Textbausteine und Längenprüfung in der Dokumentation. 81 Steuerelemente, 16 Spalten, keine Flows. |
-| [`v2/`](v2/START_HIER.md) | Dieselbe einfache Fassung ohne die Schreibhilfen. 77 Steuerelemente. Bleibt liegen, falls V3 im Studio Probleme macht. |
+| **[`v3/`](v3/START_HIER.md)** | **Aktuell. Hier anfangen.** Wie V2, zusätzlich Textbausteine und Längenprüfung in der Dokumentation. 82 Steuerelemente, 16 Spalten, keine Flows. |
+| [`v2/`](v2/START_HIER.md) | Dieselbe einfache Fassung ohne die Schreibhilfen. 78 Steuerelemente. Bleibt liegen, falls V3 im Studio Probleme macht. |
 | [`output/`](output/START_HIER.md) | Die ausführliche Fassung mit Aufnahme-Assistent, Rezeptverwaltung, Aufgaben, Einheitenzählung und Power-Automate-Flows. 219 Steuerelemente. |
 
 Beide nutzen dieselben SharePoint-Listen. Die einfache Fassung schreibt nur
@@ -25,7 +25,7 @@ Daten zu verlieren.
 ```
 v3/                                aktuelle einfache Fassung – hier anfangen
   START_HIER.md                    Einbauweg in 5 Schritten
-  01_AppShell_einfuegen.yaml/.txt  Oberfläche zum Einfügen (81 Steuerelemente)
+  01_AppShell_einfuegen.yaml/.txt  Oberfläche zum Einfügen (82 Steuerelemente)
   02_Eigenschaften_DE.md / _EN.md  App-Formeln, beide Trennzeichenfassungen
   03_Spalten.md / .json            die 16 benötigten Spalten
   04_Spalten_anlegen.ps1           legt fehlende Spalten an, prüft zuerst
