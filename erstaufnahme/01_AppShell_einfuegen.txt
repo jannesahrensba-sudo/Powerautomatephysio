@@ -2,7 +2,7 @@
 # Physio Human Performance - Erstaufnahme
 #
 # Zweite App neben der Behandlungs-App. Sie schreibt Diagnose,
-# Erstbefund und Anamnese in die Liste "Rezept" - also genau in die
+# Erstbefund und Anamnese in die Liste "Rezepte" - also genau in die
 # Felder, aus denen die Behandlungs-App den Befund bereits liest.
 # An der Behandlungs-App ist KEINE Aenderung noetig.
 #
@@ -10,7 +10,7 @@
 #
 # So gehen Sie vor:
 #   1. Zwei SharePoint-Listen als Datenquellen hinzufuegen:
-#      Patientenstamm und Rezept.
+#      Patientenstamm und Rezepte.
 #   2. Die App-Eigenschaften aus 02_Eigenschaften_DE.md setzen.
 #   3. Diesen Code auf den Bildschirm scrAufnahme einfuegen.
 #   4. Das Anlagen-Formular ergaenzen - siehe 05_Anlagen/README.md.
@@ -146,7 +146,7 @@
                   OnSelect: |-
                     =Set(gblPatient, Blank());
                     Set(gblLetztesRezept, Blank());
-                    Set(gblAufnahme, Blank()); Set(gblAufnahmeID, 0);
+                    Set(gblAufnahme, Blank());
                     Set(gblTxtD, ""); Set(gblTxtB, ""); Set(gblTxtA, "");
                     Set(gblPruefen, false);
                     Set(gblReset, true); Set(gblReset, false);
@@ -463,9 +463,9 @@
                                 // Befund uebernehmen, wenn es ein Folgerezept ist.
                                 Set(
                                     gblLetztesRezept,
-                                    First(Sort(Filter(Rezept, PatientID = ThisItem.ID), ID, SortOrder.Descending))
+                                    First(Sort(Filter(Rezepte, PatientID = ThisItem.ID), ID, SortOrder.Descending))
                                 );
-                                Set(gblAufnahme, Blank()); Set(gblAufnahmeID, 0);
+                                Set(gblAufnahme, Blank());
                                 Set(gblTxtD, ""); Set(gblTxtB, ""); Set(gblTxtA, "");
                                 Set(gblPruefen, false);
                                 Set(gblReset, true); Set(gblReset, false);
@@ -749,8 +749,8 @@
                                         gblAufnahme,
                                         IfError(
                                             Patch(
-                                                Rezept,
-                                                Defaults(Rezept),
+                                                Rezepte,
+                                                Defaults(Rezepte),
                                                 {
                                                     PatientID: gblPatient.ID,
                                                     'Diagnose laut Rezept': Trim(txtDiagnose.Text),
@@ -768,11 +768,6 @@
                                         Set(gblMeldungArt, "Fehler"),
 
                                         Set(gblPruefen, false);
-                                        // Nur die Nummer merken, nicht den Datensatz.
-                                        // Das Anlagen-Formular holt sich die Zeile damit
-                                        // frisch aus der Liste - verlaesslicher, als den
-                                        // Rueckgabewert von Patch an ein Formular zu binden.
-                                        Set(gblAufnahmeID, gblAufnahme.ID);
                                         Set(gblMeldung, "Aufnahme gespeichert. Jetzt können die Unterlagen dazu.");
                                         Set(gblMeldungArt, "Erfolg");
                                         Set(gblSchritt, "Anlagen")
@@ -855,9 +850,9 @@
                               Text: |-
                                 =Trim(Coalesce(gblPatient.Vorname, "") & " " & Coalesce(gblPatient.Nachname, "")) &
                                  If(
-                                     gblAufnahmeID > 0,
-                                     "   ·   gespeichert als Nr. " & gblAufnahmeID,
-                                     "   ·   noch nicht gespeichert"
+                                     IsBlank(gblAufnahme.ID),
+                                     "   ·   noch nicht gespeichert",
+                                     "   ·   gespeichert als Nr. " & gblAufnahme.ID
                                  )
                               Color: =clrTextHell
                               Size: =fsKlein
@@ -902,25 +897,146 @@
                         RadiusBottomLeft: =radL
                         RadiusBottomRight: =radL
                       Children:
-                        # Diese Beschriftung loeschen Sie, sobald das
-                        # Formular drin ist. Sie ist nur der Wegweiser.
-                        - lblAnlagenPlatzhalter:
-                            Control: Label
+                        # Das Anlagen-Formular. Die Datenkarte darunter hat
+                        # Studio erzeugt - nicht von Hand umbauen.
+                        #
+                        # Item bindet ueber die Zeilennummer, nicht ueber den
+                        # Rueckgabewert von Patch: ein Formular will eine echte
+                        # Zeile der Datenquelle.
+                        #
+                        # ACHTUNG beim Eintragen in Studio: In der Formelleiste
+                        # steht das fuehrende "=" schon da. Tippen Sie also
+                        # LookUp(...) OHNE Gleichheitszeichen, sonst entsteht
+                        # "==LookUp(...)" und die Funktion wird rot.
+                        - frmAnlagen:
+                            Control: Form
+                            Variant: Classic
+                            Layout: Vertical
                             Properties:
-                              Text: |-
-                                ="Hier fehlt noch das Anlagen-Formular." & Char(10) & Char(10) &
-                                 "Einfügen → Formular bearbeiten, DataSource Rezept, " &
-                                 "Item auf LookUp(Rezept; ID = gblAufnahmeID), " &
-                                 "nur das Feld Anlagen anzeigen." & Char(10) & Char(10) &
-                                 "Klick für Klick steht das in 05_Anlagen/README.md. " &
-                                 "Danach diese Beschriftung löschen."
-                              Color: =clrTextLeise
-                              Size: =fsNormal
-                              Align: =Align.Center
-                              VerticalAlign: =VerticalAlign.Middle
-                              FillPortions: =1
-                              PaddingLeft: =spM
-                              PaddingRight: =spM
+                              DataSource: =Rezepte
+                              Item: =LookUp(Rezepte, ID = gblAufnahme.ID)
+                              DefaultMode: =FormMode.Edit
+                              # Erst wenn der Upload durch ist, wird
+                              # aufgeraeumt und weitergesprungen. Stuende das
+                              # hinter SubmitForm in der Schaltflaeche, waere
+                              # gblAufnahme schon leer, waehrend noch
+                              # hochgeladen wird - das Formular verloere
+                              # mitten im Senden seine Zeile.
+                              OnSuccess: |-
+                                =Set(gblPatient, Blank());
+                                Set(gblLetztesRezept, Blank());
+                                Set(gblAufnahme, Blank());
+                                Set(gblTxtD, ""); Set(gblTxtB, ""); Set(gblTxtA, "");
+                                Set(gblPruefen, false);
+                                Set(gblReset, true); Set(gblReset, false);
+                                Set(gblMeldung, "Aufnahme abgeschlossen. Der Befund steht ab sofort in der Behandlungs-App.");
+                                Set(gblMeldungArt, "Erfolg");
+                                Set(gblSchritt, "Patienten")
+                              # Schlaegt der Upload fehl, bleibt der Therapeut
+                              # auf Schritt 3 und kann es erneut versuchen.
+                              # Die Aufnahme selbst ist laengst gespeichert.
+                              OnFailure: |-
+                                =Set(gblMeldung,
+                                    "Die Unterlagen konnten nicht hochgeladen werden. Die Aufnahme selbst ist gespeichert. " &
+                                    frmAnlagen.Error);
+                                Set(gblMeldungArt, "Fehler")
+                            Children:
+                              - Anlagen_DataCard1:
+                                  Control: TypedDataCard
+                                  Variant: ClassicAttachmentsEdit
+                                  Properties:
+                                    DataField: ="{Attachments}"
+                                    Default: =ThisItem.Anlagen
+                                    DisplayName: =DataSourceInfo([@Rezepte], DataSourceInfo.DisplayName, '{Attachments}')
+                                    Required: =false
+                                    Update: =DataCardValue11.Attachments
+                                    # Studio hatte hier eine feste Breite von
+                                    # 1272 stehen - die laeuft am Handy aus dem
+                                    # Bild.
+                                    Width: =Parent.Width
+                                    WidthFit: =true
+                                    X: =0
+                                    Y: =0
+                                  Children:
+                                    - DataCardKey11:
+                                        Control: Label
+                                        MetadataKey: FieldName
+                                        Properties:
+                                          Text: =Parent.DisplayName
+                                          Color: =clrText
+                                          Size: =fsKlein
+                                          FontWeight: =FontWeight.Semibold
+                                          AutoHeight: =true
+                                          Height: =30
+                                          BorderStyle: =BorderStyle.None
+                                          PaddingLeft: =0
+                                          Width: =Parent.Width - 2 * spM
+                                          Wrap: =false
+                                          X: =spM
+                                          Y: =spS
+                                    - DataCardValue11:
+                                        Control: Attachments
+                                        MetadataKey: FieldValue
+                                        Properties:
+                                          Items: =Parent.Default
+                                          DisplayMode: =Parent.DisplayMode
+                                          BorderColor: =If(IsBlank(Parent.Error), clrRahmen, clrFehler)
+                                          BorderStyle: =BorderStyle.None
+                                          Color: =clrText
+                                          Fill: =clrFlaeche
+                                          HoverColor: =clrText
+                                          HoverFill: =clrGoldSanft
+                                          ItemColor: =clrText
+                                          ItemFill: =clrGoldSanft
+                                          ItemHoverColor: =clrText
+                                          ItemHoverFill: =clrGoldSanft
+                                          ItemSpacing: =12
+                                          NoAttachmentsColor: =clrTextLeise
+                                          PaddingTop: =5
+                                          PaddingBottom: =5
+                                          PaddingLeft: =5
+                                          PaddingRight: =5
+                                          PressedColor: =clrDunkel
+                                          PressedFill: =clrGold
+                                          Tooltip: =Parent.DisplayName
+                                          Width: =Parent.Width - 2 * spM
+                                          X: =spM
+                                          Y: =DataCardKey11.Y + DataCardKey11.Height + 5
+                                    - ErrorMessage11:
+                                        Control: Label
+                                        MetadataKey: ErrorMessage
+                                        Properties:
+                                          Text: =Parent.Error
+                                          Color: =clrFehler
+                                          Size: =fsKlein
+                                          FontWeight: =FontWeight.Semibold
+                                          AutoHeight: =true
+                                          Height: =10
+                                          BorderStyle: =BorderStyle.None
+                                          Live: =Live.Assertive
+                                          PaddingTop: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingRight: =0
+                                          Visible: =Parent.DisplayMode = DisplayMode.Edit
+                                          Width: =Parent.Width - 2 * spM
+                                          X: =spM
+                                          Y: =DataCardValue11.Y + DataCardValue11.Height
+                                    - StarVisible11:
+                                        Control: Label
+                                        MetadataKey: FieldRequired
+                                        Properties:
+                                          Text: ="*"
+                                          Align: =Align.Center
+                                          Color: =clrText
+                                          FontWeight: =FontWeight.Semibold
+                                          BorderStyle: =BorderStyle.None
+                                          Height: =DataCardKey11.Height
+                                          PaddingLeft: =0
+                                          Visible: =And(Parent.Required, Parent.DisplayMode = DisplayMode.Edit)
+                                          Width: =spM
+                                          Wrap: =false
+                                          Y: =DataCardKey11.Y
 
                   # --- Aktionen ----------------------------------------
                   - conAnlagenAktionen:
@@ -957,16 +1073,23 @@
                             Control: Classic/Button
                             Properties:
                               Text: ="Aufnahme abschließen"
+                              # Nur absenden. Das Aufraeumen und der Sprung
+                              # zurueck stehen in frmAnlagen.OnSuccess - erst
+                              # wenn der Upload wirklich durch ist.
+                              #
+                              # Der Zweig ohne gespeicherte Zeile ist die
+                              # Notbremse: SubmitForm tut dann naemlich nichts,
+                              # OnSuccess feuert nicht, und die Schaltflaeche
+                              # waere ohne diesen Zweig wirkungslos.
                               OnSelect: |-
-                                =Set(gblPatient, Blank());
-                                Set(gblLetztesRezept, Blank());
-                                Set(gblAufnahme, Blank()); Set(gblAufnahmeID, 0);
-                                Set(gblTxtD, ""); Set(gblTxtB, ""); Set(gblTxtA, "");
-                                Set(gblPruefen, false);
-                                Set(gblReset, true); Set(gblReset, false);
-                                Set(gblMeldung, "Aufnahme abgeschlossen. Der Befund steht ab sofort in der Behandlungs-App.");
-                                Set(gblMeldungArt, "Erfolg");
-                                Set(gblSchritt, "Patienten")
+                                =If(
+                                    IsBlank(gblAufnahme.ID),
+                                    Set(gblMeldung, "Es ist keine Aufnahme offen.");
+                                    Set(gblMeldungArt, "Warnung");
+                                    Set(gblSchritt, "Patienten"),
+
+                                    SubmitForm(frmAnlagen)
+                                )
                               Fill: =clrGold
                               Color: =clrDunkel
                               HoverFill: =clrGoldHell

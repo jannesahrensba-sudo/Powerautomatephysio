@@ -30,6 +30,28 @@ import jsonschema
 HIER = pathlib.Path(__file__).resolve().parent
 
 
+def ohne_versionen(knoten):
+    """Entfernt die Versionsangabe aus Control-Namen: "Form@2.4.4" -> "Form".
+
+    Power Apps Studio stempelt beim Exportieren eine Version an jeden
+    Control-Namen. Beim Einfuegen akzeptiert es beide Schreibweisen, die
+    veroeffentlichte Typenliste kennt aber nur die blanken Namen. Fuer die
+    Schemapruefung wird deshalb auf einer Kopie normalisiert - die Datei
+    selbst bleibt unangetastet.
+    """
+    if isinstance(knoten, dict):
+        kopie = {}
+        for schluessel, wert in knoten.items():
+            if schluessel == "Control" and isinstance(wert, str):
+                kopie[schluessel] = wert.split("@")[0]
+            else:
+                kopie[schluessel] = ohne_versionen(wert)
+        return kopie
+    if isinstance(knoten, list):
+        return [ohne_versionen(x) for x in knoten]
+    return knoten
+
+
 def lade_schema() -> dict:
     schema = yaml.safe_load((HIER / "pa.schema.v3.0.yaml").read_text(encoding="utf-8"))
     enum_datei = HIER / "ControlTypeId-1P-controls-enum.schema.yaml"
@@ -281,7 +303,7 @@ def main(argv: list[str]) -> int:
                 kinder.extend(screen.get("Children") or [])
 
         try:
-            jsonschema.validate(pruefling, schema)
+            jsonschema.validate(ohne_versionen(pruefling), schema)
             schema_ok = True
         except jsonschema.ValidationError as exc:
             ort = "/".join(str(p) for p in exc.absolute_path)

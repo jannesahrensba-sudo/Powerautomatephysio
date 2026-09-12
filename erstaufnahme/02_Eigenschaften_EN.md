@@ -23,13 +23,18 @@ noch fehlen.
 | Name in der App | Liste |
 |---|---|
 | `Patientenstamm` | Patientenstammdaten |
-| `Rezept` | Rezepte |
+| `Rezepte` | Rezepte |
 
-> **Achtung, Einzahl.** Ihre laufende Behandlungs-App greift auf `Rezept` zu,
-> nicht auf `Rezepte`. Beide Apps müssen denselben Namen verwenden, sonst
-> schreibt die Aufnahme in eine andere Quelle als die andere App liest.
-> Heißt die Datenquelle bei Ihnen anders, benennen Sie **die Datenquelle in
-> der App** um – dann bleiben alle Formeln gültig.
+> **Prüfen Sie, dass beide Apps auf dieselbe Liste zeigen.** Diese App
+> spricht die Datenquelle als `Rezepte` an, die laufende Behandlungs-App als
+> `Rezept`. Der Name innerhalb einer App ist nur ein lokaler Alias – was
+> zählt, ist die SharePoint-Liste dahinter. Zeigen die beiden auf
+> **verschiedene** Listen, erscheint der Befund nie in der Behandlungs-App.
+>
+> Kontrolle in 30 Sekunden: in beiden Apps **Daten** öffnen und den Eintrag
+> anklicken – dort steht die Liste. Heißt die Datenquelle bei Ihnen anders,
+> benennen Sie **die Datenquelle in der App** um; dann bleiben alle Formeln
+> gültig.
 
 Die Liste `Behandlungsdokumentation` wird hier **nicht** gebraucht.
 
@@ -130,9 +135,6 @@ Set(gblReset, false);
 Set(gblMeldung, "");
 Set(gblMeldungArt, "");
 Set(gblFehlerText, "");
-// Row number of the assessment just saved. A number, not a record -
-// the attachment form binds to it via LookUp.
-Set(gblAufnahmeID, 0);
 // Text buffers for the three input fields. They are text, not
 // records - so "" is correct and necessary here, because Default
 // points at them.

@@ -18,16 +18,20 @@ Rechnen Sie mit **30 bis 40 Minuten**, davon 15 für das Anlagen-Formular.
 **An der Behandlungs-App ist keine einzige Änderung nötig.** Sie liest den
 Befund heute schon aus genau den Feldern, die diese App schreibt:
 
-| Diese App schreibt in `Rezept` | Die Behandlungs-App liest |
+| Diese App schreibt in `Rezepte` | Die Behandlungs-App liest |
 |---|---|
 | `PatientID` | `Filter(Rezept, PatientID = ThisItem.ID)` |
 | `Diagnose laut Rezept` | `gblRezept.'Diagnose laut Rezept'` |
 | `Erstbefund` | `gblRezept.Erstbefund` |
 | `Anamnese` | `gblRezept.Anamnese` |
 
-> **Die Datenquelle heißt `Rezept`, Einzahl.** So steht es in Ihrer laufenden
-> App. Beide Apps müssen denselben Namen verwenden, sonst schreibt die
-> Aufnahme woandershin, als die andere liest.
+> **Die beiden Apps nennen die Datenquelle unterschiedlich:** hier `Rezepte`,
+> in der Behandlungs-App `Rezept`. Der Name innerhalb einer App ist nur ein
+> lokaler Alias – entscheidend ist, dass **beide auf dieselbe SharePoint-Liste
+> zeigen**. Tun sie das nicht, erscheint der Befund nie in der Behandlungs-App.
+>
+> Kontrolle in 30 Sekunden: in beiden Apps **Daten** öffnen und den Eintrag
+> anklicken – dort steht die Liste dahinter.
 
 Die Behandlungs-App nimmt immer das **jüngste** Rezept eines Patienten
 (`Sort(..., ID, SortOrder.Descending)`). Eine neue Aufnahme überschreibt also
@@ -80,7 +84,7 @@ Englisch läuft.
 > Woran Sie es erkennen: Tippen Sie `If(` in die Formelleiste. Steht dort
 > `If( Bedingung; Dann; Sonst )`, nehmen Sie die DE-Datei.
 
-**Zwei** Listen verbinden (`Patientenstamm` und `Rezept`), Bildschirm
+**Zwei** Listen verbinden (`Patientenstamm` und `Rezepte`), Bildschirm
 `scrAufnahme` anlegen, dann `App.Formulas` und `App.OnStart` setzen. **Vor**
 dem Einfügen des Oberflächencodes – sonst fehlen die Farben und alles zeigt
 Fehler.
@@ -90,25 +94,26 @@ Fehler.
 Rechtsklick auf `scrAufnahme` → **Code einfügen** → vollständigen Inhalt von
 `01_AppShell_einfuegen.yaml` einfügen.
 
-Danach steht `conApp` mit 53 untergeordneten Steuerelementen im Baum.
+Danach steht `conApp` mit 58 untergeordneten Steuerelementen im Baum – das
+**Anlagen-Formular ist darin enthalten**, Sie müssen es nicht mehr von Hand
+anlegen.
 
-## Schritt 5 – Anlagen-Formular (15 Minuten)
+## Schritt 5 – Anlagen erlauben (2 Minuten)
 
-→ **[`05_Anlagen/README.md`](05_Anlagen/README.md)**
+Die einzige Voraussetzung, die außerhalb der App liegt: In SharePoint muss die
+Liste **Rezepte** Anlagen zulassen.
 
-Dieser eine Teil wird **nicht per Code eingefügt**, sondern über die
-Studio-Oberfläche angelegt. Grund: Das Anlagen-Steuerelement gibt es nur
-innerhalb eines Formulars, und Formular-Datenkarten von Hand als YAML zu
-schreiben ist die fehleranfälligste Stelle im ganzen Projekt. Sechs Klicks
-in Studio sind zuverlässiger.
+Zahnrad → **Listeneinstellungen** → **Erweiterte Einstellungen** →
+**Anlagen** → *Anlagen zu dieser Liste zulassen*. Das ist der Standard.
+Danach in Studio **Daten → Rezepte → Aktualisieren**.
 
-Bis dahin ist die App **voll benutzbar** – nur Schritt 3 zeigt einen
-Platzhalter statt des Anhang-Feldes.
+Das prüft auch `04_Spalten_anlegen.ps1` aus Schritt 1 – geändert wird die
+Einstellung dort aber nicht.
 
-> **Zeigt Schritt 3 „Keine anzuzeigenden Elemente"?** Dann steht das Formular,
-> findet aber keinen Datensatz – fast immer, weil die Eigenschaft `Item` leer
-> ist. Der Kopf von Schritt 3 verrät, wo es hakt: Steht dort eine Nummer, liegt
-> es am Formular; steht „noch nicht gespeichert", an der App. Beides in
+> **Zeigt Schritt 3 „Keine anzuzeigenden Elemente"?** Dann findet das Formular
+> keinen Datensatz. Der Kopf von Schritt 3 verrät, wo es hakt: Steht dort eine
+> Nummer, liegt es am Formular; steht „noch nicht gespeichert", an Schritt 2.
+> Fehlersuche in
 > [`05_Anlagen/README.md`](05_Anlagen/README.md#fehlersuche).
 
 ## Schritt 6 – Durchspielen (8 Minuten)
@@ -178,12 +183,12 @@ Im Kopf steht statt „physio / HUMAN PERFORMANCE" der Titel **„Erstaufnahme"*
 | Struktur, Control-Typen, Varianten, Verweise, Spaltenabgleich | **ausgeführt, bestanden** |
 | Power-Apps-Kompilierung | **nicht ausgeführt** – kein Studio-Zugang |
 | Test im Tenant, auf Geräten | **nicht ausgeführt** – kein Tenant-Zugang |
-| Das Anlagen-Formular | **nicht gebaut, nicht getestet** |
+| Formular, Upload, `OnSuccess`/`OnFailure` | **nicht ausgeführt** – kein Studio-Zugang |
 | `04_Spalten_anlegen.ps1` | **nicht ausgeführt** – keine PowerShell verfügbar; deshalb `-WhatIf` zuerst |
 
 Die Control-Typen und Varianten sind dieselben, die in Ihrer laufenden
 Behandlungs-App durchgelaufen sind – `Classic/Button`, `Classic/TextInput`,
 `Gallery`/`Vertical`, `GroupContainer`/`AutoLayout`, `Label`, `Rectangle`,
-`Image`. Es ist bewusst kein Steuerelement dazugekommen, das Ihr Studio noch
-nie gesehen hat. Das Formular in Schritt 5 ist die einzige Ausnahme – und
-das legt Studio selbst an.
+`Image`. Dazu `Form`, `TypedDataCard` und `Attachments` für die Anlagen –
+**die stammen aus Ihrem eigenen Studio-Export**, sind also in Ihrem Tenant
+erzeugt worden und nicht von mir erfunden.

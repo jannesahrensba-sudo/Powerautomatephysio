@@ -4,6 +4,12 @@ Diese App legt **keine neue Spalte** an. Sie schreibt genau die Felder, aus
 denen die Behandlungs-App den Befund bereits liest – deshalb erscheint eine
 Aufnahme dort ohne jede Änderung an der anderen App.
 
+> **Die Datenquelle heißt in dieser App `Rezepte`, in der Behandlungs-App
+> `Rezept`.** Der Name innerhalb einer App ist nur ein lokaler Alias –
+> entscheidend ist, dass beide auf **dieselbe SharePoint-Liste** zeigen.
+> Zeigen sie auf verschiedene Listen, erscheint der Befund nie in der
+> Behandlungs-App.
+
 > **Grenze:** Die Spalten der Liste Rezept sind nicht gegen die Liste selbst geprueft. Fehlt eine, zeigt Studio direkt nach dem Einfuegen einen Formelfehler an der betroffenen Stelle.
 
 ## Legende
@@ -24,7 +30,7 @@ Aufnahme dort ohne jede Änderung an der anderen App.
 | [OK] | `Nachname` | `Nachname` | Text | Suche und Anzeige. |
 | [OK] | `Geburtsdatum` | `Geburtsdatum` | Datum | Unterscheidet gleiche Namen. |
 
-## Rezept (lesen und schreiben)
+## Rezepte (lesen und schreiben)
 
 | | Anzeigename | Interner Name | Typ | Bedeutung |
 |---|---|---|---|---|
@@ -33,6 +39,7 @@ Aufnahme dort ohne jede Änderung an der anderen App.
 | [B] | `Diagnose laut Rezept` | `DiagnoselautRezept` | Text | Anzeigename und interner Name weichen ab. Power Fx nutzt den Anzeigenamen in einfachen Anfuehrungszeichen. |
 | [?] | `Erstbefund` | `Erstbefund` | Mehrzeiliger Text | Wird in der Behandlungs-App unter Befund und Anamnese angezeigt. |
 | [?] | `Anamnese` | `Anamnese` | Mehrzeiliger Text | Wird in der Behandlungs-App unter Befund und Anamnese angezeigt. |
+| [?] | `Anlagen` | `{Attachments}` | Anlagen (Listeneinstellung) | Keine Spalte, sondern die Anlagensammlung der Liste. Power Fx spricht sie unter dem deutschen Anzeigenamen 'Anlagen' an, das Formular ueber den internen Schluessel '{Attachments}'. Anlegen kann man sie nicht - sie muss in den Listeneinstellungen erlaubt sein. |
 
 ## Anlagen sind keine Spalte
 

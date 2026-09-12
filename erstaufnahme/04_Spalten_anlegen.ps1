@@ -43,16 +43,16 @@ Connect-PnPOnline -Url $SiteUrl -Interactive
 
 # Liste, Anzeigename, interner Name, Typ
 $spalten = @(
-    @{ Liste = 'Rezept'; Anzeige = 'PatientID';            Intern = 'PatientID';           Typ = 'Number' }
-    @{ Liste = 'Rezept'; Anzeige = 'Diagnose laut Rezept'; Intern = 'DiagnoselautRezept';  Typ = 'Text'   }
-    @{ Liste = 'Rezept'; Anzeige = 'Erstbefund';           Intern = 'Erstbefund';          Typ = 'Note'   }
-    @{ Liste = 'Rezept'; Anzeige = 'Anamnese';             Intern = 'Anamnese';            Typ = 'Note'   }
+    @{ Liste = 'Rezepte'; Anzeige = 'PatientID';            Intern = 'PatientID';           Typ = 'Number' }
+    @{ Liste = 'Rezepte'; Anzeige = 'Diagnose laut Rezept'; Intern = 'DiagnoselautRezept';  Typ = 'Text'   }
+    @{ Liste = 'Rezepte'; Anzeige = 'Erstbefund';           Intern = 'Erstbefund';          Typ = 'Note'   }
+    @{ Liste = 'Rezepte'; Anzeige = 'Anamnese';             Intern = 'Anamnese';            Typ = 'Note'   }
 )
 
 # Spalten, auf die gefiltert wird. Ohne Index bricht die Abfrage ab,
 # sobald die Liste 5000 Elemente ueberschreitet.
 $indizes = @(
-    @{ Liste = 'Rezept';         Intern = 'PatientID' }
+    @{ Liste = 'Rezepte';         Intern = 'PatientID' }
     @{ Liste = 'Patientenstamm'; Intern = 'Nachname'  }
 )
 
@@ -145,7 +145,7 @@ Disconnect-PnPOnline
 # aendern - das Einschalten ist eine bewusste Entscheidung.
 # ---------------------------------------------------------------------
 try {
-    $liste = Get-PnPList -Identity 'Rezept' -ErrorAction Stop
+    $liste = Get-PnPList -Identity 'Rezepte' -ErrorAction Stop
     if ($liste.EnableAttachments) {
         Write-Host "  Anlagen        : erlaubt" -ForegroundColor Green
     }
@@ -156,6 +156,6 @@ try {
     }
 }
 catch {
-    Write-Host "  Anlagen        : Liste 'Rezept' nicht gefunden." -ForegroundColor Red
+    Write-Host "  Anlagen        : Liste 'Rezepte' nicht gefunden." -ForegroundColor Red
     Write-Host "    Heisst sie bei Ihnen anders, oben im Skript anpassen." -ForegroundColor Red
 }
