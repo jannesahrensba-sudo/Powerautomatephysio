@@ -1,4 +1,10 @@
-# Die roten Unterringelungen – was sie bedeuten
+# Wenn Power Apps etwas rot markiert
+
+> **Sind es nur noch zwei Meldungen rund um `Rezepte`?**
+> → **[`Die_letzten_zwei_Fehler_DE.md`](Die_letzten_zwei_Fehler_DE.md)**
+> (oder `_EN.md`). Beide haben dieselbe Ursache und sind in zwei Minuten weg.
+
+## Die roten Unterringelungen – was sie bedeuten
 
 **Kurz: Das sind keine Fehler im Code. Die Spalten gibt es in SharePoint noch
 nicht.**
