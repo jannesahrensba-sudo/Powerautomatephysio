@@ -52,7 +52,7 @@ nächsten Patienten.
 > **Anlagen gibt es hier nicht mehr.** Behandlungsvertrag und
 > Datenschutzerklärung erfasst die **Anmelde-App** digital – dort füllt der
 > Patient am iPad aus und unterschreibt auf dem Bildschirm, kein Papier, kein
-> Abfotografieren. Das Rezeptfoto liegt ebenfalls dort. Siehe
+> Abfotografieren. Siehe
 > [`../anmeldung/START_HIER.md`](../anmeldung/START_HIER.md).
 
 ---
@@ -153,7 +153,10 @@ Im Kopf steht statt „physio / HUMAN PERFORMANCE" der Titel **„Erstaufnahme"*
   Eintrag. Korrekturen macht man in SharePoint.
 - **Keine Behandlungsdokumentation.** Dafür ist die andere App da.
 - **Keine Anlagen.** Vertrag und Datenschutzerklärung laufen digital über die
-  Anmelde-App, das Rezeptfoto ebenfalls dort.
+  Anmelde-App.
+- **Kein Rezeptfoto im Grundumfang.** Es liegt als einschaltbarer Zusatz in
+  [`05_Rezeptfoto/`](05_Rezeptfoto/README.md) – braucht einen
+  Power-Automate-Flow, die App läuft ohne ihn vollständig.
 
 ## Geprüft und nicht geprüft
 

@@ -25,9 +25,10 @@ KEINE_SPALTEN = {
     "FullName", "Email", "Connected", "Result", "DisplayName", "Claims",
     "Department", "JobTitle", "Picture", "Error", "Default", "DisplayMode",
     "AllItemsCount", "Size", "X", "Y", "Visible", "Fill", "Color",
-    # Felder der App-internen Navigationstabelle Table({Bez: ..., Sym: ...}) -
-    # kein SharePoint, sondern im Code erzeugte Zeilen.
-    "Bez", "Sym",
+    # Felder APP-INTERNER Tabellen aus Table({...}) - kein SharePoint,
+    # sondern im Code erzeugte Zeilen.
+    "Bez", "Sym",                        # Navigationstabelle (v1)
+    "Gruppe", "Leistung", "Preis",       # tblHonorar (Anmelde-App)
 }
 
 # Datensatzvariablen, deren Eigenschaften SharePoint-Spalten sind.

@@ -1,0 +1,1885 @@
+# ---------------------------------------------------------------------
+# Physio Human Performance - Anmeldung am iPad
+#
+# Dritte App. Der Patient fuellt sie selbst aus, waehrend er wartet.
+# Am Ende steht ein neuer Eintrag in Patientenstamm und ein
+# Anmeldungs-Eintrag mit allen Einwilligungen.
+#
+# Ablauf:  Start -> 1 Ihre Daten -> 2 Honorar -> 3 Datenschutz -> Fertig
+#
+# So gehen Sie vor:
+#   1. Zwei SharePoint-Listen als Datenquellen hinzufuegen:
+#      Patientenstamm und Anmeldungen.
+#   2. Die App-Eigenschaften aus 02_Eigenschaften_DE.md setzen.
+#      Dort stehen auch die Honorarsaetze - EINE Pflegestelle.
+#   3. Diesen Code auf den Bildschirm scrAnmeldung einfuegen.
+#
+# KEINE gezeichnete Unterschrift: Das Steuerelement PenInput steht in
+# der offiziellen Typenliste von Power Apps nicht zur Verfuegung.
+# Stattdessen bestaetigt der Patient mit seinem getippten Namen. Warum
+# das traegt, steht in START_HIER.md unter "Zur Unterschrift".
+# ---------------------------------------------------------------------
+
+- conApp:
+    Control: GroupContainer
+    Variant: AutoLayout
+    Properties:
+      Fill: =clrHintergrund
+      Width: =Parent.Width
+      Height: =Parent.Height
+      LayoutDirection: =LayoutDirection.Vertical
+      LayoutAlignItems: =LayoutAlignItems.Stretch
+    Children:
+
+      # ===============================================================
+      # KOPFLEISTE - bewusst ohne Navigation.
+      # Das iPad liegt beim Patienten; er soll nicht in fremde Daten
+      # springen koennen.
+      # ===============================================================
+      - conKopf:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            Fill: =clrDunkel
+            FillPortions: =0
+            Height: =If(conApp.Width >= bpMarke, 84, 72)
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutGap: =If(conApp.Width >= bpMarke, spM, spS)
+            PaddingLeft: =If(conApp.Width >= bpMarke, spL, spM)
+            PaddingRight: =If(conApp.Width >= bpMarke, spL, spM)
+          Children:
+            - imgLogo:
+                Control: Image
+                Properties:
+                  Image: |-
+                    ="data:image/svg+xml;utf8, " & EncodeUrl(
+                        "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 106'>" &
+                        "<g stroke='#ADADAD' stroke-width='4.5' fill='none' stroke-linecap='round' stroke-linejoin='round'>" &
+                        "<path d='M22 13 L68 10'/><path d='M22 13 L8 31'/><path d='M68 10 L70 27'/>" &
+                        "<path d='M68 10 L91 39'/><path d='M70 27 L91 39'/><path d='M70 27 L41 44'/>" &
+                        "<path d='M8 31 L41 44'/><path d='M8 31 L9 73'/><path d='M41 44 L43 63'/>" &
+                        "<path d='M43 63 L78 67'/><path d='M43 63 L9 73'/><path d='M78 67 L91 39'/>" &
+                        "<path d='M78 67 L81 93'/><path d='M9 73 L36 97'/><path d='M36 97 L43 63'/>" &
+                        "<path d='M36 97 L81 93'/><path d='M68 10 L41 44'/><path d='M9 73 L78 67'/>" &
+                        "<path d='M22 13 L41 44'/>" &
+                        "</g>" &
+                        "<g fill='#6E6E6E'>" &
+                        "<circle cx='22' cy='13' r='5'/><circle cx='68' cy='10' r='8'/>" &
+                        "<circle cx='70' cy='27' r='5'/><circle cx='8'  cy='31' r='7'/>" &
+                        "<circle cx='91' cy='39' r='6'/><circle cx='41' cy='44' r='5'/>" &
+                        "<circle cx='43' cy='63' r='6'/><circle cx='78' cy='67' r='6'/>" &
+                        "<circle cx='9'  cy='73' r='8'/><circle cx='36' cy='97' r='6'/>" &
+                        "<circle cx='81' cy='93' r='9'/>" &
+                        "</g></svg>"
+                    )
+                  Height: =If(conApp.Width >= bpMarke, 52, 40)
+                  Width: =If(conApp.Width >= bpMarke, 52, 40)
+                  FillPortions: =0
+                  ImagePosition: =ImagePosition.Fit
+
+            - conWortmarke:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  Fill: =RGBA(0, 0, 0, 0)
+                  FillPortions: =1
+                  Height: =56
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Start
+                  LayoutGap: =0
+                Children:
+                  - lblMarke:
+                      Control: Label
+                      Properties:
+                        Text: ="Anmeldung"
+                        Color: =clrWeiss
+                        Size: =If(conApp.Width >= bpMarke, 26, 20)
+                        Height: =34
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                        PaddingTop: =0
+                        PaddingBottom: =0
+                        VerticalAlign: =VerticalAlign.Bottom
+                  - lblMarkeZusatz:
+                      Control: Label
+                      Properties:
+                        Visible: =conApp.Width >= bpMarke
+                        Text: ="PHYSIO HUMAN PERFORMANCE"
+                        Color: =clrTextHell
+                        Size: =fsKlein
+                        Height: =20
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                        PaddingTop: =0
+                        VerticalAlign: =VerticalAlign.Top
+
+            - lblKopfDatum:
+                Control: Label
+                Properties:
+                  Visible: =conApp.Width >= bpName
+                  Text: =praxisOrt & ", " & Text(Today(), DateTimeFormat.LongDate)
+                  Color: =clrTextHell
+                  Size: =fsKlein
+                  Align: =Align.Right
+                  VerticalAlign: =VerticalAlign.Middle
+                  FillPortions: =0
+                  Width: =260
+                  Height: =56
+                  Wrap: =false
+                  PaddingRight: =0
+
+      # ===============================================================
+      # SCHRITTANZEIGE - nur waehrend der Anmeldung
+      # ===============================================================
+      - conSchritte:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            Visible: =gblSchritt <> "Start" And gblSchritt <> "Fertig"
+            Fill: =clrDunkelTief
+            FillPortions: =0
+            Height: =44
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutGap: =spS
+            PaddingLeft: =If(conApp.Width >= bpSchritte, spL, spM)
+            PaddingRight: =If(conApp.Width >= bpSchritte, spL, spM)
+          Children:
+            - lblSchrittKompakt:
+                Control: Label
+                Properties:
+                  Visible: =conApp.Width < bpSchritte
+                  Text: |-
+                    =If(
+                        gblSchritt = "Daten",       "Schritt 1 von 3  ·  Ihre Daten",
+                        gblSchritt = "Honorar",     "Schritt 2 von 3  ·  Honorar",
+                        gblSchritt = "Datenschutz", "Schritt 3 von 3  ·  Datenschutz",
+                        ""
+                    )
+                  Color: =clrGold
+                  Size: =fsKlein
+                  FontWeight: =FontWeight.Semibold
+                  VerticalAlign: =VerticalAlign.Middle
+                  Height: =32
+                  FillPortions: =1
+                  Wrap: =false
+                  PaddingLeft: =0
+            - lblSchritt1:
+                Control: Label
+                Properties:
+                  Visible: =conApp.Width >= bpSchritte
+                  Text: ="1  Ihre Daten"
+                  Color: =If(gblSchritt = "Daten", clrGold, clrTextHell)
+                  FontWeight: =If(gblSchritt = "Daten", FontWeight.Semibold, FontWeight.Normal)
+                  Size: =fsKlein
+                  Height: =32
+                  Width: =120
+                  FillPortions: =0
+                  Wrap: =false
+                  PaddingLeft: =0
+            - lblSchrittTrenner1:
+                Control: Label
+                Properties:
+                  Visible: =conApp.Width >= bpSchritte
+                  Text: ="-"
+                  Color: =clrTextHell
+                  Size: =fsKlein
+                  Height: =32
+                  Width: =24
+                  FillPortions: =0
+                  Wrap: =false
+                  PaddingLeft: =0
+            - lblSchritt2:
+                Control: Label
+                Properties:
+                  Visible: =conApp.Width >= bpSchritte
+                  Text: ="2  Honorar"
+                  Color: =If(gblSchritt = "Honorar", clrGold, clrTextHell)
+                  FontWeight: =If(gblSchritt = "Honorar", FontWeight.Semibold, FontWeight.Normal)
+                  Size: =fsKlein
+                  Height: =32
+                  Width: =110
+                  FillPortions: =0
+                  Wrap: =false
+                  PaddingLeft: =0
+            - lblSchrittTrenner2:
+                Control: Label
+                Properties:
+                  Visible: =conApp.Width >= bpSchritte
+                  Text: ="-"
+                  Color: =clrTextHell
+                  Size: =fsKlein
+                  Height: =32
+                  Width: =24
+                  FillPortions: =0
+                  Wrap: =false
+                  PaddingLeft: =0
+            - lblSchritt3:
+                Control: Label
+                Properties:
+                  Visible: =conApp.Width >= bpSchritte
+                  Text: ="3  Datenschutz"
+                  Color: =If(gblSchritt = "Datenschutz", clrGold, clrTextHell)
+                  FontWeight: =If(gblSchritt = "Datenschutz", FontWeight.Semibold, FontWeight.Normal)
+                  Size: =fsKlein
+                  Height: =32
+                  FillPortions: =1
+                  Wrap: =false
+                  PaddingLeft: =0
+
+      # ===============================================================
+      # MELDUNGSLEISTE
+      # ===============================================================
+      - conMeldung:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            Visible: =Not(IsBlank(gblMeldung))
+            Fill: |-
+              =Switch(gblMeldungArt,
+                  "Erfolg", clrErfolgSanft,
+                  "Warnung", clrWarnungSanft,
+                  "Fehler", clrFehlerSanft,
+                  clrGoldSanft)
+            FillPortions: =0
+            Height: =64
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutGap: =spM
+            PaddingLeft: =spL
+            PaddingRight: =spL
+          Children:
+            - lblMeldung:
+                Control: Label
+                Properties:
+                  Text: =gblMeldung
+                  Color: |-
+                    =Switch(gblMeldungArt,
+                        "Erfolg", clrErfolg,
+                        "Warnung", clrWarnung,
+                        "Fehler", clrFehler,
+                        clrText)
+                  Size: =fsNormal
+                  Height: =52
+                  FillPortions: =1
+                  Live: =Live.Polite
+                  PaddingLeft: =0
+            - btnMeldungZu:
+                Control: Classic/Button
+                Properties:
+                  Text: ="OK"
+                  OnSelect: =Set(gblMeldung, ""); Set(gblMeldungArt, "")
+                  Fill: =clrFlaeche
+                  Color: =clrText
+                  BorderColor: =clrRahmen
+                  BorderThickness: =1
+                  Size: =fsNormal
+                  Height: =hTouch
+                  Width: =96
+                  FillPortions: =0
+                  RadiusTopLeft: =radM
+                  RadiusTopRight: =radM
+                  RadiusBottomLeft: =radM
+                  RadiusBottomRight: =radM
+
+      # ===============================================================
+      # INHALT - fuenf Ansichten, immer genau eine sichtbar
+      # ===============================================================
+      - conInhalt:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            Fill: =RGBA(0, 0, 0, 0)
+            FillPortions: =1
+            LayoutDirection: =LayoutDirection.Vertical
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+          Children:
+
+            # -----------------------------------------------------------
+            # START - das sieht der Patient, wenn er das iPad bekommt
+            # -----------------------------------------------------------
+            - conStart:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  Visible: =gblSchritt = "Start"
+                  Fill: =RGBA(0, 0, 0, 0)
+                  FillPortions: =1
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutGap: =spL
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  PaddingTop: =spL
+                  PaddingBottom: =spL
+                  PaddingLeft: =spL
+                  PaddingRight: =spL
+                Children:
+                  - conStartKarte:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =clrDunkel
+                        FillPortions: =0
+                        Height: =240
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutGap: =spS
+                        PaddingTop: =spL
+                        PaddingBottom: =spL
+                        PaddingLeft: =spL
+                        PaddingRight: =spL
+                        RadiusTopLeft: =radL
+                        RadiusTopRight: =radL
+                        RadiusBottomLeft: =radL
+                        RadiusBottomRight: =radL
+                      Children:
+                        - lblStartTitel:
+                            Control: Label
+                            Properties:
+                              Text: ="Herzlich willkommen"
+                              Color: =clrWeiss
+                              Size: =fsTitel
+                              FontWeight: =FontWeight.Semibold
+                              Height: =44
+                              FillPortions: =0
+                              Wrap: =false
+                              PaddingLeft: =0
+                        - lblStartText:
+                            Control: Label
+                            Properties:
+                              Text: |-
+                                ="Bitte nehmen Sie sich fünf Minuten Zeit. Wir fragen nacheinander ab:" & Char(10) &
+                                 "1. Ihre Kontaktdaten" & Char(10) &
+                                 "2. die Honoraraufklärung für private Kassen" & Char(10) &
+                                 "3. Ihre Einwilligung in die Datenverarbeitung" & Char(10) & Char(10) &
+                                 "Sie können jederzeit zurückgehen und etwas ändern. Gespeichert wird erst ganz am Ende."
+                              Color: =clrTextHell
+                              Size: =fsNormal
+                              FillPortions: =1
+                              PaddingLeft: =0
+
+                  - btnStart:
+                      Control: Classic/Button
+                      Properties:
+                        Text: ="Anmeldung starten"
+                        OnSelect: |-
+                          =Set(gblMeldung, ""); Set(gblMeldungArt, "");
+                          Set(gblSchritt, "Daten")
+                        Fill: =clrGold
+                        Color: =clrDunkel
+                        HoverFill: =clrGoldHell
+                        PressedFill: =clrGoldHell
+                        BorderThickness: =0
+                        Size: =fsGross
+                        FontWeight: =FontWeight.Semibold
+                        Height: =80
+                        FillPortions: =0
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+
+                  - lblStartFuss:
+                      Control: Label
+                      Properties:
+                        Text: |-
+                          ="Ihre Angaben werden ausschließlich für Terminorganisation, Behandlung, Dokumentation und Abrechnung verwendet. Den vollständigen Text lesen Sie in Schritt 3."
+                        Color: =clrTextLeise
+                        Size: =fsKlein
+                        Height: =60
+                        FillPortions: =0
+                        PaddingLeft: =0
+
+            # -----------------------------------------------------------
+            # SCHRITT 1 - Kontaktdaten
+            # -----------------------------------------------------------
+            - conDaten:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  Visible: =gblSchritt = "Daten"
+                  Fill: =RGBA(0, 0, 0, 0)
+                  FillPortions: =1
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutGap: =spS
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  PaddingTop: =spL
+                  PaddingBottom: =spL
+                  PaddingLeft: =spL
+                  PaddingRight: =spL
+                Children:
+                  - lblDatenTitel:
+                      Control: Label
+                      Properties:
+                        Text: ="Ihre Daten"
+                        Color: =clrText
+                        Size: =fsTitel
+                        FontWeight: =FontWeight.Semibold
+                        Height: =44
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - lblDatenHinweis:
+                      Control: Label
+                      Properties:
+                        Text: ="Felder mit * benötigen wir, alles andere ist freiwillig."
+                        Color: =clrTextLeise
+                        Size: =fsKlein
+                        Height: =26
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+
+                  - lblFVorname:
+                      Control: Label
+                      Properties:
+                        Text: ="Vorname *"
+                        Color: =clrText
+                        Size: =fsNormal
+                        FontWeight: =FontWeight.Semibold
+                        Height: =28
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - txtVorname:
+                      Control: Classic/TextInput
+                      Properties:
+                        Default: =gblTxtVorname
+                        Reset: =gblReset
+                        HintText: ="Wie heißen Sie mit Vornamen?"
+                        Height: =hEingabe
+                        FillPortions: =0
+                        BorderColor: =If(gblPruefen And IsBlank(Trim(Self.Text)), clrFehler, clrRahmen)
+                        BorderThickness: =1
+                        Size: =fsGross
+                        PaddingLeft: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+
+                  - lblFNachname:
+                      Control: Label
+                      Properties:
+                        Text: ="Nachname *"
+                        Color: =clrText
+                        Size: =fsNormal
+                        FontWeight: =FontWeight.Semibold
+                        Height: =28
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - txtNachname:
+                      Control: Classic/TextInput
+                      Properties:
+                        Default: =gblTxtNachname
+                        Reset: =gblReset
+                        HintText: ="Ihr Familienname"
+                        Height: =hEingabe
+                        FillPortions: =0
+                        BorderColor: =If(gblPruefen And IsBlank(Trim(Self.Text)), clrFehler, clrRahmen)
+                        BorderThickness: =1
+                        Size: =fsGross
+                        PaddingLeft: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+
+                  - lblFGeburt:
+                      Control: Label
+                      Properties:
+                        Text: ="Geburtsdatum *"
+                        Color: =clrText
+                        Size: =fsNormal
+                        FontWeight: =FontWeight.Semibold
+                        Height: =28
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - txtGeburt:
+                      Control: Classic/TextInput
+                      Properties:
+                        Default: =gblTxtGeburt
+                        Reset: =gblReset
+                        HintText: ="TT.MM.JJJJ, zum Beispiel 15.03.1985"
+                        Height: =hEingabe
+                        FillPortions: =0
+                        # Rot, sobald geprueft wurde und das Datum nicht
+                        # lesbar ist - nicht schon beim Tippen.
+                        BorderColor: |-
+                          =If(
+                              gblPruefen And IsBlank(IfError(DateValue(Trim(Self.Text)), Blank())),
+                              clrFehler,
+                              clrRahmen
+                          )
+                        BorderThickness: =1
+                        Size: =fsGross
+                        PaddingLeft: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+
+                  - lblFTelefon:
+                      Control: Label
+                      Properties:
+                        Text: ="Telefonnummer *"
+                        Color: =clrText
+                        Size: =fsNormal
+                        FontWeight: =FontWeight.Semibold
+                        Height: =28
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - txtTelefon:
+                      Control: Classic/TextInput
+                      Properties:
+                        Default: =gblTxtTelefon
+                        Reset: =gblReset
+                        HintText: ="Unter welcher Nummer erreichen wir Sie?"
+                        Height: =hEingabe
+                        FillPortions: =0
+                        BorderColor: =If(gblPruefen And IsBlank(Trim(Self.Text)), clrFehler, clrRahmen)
+                        BorderThickness: =1
+                        Size: =fsGross
+                        PaddingLeft: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+
+                  - lblFEMail:
+                      Control: Label
+                      Properties:
+                        Text: ="E-Mail-Adresse *"
+                        Color: =clrText
+                        Size: =fsNormal
+                        FontWeight: =FontWeight.Semibold
+                        Height: =28
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - txtEMail:
+                      Control: Classic/TextInput
+                      Properties:
+                        Default: =gblTxtEMail
+                        Reset: =gblReset
+                        HintText: ="Für Rechnungen und Terminerinnerungen"
+                        Height: =hEingabe
+                        FillPortions: =0
+                        # Sehr einfache Pruefung: ein @ und ein Punkt
+                        # dahinter. Mehr faengt keine echten Fehler.
+                        BorderColor: |-
+                          =If(
+                              gblPruefen And Not(IsMatch(Trim(Self.Text), Match.Email)),
+                              clrFehler,
+                              clrRahmen
+                          )
+                        BorderThickness: =1
+                        Size: =fsGross
+                        PaddingLeft: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+
+                  - lblFStrasse:
+                      Control: Label
+                      Properties:
+                        Text: ="Straße und Hausnummer"
+                        Color: =clrTextLeise
+                        Size: =fsNormal
+                        Height: =28
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - txtStrasse:
+                      Control: Classic/TextInput
+                      Properties:
+                        Default: =gblTxtStrasse
+                        Reset: =gblReset
+                        HintText: ="Planeggerstraße 47d"
+                        Height: =hEingabe
+                        FillPortions: =0
+                        BorderColor: =clrRahmen
+                        BorderThickness: =1
+                        Size: =fsGross
+                        PaddingLeft: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+
+                  - lblFPLZ:
+                      Control: Label
+                      Properties:
+                        Text: ="Postleitzahl"
+                        Color: =clrTextLeise
+                        Size: =fsNormal
+                        Height: =28
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - txtPLZ:
+                      Control: Classic/TextInput
+                      Properties:
+                        Default: =gblTxtPLZ
+                        Reset: =gblReset
+                        HintText: ="81241"
+                        Height: =hEingabe
+                        FillPortions: =0
+                        BorderColor: =clrRahmen
+                        BorderThickness: =1
+                        Size: =fsGross
+                        PaddingLeft: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+
+                  - lblFOrt:
+                      Control: Label
+                      Properties:
+                        Text: ="Ort"
+                        Color: =clrTextLeise
+                        Size: =fsNormal
+                        Height: =28
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - txtOrt:
+                      Control: Classic/TextInput
+                      Properties:
+                        Default: =gblTxtOrt
+                        Reset: =gblReset
+                        HintText: ="München"
+                        Height: =hEingabe
+                        FillPortions: =0
+                        BorderColor: =clrRahmen
+                        BorderThickness: =1
+                        Size: =fsGross
+                        PaddingLeft: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+
+                  - lblFVersicherung:
+                      Control: Label
+                      Properties:
+                        Text: ="Wie sind Sie versichert? *"
+                        Color: =clrText
+                        Size: =fsNormal
+                        FontWeight: =FontWeight.Semibold
+                        Height: =28
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - drpVersicherung:
+                      Control: Classic/DropDown
+                      Properties:
+                        Items: =tblVersicherung
+                        Reset: =gblReset
+                        Height: =hEingabe
+                        FillPortions: =0
+                        BorderColor: |-
+                          =If(
+                              gblPruefen And Self.Selected.Value = Index(tblVersicherung, 1).Value,
+                              clrFehler,
+                              clrRahmen
+                          )
+                        BorderThickness: =1
+                        Size: =fsGross
+
+                  # --- Hinweis, wenn es den Patienten schon gibt ------
+                  - lblDublette:
+                      Control: Label
+                      Properties:
+                        Visible: =Not(IsBlank(gblVorhandenerPatient))
+                        Text: |-
+                          ="Wir haben Sie bereits im System (Nr. " & gblVorhandenerPatient.ID &
+                           "). Ihre Angaben werden aktualisiert, es wird kein zweiter Eintrag angelegt."
+                        Color: =clrWarnung
+                        Size: =fsKlein
+                        Height: =44
+                        FillPortions: =0
+                        PaddingLeft: =0
+
+                  - conDatenAktionen:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =RGBA(0, 0, 0, 0)
+                        FillPortions: =0
+                        Height: =88
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutGap: =spS
+                      Children:
+                        - btnDatenZurueck:
+                            Control: Classic/Button
+                            Properties:
+                              Text: ="Zurück"
+                              OnSelect: |-
+                                =Set(gblPruefen, false);
+                                Set(gblMeldung, ""); Set(gblMeldungArt, "");
+                                Set(gblSchritt, "Start")
+                              Fill: =clrFlaeche
+                              Color: =clrText
+                              BorderColor: =clrRahmen
+                              BorderThickness: =1
+                              Size: =fsNormal
+                              Height: =72
+                              Width: =160
+                              FillPortions: =0
+                              RadiusTopLeft: =radM
+                              RadiusTopRight: =radM
+                              RadiusBottomLeft: =radM
+                              RadiusBottomRight: =radM
+                        - btnDatenWeiter:
+                            Control: Classic/Button
+                            Properties:
+                              Text: ="Weiter zur Honoraraufklärung"
+                              OnSelect: |-
+                                =Set(gblPruefen, true);
+                                // Das Geburtsdatum wird einmal geparst und
+                                // danach ueberall als Datum verwendet.
+                                Set(gblGeburtsdatum, IfError(DateValue(Trim(txtGeburt.Text)), Blank()));
+                                If(
+                                    IsBlank(Trim(txtVorname.Text)) Or IsBlank(Trim(txtNachname.Text)) Or
+                                    IsBlank(Trim(txtTelefon.Text)),
+                                    Set(gblMeldung, "Bitte Vorname, Nachname und Telefonnummer ausfüllen.");
+                                    Set(gblMeldungArt, "Warnung"),
+
+                                    IsBlank(gblGeburtsdatum),
+                                    Set(gblMeldung, "Das Geburtsdatum konnte nicht gelesen werden. Bitte als TT.MM.JJJJ eingeben, zum Beispiel 15.03.1985.");
+                                    Set(gblMeldungArt, "Warnung"),
+
+                                    Not(IsMatch(Trim(txtEMail.Text), Match.Email)),
+                                    Set(gblMeldung, "Bitte eine gültige E-Mail-Adresse eingeben.");
+                                    Set(gblMeldungArt, "Warnung"),
+
+                                    drpVersicherung.Selected.Value = Index(tblVersicherung, 1).Value,
+                                    Set(gblMeldung, "Bitte wählen Sie aus, wie Sie versichert sind.");
+                                    Set(gblMeldungArt, "Warnung"),
+
+                                    // Gibt es die Person schon? Dann wird
+                                    // spaeter aktualisiert statt doppelt
+                                    // angelegt.
+                                    Set(
+                                        gblVorhandenerPatient,
+                                        LookUp(
+                                            Patientenstamm,
+                                            Nachname = Trim(txtNachname.Text) And
+                                            Vorname = Trim(txtVorname.Text) And
+                                            Geburtsdatum = gblGeburtsdatum
+                                        )
+                                    );
+                                    Set(gblPruefen, false);
+                                    Set(gblMeldung, ""); Set(gblMeldungArt, "");
+                                    Set(gblSchritt, "Honorar")
+                                )
+                              Fill: =clrGold
+                              Color: =clrDunkel
+                              HoverFill: =clrGoldHell
+                              PressedFill: =clrGoldHell
+                              BorderThickness: =0
+                              Size: =fsGross
+                              FontWeight: =FontWeight.Semibold
+                              Height: =72
+                              FillPortions: =1
+                              RadiusTopLeft: =radM
+                              RadiusTopRight: =radM
+                              RadiusBottomLeft: =radM
+                              RadiusBottomRight: =radM
+
+            # -----------------------------------------------------------
+            # SCHRITT 2 - Honoraraufklaerung
+            # Der Text stammt wortgleich aus dem Papierformular der
+            # Praxis. Die Saetze stehen in App.Formulas unter tblHonorar.
+            # -----------------------------------------------------------
+            - conHonorar:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  Visible: =gblSchritt = "Honorar"
+                  Fill: =RGBA(0, 0, 0, 0)
+                  FillPortions: =1
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutGap: =spM
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  PaddingTop: =spL
+                  PaddingBottom: =spL
+                  PaddingLeft: =spL
+                  PaddingRight: =spL
+                Children:
+                  - lblHonorarTitel:
+                      Control: Label
+                      Properties:
+                        Text: ="Honoraraufklärung für private Kassen"
+                        Color: =clrText
+                        Size: =fsTitel
+                        FontWeight: =FontWeight.Semibold
+                        Height: =44
+                        FillPortions: =0
+                        PaddingLeft: =0
+
+                  - lblHonorarText1:
+                      Control: Label
+                      Properties:
+                        Text: |-
+                          ="Unser Bestreben ist es, dass Ihre Krankenversicherung die anfallenden Behandlungskosten vollständig übernimmt." & Char(10) & Char(10) &
+                           "Aus diesem Grund wird Ihre Behandlung in einzelne Abrechnungspositionen aufgegliedert. Die einzelnen Positionen werden nach der Liste der beihilfefähigen Heilbehandlungen abgerechnet, sodass eine Übernahme durch Ihre private Krankenversicherung oder Beihilfestelle in der Regel möglich ist." & Char(10) & Char(10) &
+                           "Bitte klären Sie die Kostenübernahme mit Ihrer Krankenversicherung." & Char(10) & Char(10) &
+                           "Um die therapeutische Wirksamkeit zu verbessern, empfehlen wir in der Physiotherapie in der Regel Doppeltermine, also zwei aufeinanderfolgende Einheiten. Damit haben Sie eine Behandlungsdauer von 50 Minuten. Ein Termin in der Sporttherapie dauert 60 Minuten."
+                        Color: =clrText
+                        Size: =fsNormal
+                        Height: =300
+                        FillPortions: =0
+                        PaddingLeft: =0
+
+                  # --- Honorarsaetze -----------------------------------
+                  - lblPreiseTitel:
+                      Control: Label
+                      Properties:
+                        Text: ="Die Honorarsätze im Einzelnen"
+                        Color: =clrText
+                        Size: =fsGross
+                        FontWeight: =FontWeight.Semibold
+                        Height: =34
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - galPreise:
+                      Control: Gallery
+                      Variant: Vertical
+                      Properties:
+                        Items: =tblHonorar
+                        # Feste Hoehe fuer alle Zeilen: der aeussere
+                        # Bereich scrollt, die Galerie selbst nicht.
+                        # Verschachteltes Scrollen ist am Finger kaum
+                        # bedienbar.
+                        Height: =CountRows(tblHonorar) * 56
+                        FillPortions: =0
+                        TemplateSize: =56
+                        TemplatePadding: =0
+                      Children:
+                        - rectPreisZeile:
+                            Control: Rectangle
+                            Properties:
+                              Fill: =clrFlaeche
+                              Width: =Parent.TemplateWidth
+                              Height: =Parent.TemplateHeight - 1
+                              OnSelect: =Select(Parent)
+                        - rectPreisTrenner:
+                            Control: Rectangle
+                            Properties:
+                              Fill: =clrRahmen
+                              Width: =Parent.TemplateWidth
+                              Height: =1
+                              Y: =Parent.TemplateHeight - 1
+                              OnSelect: =Select(Parent)
+                        - lblPreisLeistung:
+                            Control: Label
+                            Properties:
+                              Text: =ThisItem.Leistung
+                              Color: =clrText
+                              Size: =fsNormal
+                              X: =spM
+                              Y: =6
+                              Width: =Parent.TemplateWidth - 140
+                              Height: =26
+                              Wrap: =false
+                              PaddingLeft: =0
+                              OnSelect: =Select(Parent)
+                        - lblPreisGruppe:
+                            Control: Label
+                            Properties:
+                              Text: =ThisItem.Gruppe
+                              Color: =clrTextLeise
+                              Size: =fsKlein
+                              X: =spM
+                              Y: =30
+                              Width: =Parent.TemplateWidth - 140
+                              Height: =20
+                              Wrap: =false
+                              PaddingLeft: =0
+                              OnSelect: =Select(Parent)
+                        - lblPreisWert:
+                            Control: Label
+                            Properties:
+                              Text: =ThisItem.Preis
+                              Color: =clrText
+                              Size: =fsNormal
+                              FontWeight: =FontWeight.Semibold
+                              Align: =Align.Right
+                              VerticalAlign: =VerticalAlign.Middle
+                              X: =Parent.TemplateWidth - 132
+                              Y: =0
+                              Width: =116
+                              Height: =Parent.TemplateHeight
+                              Wrap: =false
+                              PaddingRight: =0
+                              OnSelect: =Select(Parent)
+
+                  - lblHonorarText2:
+                      Control: Label
+                      Properties:
+                        Text: |-
+                          ="Diese Honorarsätze gelten als vereinbart, unabhängig davon, ob Ihre private Krankenversicherung oder Beihilfestelle diese ganz, nicht oder teilweise erstattet. Abzüge von der Rechnung aufgrund unzureichender Erstattung sind nicht standhaft und werden nachgefordert." & Char(10) & Char(10) &
+                           "Terminabsagen" & Char(10) &
+                           "Therapietermine, die innerhalb von 24 Stunden abgesagt werden, können von der Praxis in Rechnung gestellt werden (§ 615 BGB)." & Char(10) & Char(10) &
+                           "Sonstiges" & Char(10) &
+                           "Bitte bringen Sie zu allen Behandlungen ein ausreichend großes Handtuch mit."
+                        Color: =clrText
+                        Size: =fsNormal
+                        Height: =270
+                        FillPortions: =0
+                        PaddingLeft: =0
+
+                  # --- Zustimmung --------------------------------------
+                  - btnHonorarZu:
+                      Control: Classic/Button
+                      Properties:
+                        Text: |-
+                          =If(
+                              gblHonorarOk,
+                              "Zugestimmt - hier tippen, um zurückzunehmen",
+                              "Ich habe die Honoraraufklärung gelesen und stimme zu"
+                          )
+                        OnSelect: =Set(gblHonorarOk, Not(gblHonorarOk))
+                        Fill: =If(gblHonorarOk, clrGold, clrFlaeche)
+                        Color: =If(gblHonorarOk, clrDunkel, clrText)
+                        BorderColor: =If(gblHonorarOk, clrGold, If(gblPruefen, clrFehler, clrRahmen))
+                        BorderThickness: =2
+                        HoverFill: =clrGoldHell
+                        HoverColor: =clrDunkel
+                        Size: =fsNormal
+                        FontWeight: =FontWeight.Semibold
+                        Height: =80
+                        FillPortions: =0
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+
+                  - lblHonorarName:
+                      Control: Label
+                      Properties:
+                        Text: ="Bitte bestätigen Sie mit Ihrem vollständigen Namen *"
+                        Color: =clrText
+                        Size: =fsNormal
+                        FontWeight: =FontWeight.Semibold
+                        Height: =28
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - txtHonorarName:
+                      Control: Classic/TextInput
+                      Properties:
+                        Default: =gblTxtHonorarName
+                        Reset: =gblReset
+                        HintText: ="Vorname und Nachname"
+                        Height: =hEingabe
+                        FillPortions: =0
+                        BorderColor: =If(gblPruefen And IsBlank(Trim(Self.Text)), clrFehler, clrRahmen)
+                        BorderThickness: =1
+                        Size: =fsGross
+                        PaddingLeft: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+                  - lblHonorarFuss:
+                      Control: Label
+                      Properties:
+                        Text: |-
+                          =praxisOrt & ", " & Text(Today(), DateTimeFormat.LongDate) &
+                           "   ·   Fassung der Honoraraufklärung: " & vertragsStand
+                        Color: =clrTextLeise
+                        Size: =fsKlein
+                        Height: =24
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+
+                  - conHonorarAktionen:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =RGBA(0, 0, 0, 0)
+                        FillPortions: =0
+                        Height: =88
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutGap: =spS
+                      Children:
+                        - btnHonorarZurueck:
+                            Control: Classic/Button
+                            Properties:
+                              Text: ="Zurück"
+                              OnSelect: |-
+                                =Set(gblPruefen, false);
+                                Set(gblMeldung, ""); Set(gblMeldungArt, "");
+                                Set(gblSchritt, "Daten")
+                              Fill: =clrFlaeche
+                              Color: =clrText
+                              BorderColor: =clrRahmen
+                              BorderThickness: =1
+                              Size: =fsNormal
+                              Height: =72
+                              Width: =160
+                              FillPortions: =0
+                              RadiusTopLeft: =radM
+                              RadiusTopRight: =radM
+                              RadiusBottomLeft: =radM
+                              RadiusBottomRight: =radM
+                        - btnHonorarWeiter:
+                            Control: Classic/Button
+                            Properties:
+                              Text: ="Weiter zum Datenschutz"
+                              OnSelect: |-
+                                =Set(gblPruefen, true);
+                                If(
+                                    Not(gblHonorarOk),
+                                    Set(gblMeldung, "Ohne Ihre Zustimmung zur Honoraraufklärung können wir Sie nicht privat abrechnen. Bitte tippen Sie auf die Zustimmung.");
+                                    Set(gblMeldungArt, "Warnung"),
+
+                                    IsBlank(Trim(txtHonorarName.Text)),
+                                    Set(gblMeldung, "Bitte bestätigen Sie mit Ihrem vollständigen Namen.");
+                                    Set(gblMeldungArt, "Warnung"),
+
+                                    Set(gblPruefen, false);
+                                    Set(gblMeldung, ""); Set(gblMeldungArt, "");
+                                    Set(gblSchritt, "Datenschutz")
+                                )
+                              Fill: =clrGold
+                              Color: =clrDunkel
+                              HoverFill: =clrGoldHell
+                              PressedFill: =clrGoldHell
+                              BorderThickness: =0
+                              Size: =fsGross
+                              FontWeight: =FontWeight.Semibold
+                              Height: =72
+                              FillPortions: =1
+                              RadiusTopLeft: =radM
+                              RadiusTopRight: =radM
+                              RadiusBottomLeft: =radM
+                              RadiusBottomRight: =radM
+
+            # -----------------------------------------------------------
+            # SCHRITT 3 - Einwilligung in die Datenverarbeitung
+            # Text wortgleich aus dem Papierformular der Praxis.
+            #
+            # Die vier Kontaktwege und Social Media sind FREIWILLIG und
+            # werden einzeln erfasst - genau wie auf dem Papier. Eine
+            # Sammelzustimmung waere keine wirksame Einwilligung.
+            # Unbeantwortet zaehlt nicht als Nein: die App verlangt zu
+            # jeder Zeile eine ausdrueckliche Antwort.
+            # -----------------------------------------------------------
+            - conDatenschutz:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  Visible: =gblSchritt = "Datenschutz"
+                  Fill: =RGBA(0, 0, 0, 0)
+                  FillPortions: =1
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutGap: =spM
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  PaddingTop: =spL
+                  PaddingBottom: =spL
+                  PaddingLeft: =spL
+                  PaddingRight: =spL
+                Children:
+                  - lblDsTitel:
+                      Control: Label
+                      Properties:
+                        Text: ="Einwilligung in die Datenverarbeitung"
+                        Color: =clrText
+                        Size: =fsTitel
+                        FontWeight: =FontWeight.Semibold
+                        Height: =44
+                        FillPortions: =0
+                        PaddingLeft: =0
+
+                  - lblDsHaupttext:
+                      Control: Label
+                      Properties:
+                        Text: |-
+                          ="Ich bin damit einverstanden, dass meine Daten durch die Praxis zum Zweck der Kontaktaufnahme, Behandlungsdurchführung, Dokumentation sowie Abrechnung verarbeitet und genutzt werden." & Char(10) & Char(10) &
+                           "Dazu zählen insbesondere: die Pflege der Kontaktdaten, die Terminorganisation, die Abrechnung mit Kostenträgern (Krankenkassen, Beihilfestellen), sowie die therapeutische Dokumentation und ggf. notwendige Weitergabe an Ärzt:innen oder andere medizinische Partner:innen."
+                        Color: =clrText
+                        Size: =fsNormal
+                        Height: =220
+                        FillPortions: =0
+                        PaddingLeft: =0
+
+                  - lblDsHinweise:
+                      Control: Label
+                      Properties:
+                        Text: |-
+                          ="Ich bin darauf hingewiesen worden, dass ich" & Char(10) &
+                           "-  diese Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen kann," & Char(10) &
+                           "-  jederzeit Auskunft über die zu meiner Person gespeicherten Daten verlangen kann," & Char(10) &
+                           "-  jederzeit Berichtigung, Löschung oder Sperrung meiner personenbezogenen Daten verlangen kann." & Char(10) & Char(10) &
+                           "Der Widerruf ist zu richten an:" & Char(10) & praxisAnschrift & Char(10) & Char(10) &
+                           "Im Fall des Widerrufs werden meine Daten nach Ablauf gesetzlicher Fristen gelöscht, sofern dem keine andere gesetzliche Regelung entgegensteht."
+                        Color: =clrText
+                        Size: =fsNormal
+                        Height: =300
+                        FillPortions: =0
+                        PaddingLeft: =0
+
+                  - btnDsZu:
+                      Control: Classic/Button
+                      Properties:
+                        Text: |-
+                          =If(
+                              gblDsOk,
+                              "Zugestimmt - hier tippen, um zurückzunehmen",
+                              "Ich habe den Text gelesen und willige in die Datenverarbeitung ein"
+                          )
+                        OnSelect: =Set(gblDsOk, Not(gblDsOk))
+                        Fill: =If(gblDsOk, clrGold, clrFlaeche)
+                        Color: =If(gblDsOk, clrDunkel, clrText)
+                        BorderColor: =If(gblDsOk, clrGold, If(gblPruefen, clrFehler, clrRahmen))
+                        BorderThickness: =2
+                        HoverFill: =clrGoldHell
+                        HoverColor: =clrDunkel
+                        Size: =fsNormal
+                        FontWeight: =FontWeight.Semibold
+                        Height: =80
+                        FillPortions: =0
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+
+                  - lblDsWahlTitel:
+                      Control: Label
+                      Properties:
+                        Text: ="Freiwillig - Sie entscheiden bei jedem Punkt selbst"
+                        Color: =clrText
+                        Size: =fsGross
+                        FontWeight: =FontWeight.Semibold
+                        Height: =40
+                        FillPortions: =0
+                        PaddingLeft: =0
+
+                  # --- Rechnungen per E-Mail ---
+                  - conDsRechnung:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =clrFlaeche
+                        FillPortions: =0
+                        # Schmal stehen die Knoepfe UNTER dem Text. Nebeneinander
+                        # bliebe fuer den Text zu wenig Breite uebrig.
+                        Height: =If(conApp.Width >= bpSchritte, 116, 184)
+                        LayoutDirection: |-
+                          =If(
+                              conApp.Width >= bpSchritte,
+                              LayoutDirection.Horizontal,
+                              LayoutDirection.Vertical
+                          )
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutGap: =spS
+                        BorderColor: =If(gblPruefen And gblDsRechnung = "", clrFehler, clrRahmen)
+                        BorderThickness: =1
+                        PaddingTop: =spS
+                        PaddingBottom: =spS
+                        PaddingLeft: =spM
+                        PaddingRight: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+                      Children:
+                        - lblDsRechnung:
+                            Control: Label
+                            Properties:
+                              Text: ="Rechnungen dürfen an meine E-Mail-Adresse versandt werden."
+                              Color: =clrText
+                              Size: =fsNormal
+                              VerticalAlign: =VerticalAlign.Middle
+                              FillPortions: =1
+                              PaddingLeft: =0
+                        - conDsRechnungWahl:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              Fill: =RGBA(0, 0, 0, 0)
+                              FillPortions: =0
+                              Height: =64
+                              Width: =192
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutGap: =spS
+                            Children:
+                              - btnDsRechnungJa:
+                                  Control: Classic/Button
+                                  Properties:
+                                    Text: ="Ja"
+                                    OnSelect: =Set(gblDsRechnung, "Ja")
+                                    Fill: =If(gblDsRechnung = "Ja", clrGold, clrFlaeche)
+                                    Color: =If(gblDsRechnung = "Ja", clrDunkel, clrTextLeise)
+                                    BorderColor: =If(gblDsRechnung = "Ja", clrGold, clrRahmen)
+                                    BorderThickness: =1
+                                    FontWeight: =If(gblDsRechnung = "Ja", FontWeight.Semibold, FontWeight.Normal)
+                                    Size: =fsNormal
+                                    Height: =64
+                                    FillPortions: =1
+                                    RadiusTopLeft: =radM
+                                    RadiusTopRight: =radM
+                                    RadiusBottomLeft: =radM
+                                    RadiusBottomRight: =radM
+                              - btnDsRechnungNein:
+                                  Control: Classic/Button
+                                  Properties:
+                                    Text: ="Nein"
+                                    OnSelect: =Set(gblDsRechnung, "Nein")
+                                    Fill: =If(gblDsRechnung = "Nein", clrDunkel, clrFlaeche)
+                                    Color: =If(gblDsRechnung = "Nein", clrWeiss, clrTextLeise)
+                                    BorderColor: =If(gblDsRechnung = "Nein", clrDunkel, clrRahmen)
+                                    BorderThickness: =1
+                                    FontWeight: =If(gblDsRechnung = "Nein", FontWeight.Semibold, FontWeight.Normal)
+                                    Size: =fsNormal
+                                    Height: =64
+                                    FillPortions: =1
+                                    RadiusTopLeft: =radM
+                                    RadiusTopRight: =radM
+                                    RadiusBottomLeft: =radM
+                                    RadiusBottomRight: =radM
+
+                  # --- Kontakt per E-Mail ---
+                  - conDsEMail:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =clrFlaeche
+                        FillPortions: =0
+                        # Schmal stehen die Knoepfe UNTER dem Text. Nebeneinander
+                        # bliebe fuer den Text zu wenig Breite uebrig.
+                        Height: =If(conApp.Width >= bpSchritte, 116, 184)
+                        LayoutDirection: |-
+                          =If(
+                              conApp.Width >= bpSchritte,
+                              LayoutDirection.Horizontal,
+                              LayoutDirection.Vertical
+                          )
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutGap: =spS
+                        BorderColor: =If(gblPruefen And gblDsEMail = "", clrFehler, clrRahmen)
+                        BorderThickness: =1
+                        PaddingTop: =spS
+                        PaddingBottom: =spS
+                        PaddingLeft: =spM
+                        PaddingRight: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+                      Children:
+                        - lblDsEMail:
+                            Control: Label
+                            Properties:
+                              Text: ="Die Praxis darf mich per E-Mail kontaktieren."
+                              Color: =clrText
+                              Size: =fsNormal
+                              VerticalAlign: =VerticalAlign.Middle
+                              FillPortions: =1
+                              PaddingLeft: =0
+                        - conDsEMailWahl:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              Fill: =RGBA(0, 0, 0, 0)
+                              FillPortions: =0
+                              Height: =64
+                              Width: =192
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutGap: =spS
+                            Children:
+                              - btnDsEMailJa:
+                                  Control: Classic/Button
+                                  Properties:
+                                    Text: ="Ja"
+                                    OnSelect: =Set(gblDsEMail, "Ja")
+                                    Fill: =If(gblDsEMail = "Ja", clrGold, clrFlaeche)
+                                    Color: =If(gblDsEMail = "Ja", clrDunkel, clrTextLeise)
+                                    BorderColor: =If(gblDsEMail = "Ja", clrGold, clrRahmen)
+                                    BorderThickness: =1
+                                    FontWeight: =If(gblDsEMail = "Ja", FontWeight.Semibold, FontWeight.Normal)
+                                    Size: =fsNormal
+                                    Height: =64
+                                    FillPortions: =1
+                                    RadiusTopLeft: =radM
+                                    RadiusTopRight: =radM
+                                    RadiusBottomLeft: =radM
+                                    RadiusBottomRight: =radM
+                              - btnDsEMailNein:
+                                  Control: Classic/Button
+                                  Properties:
+                                    Text: ="Nein"
+                                    OnSelect: =Set(gblDsEMail, "Nein")
+                                    Fill: =If(gblDsEMail = "Nein", clrDunkel, clrFlaeche)
+                                    Color: =If(gblDsEMail = "Nein", clrWeiss, clrTextLeise)
+                                    BorderColor: =If(gblDsEMail = "Nein", clrDunkel, clrRahmen)
+                                    BorderThickness: =1
+                                    FontWeight: =If(gblDsEMail = "Nein", FontWeight.Semibold, FontWeight.Normal)
+                                    Size: =fsNormal
+                                    Height: =64
+                                    FillPortions: =1
+                                    RadiusTopLeft: =radM
+                                    RadiusTopRight: =radM
+                                    RadiusBottomLeft: =radM
+                                    RadiusBottomRight: =radM
+
+                  # --- Kontakt per Telefon ---
+                  - conDsTelefon:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =clrFlaeche
+                        FillPortions: =0
+                        # Schmal stehen die Knoepfe UNTER dem Text. Nebeneinander
+                        # bliebe fuer den Text zu wenig Breite uebrig.
+                        Height: =If(conApp.Width >= bpSchritte, 116, 184)
+                        LayoutDirection: |-
+                          =If(
+                              conApp.Width >= bpSchritte,
+                              LayoutDirection.Horizontal,
+                              LayoutDirection.Vertical
+                          )
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutGap: =spS
+                        BorderColor: =If(gblPruefen And gblDsTelefon = "", clrFehler, clrRahmen)
+                        BorderThickness: =1
+                        PaddingTop: =spS
+                        PaddingBottom: =spS
+                        PaddingLeft: =spM
+                        PaddingRight: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+                      Children:
+                        - lblDsTelefon:
+                            Control: Label
+                            Properties:
+                              Text: ="Die Praxis darf mich telefonisch kontaktieren."
+                              Color: =clrText
+                              Size: =fsNormal
+                              VerticalAlign: =VerticalAlign.Middle
+                              FillPortions: =1
+                              PaddingLeft: =0
+                        - conDsTelefonWahl:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              Fill: =RGBA(0, 0, 0, 0)
+                              FillPortions: =0
+                              Height: =64
+                              Width: =192
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutGap: =spS
+                            Children:
+                              - btnDsTelefonJa:
+                                  Control: Classic/Button
+                                  Properties:
+                                    Text: ="Ja"
+                                    OnSelect: =Set(gblDsTelefon, "Ja")
+                                    Fill: =If(gblDsTelefon = "Ja", clrGold, clrFlaeche)
+                                    Color: =If(gblDsTelefon = "Ja", clrDunkel, clrTextLeise)
+                                    BorderColor: =If(gblDsTelefon = "Ja", clrGold, clrRahmen)
+                                    BorderThickness: =1
+                                    FontWeight: =If(gblDsTelefon = "Ja", FontWeight.Semibold, FontWeight.Normal)
+                                    Size: =fsNormal
+                                    Height: =64
+                                    FillPortions: =1
+                                    RadiusTopLeft: =radM
+                                    RadiusTopRight: =radM
+                                    RadiusBottomLeft: =radM
+                                    RadiusBottomRight: =radM
+                              - btnDsTelefonNein:
+                                  Control: Classic/Button
+                                  Properties:
+                                    Text: ="Nein"
+                                    OnSelect: =Set(gblDsTelefon, "Nein")
+                                    Fill: =If(gblDsTelefon = "Nein", clrDunkel, clrFlaeche)
+                                    Color: =If(gblDsTelefon = "Nein", clrWeiss, clrTextLeise)
+                                    BorderColor: =If(gblDsTelefon = "Nein", clrDunkel, clrRahmen)
+                                    BorderThickness: =1
+                                    FontWeight: =If(gblDsTelefon = "Nein", FontWeight.Semibold, FontWeight.Normal)
+                                    Size: =fsNormal
+                                    Height: =64
+                                    FillPortions: =1
+                                    RadiusTopLeft: =radM
+                                    RadiusTopRight: =radM
+                                    RadiusBottomLeft: =radM
+                                    RadiusBottomRight: =radM
+
+                  # --- Kontakt per WhatsApp ---
+                  - conDsWhatsApp:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =clrFlaeche
+                        FillPortions: =0
+                        # Schmal stehen die Knoepfe UNTER dem Text. Nebeneinander
+                        # bliebe fuer den Text zu wenig Breite uebrig.
+                        Height: =If(conApp.Width >= bpSchritte, 148, 280)
+                        LayoutDirection: |-
+                          =If(
+                              conApp.Width >= bpSchritte,
+                              LayoutDirection.Horizontal,
+                              LayoutDirection.Vertical
+                          )
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutGap: =spS
+                        BorderColor: =If(gblPruefen And gblDsWhatsApp = "", clrFehler, clrRahmen)
+                        BorderThickness: =1
+                        PaddingTop: =spS
+                        PaddingBottom: =spS
+                        PaddingLeft: =spM
+                        PaddingRight: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+                      Children:
+                        - lblDsWhatsApp:
+                            Control: Label
+                            Properties:
+                              Text: |-
+                                ="Die Praxis darf mich per WhatsApp kontaktieren." & Char(10) &
+                                 "Hinweis: WhatsApp gehört zu Meta. Nachrichten laufen über deren Server. Wenn Sie das nicht möchten, wählen Sie Nein - wir erreichen Sie dann anders."
+                              Color: =clrText
+                              Size: =fsNormal
+                              VerticalAlign: =VerticalAlign.Middle
+                              FillPortions: =1
+                              PaddingLeft: =0
+                        - conDsWhatsAppWahl:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              Fill: =RGBA(0, 0, 0, 0)
+                              FillPortions: =0
+                              Height: =64
+                              Width: =192
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutGap: =spS
+                            Children:
+                              - btnDsWhatsAppJa:
+                                  Control: Classic/Button
+                                  Properties:
+                                    Text: ="Ja"
+                                    OnSelect: =Set(gblDsWhatsApp, "Ja")
+                                    Fill: =If(gblDsWhatsApp = "Ja", clrGold, clrFlaeche)
+                                    Color: =If(gblDsWhatsApp = "Ja", clrDunkel, clrTextLeise)
+                                    BorderColor: =If(gblDsWhatsApp = "Ja", clrGold, clrRahmen)
+                                    BorderThickness: =1
+                                    FontWeight: =If(gblDsWhatsApp = "Ja", FontWeight.Semibold, FontWeight.Normal)
+                                    Size: =fsNormal
+                                    Height: =64
+                                    FillPortions: =1
+                                    RadiusTopLeft: =radM
+                                    RadiusTopRight: =radM
+                                    RadiusBottomLeft: =radM
+                                    RadiusBottomRight: =radM
+                              - btnDsWhatsAppNein:
+                                  Control: Classic/Button
+                                  Properties:
+                                    Text: ="Nein"
+                                    OnSelect: =Set(gblDsWhatsApp, "Nein")
+                                    Fill: =If(gblDsWhatsApp = "Nein", clrDunkel, clrFlaeche)
+                                    Color: =If(gblDsWhatsApp = "Nein", clrWeiss, clrTextLeise)
+                                    BorderColor: =If(gblDsWhatsApp = "Nein", clrDunkel, clrRahmen)
+                                    BorderThickness: =1
+                                    FontWeight: =If(gblDsWhatsApp = "Nein", FontWeight.Semibold, FontWeight.Normal)
+                                    Size: =fsNormal
+                                    Height: =64
+                                    FillPortions: =1
+                                    RadiusTopLeft: =radM
+                                    RadiusTopRight: =radM
+                                    RadiusBottomLeft: =radM
+                                    RadiusBottomRight: =radM
+
+                  # --- Social Media und Website ---
+                  - conDsSocial:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =clrFlaeche
+                        FillPortions: =0
+                        # Schmal stehen die Knoepfe UNTER dem Text. Nebeneinander
+                        # bliebe fuer den Text zu wenig Breite uebrig.
+                        Height: =If(conApp.Width >= bpSchritte, 172, 320)
+                        LayoutDirection: |-
+                          =If(
+                              conApp.Width >= bpSchritte,
+                              LayoutDirection.Horizontal,
+                              LayoutDirection.Vertical
+                          )
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutGap: =spS
+                        BorderColor: =If(gblPruefen And gblDsSocial = "", clrFehler, clrRahmen)
+                        BorderThickness: =1
+                        PaddingTop: =spS
+                        PaddingBottom: =spS
+                        PaddingLeft: =spM
+                        PaddingRight: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+                      Children:
+                        - lblDsSocial:
+                            Control: Label
+                            Properties:
+                              Text: |-
+                                ="Anonymisierte Bild- oder Videoaufnahmen aus der Behandlung (zum Beispiel von Übungen) dürfen für die Außendarstellung der Praxis verwendet werden, etwa auf Social Media oder der Website." & Char(10) &
+                                 "Dabei wird darauf geachtet, dass keine personenbezogenen Daten oder identifizierbaren Merkmale veröffentlicht werden - es sei denn, ich stimme gesondert und ausdrücklich zu."
+                              Color: =clrText
+                              Size: =fsNormal
+                              VerticalAlign: =VerticalAlign.Middle
+                              FillPortions: =1
+                              PaddingLeft: =0
+                        - conDsSocialWahl:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              Fill: =RGBA(0, 0, 0, 0)
+                              FillPortions: =0
+                              Height: =64
+                              Width: =192
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutGap: =spS
+                            Children:
+                              - btnDsSocialJa:
+                                  Control: Classic/Button
+                                  Properties:
+                                    Text: ="Ja"
+                                    OnSelect: =Set(gblDsSocial, "Ja")
+                                    Fill: =If(gblDsSocial = "Ja", clrGold, clrFlaeche)
+                                    Color: =If(gblDsSocial = "Ja", clrDunkel, clrTextLeise)
+                                    BorderColor: =If(gblDsSocial = "Ja", clrGold, clrRahmen)
+                                    BorderThickness: =1
+                                    FontWeight: =If(gblDsSocial = "Ja", FontWeight.Semibold, FontWeight.Normal)
+                                    Size: =fsNormal
+                                    Height: =64
+                                    FillPortions: =1
+                                    RadiusTopLeft: =radM
+                                    RadiusTopRight: =radM
+                                    RadiusBottomLeft: =radM
+                                    RadiusBottomRight: =radM
+                              - btnDsSocialNein:
+                                  Control: Classic/Button
+                                  Properties:
+                                    Text: ="Nein"
+                                    OnSelect: =Set(gblDsSocial, "Nein")
+                                    Fill: =If(gblDsSocial = "Nein", clrDunkel, clrFlaeche)
+                                    Color: =If(gblDsSocial = "Nein", clrWeiss, clrTextLeise)
+                                    BorderColor: =If(gblDsSocial = "Nein", clrDunkel, clrRahmen)
+                                    BorderThickness: =1
+                                    FontWeight: =If(gblDsSocial = "Nein", FontWeight.Semibold, FontWeight.Normal)
+                                    Size: =fsNormal
+                                    Height: =64
+                                    FillPortions: =1
+                                    RadiusTopLeft: =radM
+                                    RadiusTopRight: =radM
+                                    RadiusBottomLeft: =radM
+                                    RadiusBottomRight: =radM
+
+                  - lblDsName:
+                      Control: Label
+                      Properties:
+                        Text: ="Bitte bestätigen Sie mit Ihrem vollständigen Namen *"
+                        Color: =clrText
+                        Size: =fsNormal
+                        FontWeight: =FontWeight.Semibold
+                        Height: =28
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+                  - txtDsName:
+                      Control: Classic/TextInput
+                      Properties:
+                        Default: =gblTxtDsName
+                        Reset: =gblReset
+                        HintText: ="Vorname und Nachname"
+                        Height: =hEingabe
+                        FillPortions: =0
+                        BorderColor: =If(gblPruefen And IsBlank(Trim(Self.Text)), clrFehler, clrRahmen)
+                        BorderThickness: =1
+                        Size: =fsGross
+                        PaddingLeft: =spM
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM
+                  - lblDsFuss:
+                      Control: Label
+                      Properties:
+                        Text: =praxisOrt & ", " & Text(Today(), DateTimeFormat.LongDate)
+                        Color: =clrTextLeise
+                        Size: =fsKlein
+                        Height: =24
+                        FillPortions: =0
+                        Wrap: =false
+                        PaddingLeft: =0
+
+                  - conDsAktionen:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =RGBA(0, 0, 0, 0)
+                        FillPortions: =0
+                        Height: =88
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutGap: =spS
+                      Children:
+                        - btnDsZurueck:
+                            Control: Classic/Button
+                            Properties:
+                              Text: ="Zurück"
+                              DisplayMode: =If(gblSpeichert, DisplayMode.Disabled, DisplayMode.Edit)
+                              OnSelect: |-
+                                =Set(gblPruefen, false);
+                                Set(gblMeldung, ""); Set(gblMeldungArt, "");
+                                Set(gblSchritt, "Honorar")
+                              Fill: =clrFlaeche
+                              Color: =clrText
+                              BorderColor: =clrRahmen
+                              BorderThickness: =1
+                              Size: =fsNormal
+                              Height: =72
+                              Width: =160
+                              FillPortions: =0
+                              RadiusTopLeft: =radM
+                              RadiusTopRight: =radM
+                              RadiusBottomLeft: =radM
+                              RadiusBottomRight: =radM
+                        - btnAbschliessen:
+                            Control: Classic/Button
+                            Properties:
+                              Text: =If(gblSpeichert, "Speichert ...", "Anmeldung abschließen")
+                              DisplayMode: =If(gblSpeichert, DisplayMode.Disabled, DisplayMode.Edit)
+                              OnSelect: |-
+                                =Set(gblPruefen, true);
+                                If(
+                                    Not(gblDsOk),
+                                    Set(gblMeldung, "Ohne Ihre Einwilligung in die Datenverarbeitung dürfen wir Sie nicht behandeln. Bitte tippen Sie auf die Zustimmung.");
+                                    Set(gblMeldungArt, "Warnung"),
+
+                                    IsBlank(Trim(txtDsName.Text)),
+                                    Set(gblMeldung, "Bitte bestätigen Sie mit Ihrem vollständigen Namen.");
+                                    Set(gblMeldungArt, "Warnung"),
+
+                                    gblDsRechnung = "" Or gblDsEMail = "" Or gblDsTelefon = "" Or
+                                    gblDsWhatsApp = "" Or gblDsSocial = "",
+                                    Set(gblMeldung, "Bitte beantworten Sie jeden der freiwilligen Punkte mit Ja oder Nein. Nein ist völlig in Ordnung.");
+                                    Set(gblMeldungArt, "Warnung"),
+
+                                    Set(gblSpeichert, true);
+                                    Set(gblFehlerText, "");
+                                    // 1) Patient anlegen ODER aktualisieren.
+                                    // Dieselbe Formel deckt beides ab.
+                                    Set(
+                                        gblPatient,
+                                        IfError(
+                                            Patch(
+                                                Patientenstamm,
+                                                If(
+                                                    IsBlank(gblVorhandenerPatient),
+                                                    Defaults(Patientenstamm),
+                                                    gblVorhandenerPatient
+                                                ),
+                                                {
+                                                    Vorname: Trim(txtVorname.Text),
+                                                    Nachname: Trim(txtNachname.Text),
+                                                    Geburtsdatum: gblGeburtsdatum,
+                                                    Telefon: Trim(txtTelefon.Text),
+                                                    EMail: Trim(txtEMail.Text),
+                                                    Strasse: Trim(txtStrasse.Text),
+                                                    PLZ: Trim(txtPLZ.Text),
+                                                    Ort: Trim(txtOrt.Text)
+                                                }
+                                            ),
+                                            Set(gblFehlerText, FirstError.Message); Blank()
+                                        )
+                                    );
+                                    If(
+                                        IsBlank(gblPatient) Or IsBlank(gblPatient.ID),
+                                        Set(gblMeldung, "Ihre Daten konnten nicht gespeichert werden. Bitte wenden Sie sich an die Rezeption. " & gblFehlerText);
+                                        Set(gblMeldungArt, "Fehler"),
+
+                                        // 2) Die Einwilligungen als eigener
+                                        // Eintrag - nachvollziehbar mit Datum
+                                        // und Fassung der Honoraraufklaerung.
+                                        Set(
+                                            gblAnmeldung,
+                                            IfError(
+                                                Patch(
+                                                    Anmeldungen,
+                                                    Defaults(Anmeldungen),
+                                                    {
+                                                        PatientID: gblPatient.ID,
+                                                        Anmeldedatum: Today(),
+                                                        Versicherung: { Value: drpVersicherung.Selected.Value },
+                                                        Vertragsstand: vertragsStand,
+                                                        Honorar_Zugestimmt: gblHonorarOk,
+                                                        Honorar_Name: Trim(txtHonorarName.Text),
+                                                        DS_Zugestimmt: gblDsOk,
+                                                        DS_Name: Trim(txtDsName.Text),
+                                                        DS_Rechnung_EMail: gblDsRechnung = "Ja",
+                                                        DS_Kontakt_EMail: gblDsEMail = "Ja",
+                                                        DS_Kontakt_Telefon: gblDsTelefon = "Ja",
+                                                        DS_Kontakt_WhatsApp: gblDsWhatsApp = "Ja",
+                                                        DS_SocialMedia: {
+                                                            Value: If(gblDsSocial = "Ja", "Einverstanden", "Nicht einverstanden")
+                                                        }
+                                                    }
+                                                ),
+                                                Set(gblFehlerText, FirstError.Message); Blank()
+                                            )
+                                        );
+                                        If(
+                                            IsBlank(gblAnmeldung) Or IsBlank(gblAnmeldung.ID),
+                                            // Der Patient steht schon in der Liste,
+                                            // die Einwilligungen nicht. Das muss
+                                            // die Rezeption wissen.
+                                            Set(gblMeldung,
+                                                "Ihre Daten wurden gespeichert, die Einwilligungen jedoch nicht. Bitte wenden Sie sich an die Rezeption. " & gblFehlerText);
+                                            Set(gblMeldungArt, "Fehler"),
+
+                                            Set(gblPruefen, false);
+                                            Set(gblMeldung, ""); Set(gblMeldungArt, "");
+                                            Set(gblSchritt, "Fertig")
+                                        )
+                                    );
+                                    Set(gblSpeichert, false)
+                                )
+                              Fill: =clrGold
+                              Color: =clrDunkel
+                              HoverFill: =clrGoldHell
+                              PressedFill: =clrGoldHell
+                              DisabledFill: =clrRahmen
+                              DisabledColor: =clrTextLeise
+                              BorderThickness: =0
+                              Size: =fsGross
+                              FontWeight: =FontWeight.Semibold
+                              Height: =72
+                              FillPortions: =1
+                              RadiusTopLeft: =radM
+                              RadiusTopRight: =radM
+                              RadiusBottomLeft: =radM
+                              RadiusBottomRight: =radM
+
+            # -----------------------------------------------------------
+            # FERTIG - und das iPad ist wieder frei fuer den naechsten
+            # -----------------------------------------------------------
+            - conFertig:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  Visible: =gblSchritt = "Fertig"
+                  Fill: =RGBA(0, 0, 0, 0)
+                  FillPortions: =1
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutGap: =spL
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  PaddingTop: =spL
+                  PaddingBottom: =spL
+                  PaddingLeft: =spL
+                  PaddingRight: =spL
+                Children:
+                  - conFertigKarte:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        Fill: =clrErfolgSanft
+                        FillPortions: =0
+                        Height: =240
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutGap: =spS
+                        PaddingTop: =spL
+                        PaddingBottom: =spL
+                        PaddingLeft: =spL
+                        PaddingRight: =spL
+                        RadiusTopLeft: =radL
+                        RadiusTopRight: =radL
+                        RadiusBottomLeft: =radL
+                        RadiusBottomRight: =radL
+                      Children:
+                        - lblFertigTitel:
+                            Control: Label
+                            Properties:
+                              Text: ="Vielen Dank, alles gespeichert."
+                              Color: =clrErfolg
+                              Size: =fsTitel
+                              FontWeight: =FontWeight.Semibold
+                              Height: =44
+                              FillPortions: =0
+                              PaddingLeft: =0
+                        - lblFertigText:
+                            Control: Label
+                            Properties:
+                              Text: |-
+                                ="Bitte geben Sie das iPad an der Rezeption zurück." & Char(10) & Char(10) &
+                                 "Ihre Einwilligungen können Sie jederzeit widerrufen - formlos an die Praxis."
+                              Color: =clrText
+                              Size: =fsNormal
+                              FillPortions: =1
+                              PaddingLeft: =0
+
+                  - btnFertig:
+                      Control: Classic/Button
+                      Properties:
+                        Text: ="Für den nächsten Patienten bereitmachen"
+                        # Leert ALLES. Der naechste Patient darf nichts
+                        # vom vorherigen sehen.
+                        OnSelect: |-
+                          =Set(gblPatient, Blank());
+                          Set(gblVorhandenerPatient, Blank());
+                          Set(gblAnmeldung, Blank());
+                          Set(gblGeburtsdatum, Blank());
+                          Set(gblTxtVorname, ""); Set(gblTxtNachname, ""); Set(gblTxtGeburt, "");
+                          Set(gblTxtTelefon, ""); Set(gblTxtEMail, ""); Set(gblTxtStrasse, "");
+                          Set(gblTxtPLZ, ""); Set(gblTxtOrt, "");
+                          Set(gblTxtHonorarName, ""); Set(gblTxtDsName, "");
+                          Set(gblHonorarOk, false); Set(gblDsOk, false);
+                          Set(gblDsRechnung, ""); Set(gblDsEMail, "");
+                          Set(gblDsTelefon, ""); Set(gblDsWhatsApp, ""); Set(gblDsSocial, "");
+                          Set(gblPruefen, false);
+                          Set(gblReset, true); Set(gblReset, false);
+                          Set(gblMeldung, ""); Set(gblMeldungArt, "");
+                          Set(gblSchritt, "Start")
+                        Fill: =clrDunkel
+                        Color: =clrWeiss
+                        HoverFill: =clrDunkelTief
+                        PressedFill: =clrDunkelTief
+                        BorderThickness: =0
+                        Size: =fsGross
+                        FontWeight: =FontWeight.Semibold
+                        Height: =80
+                        FillPortions: =0
+                        RadiusTopLeft: =radM
+                        RadiusTopRight: =radM
+                        RadiusBottomLeft: =radM
+                        RadiusBottomRight: =radM

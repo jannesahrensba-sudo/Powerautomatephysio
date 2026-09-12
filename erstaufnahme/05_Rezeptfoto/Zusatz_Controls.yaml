@@ -1,0 +1,187 @@
+# ---------------------------------------------------------------------
+# Zusatz: Rezept fotografieren
+#
+# Diese Steuerelemente gehoeren in conBefund der ERSTAUFNAHME-App,
+# direkt VOR conBefundAktionen. In Power Apps Studio: conBefund im
+# Baum auswaehlen, Rechtsklick -> Code einfuegen. Die neuen Elemente
+# landen am Ende; ziehen Sie conBefundAktionen danach wieder nach
+# unten.
+#
+# WARUM HIER UND NICHT IN DER ANMELDE-APP:
+# Die Anmelde-App liegt beim Patienten im Wartebereich. Zum Ablegen
+# eines Fotos braucht man einen Patienten - und eine Patientenauswahl
+# in einer App, die ein Patient in der Hand hat, waere ein
+# Datenschutzproblem: Er saehe die Namen aller anderen. In der
+# Erstaufnahme-App ist der Patient in Schritt 1 ohnehin schon
+# gewaehlt, es braucht also gar keine Auswahl.
+#
+# Voraussetzung: der Flow Rezept_Ablegen ist gebaut und der App als
+# Datenquelle hinzugefuegt. Ohne ihn zeigt btnFotoAblegen einen
+# Fehler. Anleitung: Flow_bauen.md
+#
+# gblFoto steht ABSICHTLICH nicht in App.OnStart: Es ist ein Bild,
+# kein Text. Ein Set(gblFoto, "") wuerde es zu Text machen.
+# ---------------------------------------------------------------------
+
+- conFoto:
+    Control: GroupContainer
+    Variant: AutoLayout
+    Properties:
+      Fill: =clrFlaeche
+      FillPortions: =0
+      Height: =If(IsBlank(gblFoto), 420, 700)
+      LayoutDirection: =LayoutDirection.Vertical
+      LayoutAlignItems: =LayoutAlignItems.Stretch
+      LayoutGap: =spS
+      BorderColor: =clrRahmen
+      BorderThickness: =1
+      PaddingTop: =spM
+      PaddingBottom: =spM
+      PaddingLeft: =spM
+      PaddingRight: =spM
+      RadiusTopLeft: =radL
+      RadiusTopRight: =radL
+      RadiusBottomLeft: =radL
+      RadiusBottomRight: =radL
+    Children:
+
+      - lblFotoTitel:
+          Control: Label
+          Properties:
+            Text: ="Rezept fotografieren"
+            Color: =clrText
+            Size: =fsGross
+            FontWeight: =FontWeight.Semibold
+            Height: =32
+            FillPortions: =0
+            Wrap: =false
+            PaddingLeft: =0
+
+      - lblFotoHinweis:
+          Control: Label
+          Properties:
+            Text: |-
+              ="Rezept flach auf den Tisch legen, nicht in der Hand halten. " &
+               "Auf das Bild tippen löst aus. Beidseitig bedruckte Rezepte " &
+               "bitte als zwei Aufnahmen ablegen."
+            Color: =clrTextLeise
+            Size: =fsKlein
+            Height: =62
+            FillPortions: =0
+            PaddingLeft: =0
+
+      - camRezept:
+          Control: Camera
+          Properties:
+            # Tippen loest aus. Das aufgenommene Bild wird gemerkt,
+            # damit man es vor dem Ablegen ansehen kann.
+            OnSelect: =Set(gblFoto, Self.Photo)
+            Height: =240
+            FillPortions: =0
+
+      # --- Vorschau, erst nach der Aufnahme -----------------------
+      - lblFotoVorschauTitel:
+          Control: Label
+          Properties:
+            Visible: =Not(IsBlank(gblFoto))
+            Text: ="Aufnahme - lesbar? Sonst neu antippen."
+            Color: =clrText
+            Size: =fsKlein
+            FontWeight: =FontWeight.Semibold
+            Height: =26
+            FillPortions: =0
+            Wrap: =false
+            PaddingLeft: =0
+      - imgFotoVorschau:
+          Control: Image
+          Properties:
+            Visible: =Not(IsBlank(gblFoto))
+            Image: =gblFoto
+            Height: =240
+            FillPortions: =0
+            ImagePosition: =ImagePosition.Fit
+
+      - conFotoAktionen:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            Fill: =RGBA(0, 0, 0, 0)
+            FillPortions: =0
+            Height: =64
+            LayoutDirection: =LayoutDirection.Horizontal
+            LayoutAlignItems: =LayoutAlignItems.Center
+            LayoutGap: =spS
+          Children:
+            - btnFotoVerwerfen:
+                Control: Classic/Button
+                Properties:
+                  Text: ="Verwerfen"
+                  DisplayMode: |-
+                    =If(IsBlank(gblFoto) Or gblFotoLaeuft, DisplayMode.Disabled, DisplayMode.Edit)
+                  OnSelect: =Set(gblFoto, Blank())
+                  Fill: =RGBA(0, 0, 0, 0)
+                  Color: =clrTextLeise
+                  BorderColor: =clrRahmen
+                  BorderThickness: =1
+                  DisabledFill: =clrHintergrund
+                  DisabledColor: =clrTextLeise
+                  Size: =fsKlein
+                  Height: =56
+                  Width: =160
+                  FillPortions: =0
+                  RadiusTopLeft: =radM
+                  RadiusTopRight: =radM
+                  RadiusBottomLeft: =radM
+                  RadiusBottomRight: =radM
+            - btnFotoAblegen:
+                Control: Classic/Button
+                Properties:
+                  Text: =If(gblFotoLaeuft, "Legt ab ...", "Foto ablegen")
+                  DisplayMode: |-
+                    =If(
+                        IsBlank(gblFoto) Or IsBlank(gblPatient) Or gblFotoLaeuft,
+                        DisplayMode.Disabled,
+                        DisplayMode.Edit
+                    )
+                  # Der Flow bekommt PatientID, Dateiname und das Bild als
+                  # Text. Faellt er aus, wird das gemeldet - aber die
+                  # Dokumentation der Behandlung haelt er nicht auf.
+                  OnSelect: |-
+                    =Set(gblFotoLaeuft, true);
+                    Set(gblFotoFehler, "");
+                    Set(
+                        gblFotoErgebnis,
+                        IfError(
+                            Rezept_Ablegen.Run(
+                                gblPatient.ID,
+                                "Rezept_" & gblPatient.ID & "_" & Text(Now(), "yyyy-mm-dd_hh-mm-ss") & ".jpg",
+                                JSON(gblFoto, JSONFormat.IncludeBinaryData)
+                            ),
+                            Set(gblFotoFehler, FirstError.Message); Blank()
+                        )
+                    );
+                    Set(gblFotoLaeuft, false);
+                    If(
+                        IsBlank(gblFotoFehler),
+                        Set(gblFoto, Blank());
+                        Set(gblMeldung, "Rezeptfoto abgelegt.");
+                        Set(gblMeldungArt, "Erfolg"),
+
+                        Set(gblMeldung, "Das Foto konnte nicht abgelegt werden. Die Aufnahme bleibt stehen, Sie können es erneut versuchen. " & gblFotoFehler);
+                        Set(gblMeldungArt, "Fehler")
+                    )
+                  Fill: =clrGold
+                  Color: =clrDunkel
+                  HoverFill: =clrGoldHell
+                  PressedFill: =clrGoldHell
+                  DisabledFill: =clrRahmen
+                  DisabledColor: =clrTextLeise
+                  BorderThickness: =0
+                  Size: =fsNormal
+                  FontWeight: =FontWeight.Semibold
+                  Height: =56
+                  FillPortions: =1
+                  RadiusTopLeft: =radM
+                  RadiusTopRight: =radM
+                  RadiusBottomLeft: =radM
+                  RadiusBottomRight: =radM

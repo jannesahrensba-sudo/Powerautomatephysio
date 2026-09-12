@@ -3,16 +3,25 @@
 **Power Apps Canvas Apps** für Erstaufnahme, Patientenakte, Rezepte und
 Behandlungsdokumentation – auf der bestehenden SharePoint-Datenhaltung.
 
-## Zwei Apps, eine Datenhaltung
+## Drei Apps, eine Datenhaltung
 
-| App | Macht | Schreibt in |
-|---|---|---|
-| **[`erstaufnahme/`](erstaufnahme/START_HIER.md)** | Befund und Anamnese bei der Erstaufnahme | `Rezepte` |
-| **[`v3/`](v3/START_HIER.md)** | Patient aufrufen, Vorbereitung, Behandlung dokumentieren | `Behandlungsdokumentation` |
+| App | Wer bedient sie | Macht | Schreibt in |
+|---|---|---|---|
+| **[`anmeldung/`](anmeldung/START_HIER.md)** | der Patient, am iPad | Kontaktdaten, Honoraraufklärung, Einwilligungen | `Patientenstamm`, `Anmeldungen` |
+| **[`erstaufnahme/`](erstaufnahme/START_HIER.md)** | Therapeut | Befund und Anamnese bei der Erstaufnahme | `Rezepte` |
+| **[`v3/`](v3/START_HIER.md)** | Therapeut | Patient aufrufen, Vorbereitung, Behandlung dokumentieren | `Behandlungsdokumentation` |
 
-Die Aufnahme-App schreibt genau die Felder, aus denen die Behandlungs-App den
-Befund liest (`Erstbefund`, `Anamnese`, `Diagnose laut Rezept` über
-`PatientID`). **An der Behandlungs-App ist dafür keine Änderung nötig.**
+Sie greifen ineinander, ohne sich zu kennen:
+
+- Die **Anmelde-App** legt den Patienten in `Patientenstamm` an – genau dort,
+  wo die anderen zwei ihn suchen.
+- Die **Aufnahme-App** schreibt Befund und Anamnese in die Felder, aus denen
+  die Behandlungs-App den Befund liest (`Erstbefund`, `Anamnese`,
+  `Diagnose laut Rezept` über `PatientID`).
+
+**An den bestehenden Apps ist für keine der Erweiterungen eine Änderung
+nötig.** Die Anmelde-App fügt `Patientenstamm` nur Spalten hinzu; die drei
+Felder, die die anderen lesen, bleiben unverändert.
 
 > Beide Apps sprechen die Rezeptliste als **`Rezept`** an – Einzahl, so wie in
 > der laufenden App. Der Name muss in beiden gleich sein.
@@ -31,19 +40,30 @@ Daten zu verlieren.
 
 ## Einstieg
 
-Behandlungs-App: → **[`v3/START_HIER.md`](v3/START_HIER.md)**
-
-Aufnahme-App: → **[`erstaufnahme/START_HIER.md`](erstaufnahme/START_HIER.md)**
+| | |
+|---|---|
+| Behandlungs-App | → **[`v3/START_HIER.md`](v3/START_HIER.md)** |
+| Aufnahme-App | → **[`erstaufnahme/START_HIER.md`](erstaufnahme/START_HIER.md)** |
+| Anmelde-App | → **[`anmeldung/START_HIER.md`](anmeldung/START_HIER.md)** |
 
 ## Aufbau
 
 ```
+anmeldung/                         Anmeldung am iPad, vom Patienten bedient
+  START_HIER.md                    Einbauweg in 5 Schritten
+  01_AppShell_einfuegen.yaml/.txt  Oberfläche zum Einfügen (109 Steuerelemente)
+  02_Eigenschaften_DE.md / _EN.md  App-Formeln, Honorarsätze, Praxisanschrift
+  03_Spalten.md / .json            neue Liste Anmeldungen, Zusatzspalten
+  04_Spalten_anlegen.ps1           legt Liste und Spalten an, prüft zuerst
+  06_Rechtstexte.md                jeder Rechtstext wörtlich, zum Gegenlesen
+
 erstaufnahme/                      Erstaufnahme: Befund und Anamnese
   START_HIER.md                    Einbauweg in 5 Schritten
   01_AppShell_einfuegen.yaml/.txt  Oberfläche zum Einfügen (42 Steuerelemente)
   02_Eigenschaften_DE.md / _EN.md  App-Formeln, beide Trennzeichenfassungen
   03_Spalten.md / .json            welche Spalten gebraucht werden
   04_Spalten_anlegen.ps1           legt fehlende Spalten an, prüft zuerst
+  05_Rezeptfoto/                   optionaler Zusatz: Kamera plus Flow
 
 v3/                                Behandlungs-App – aktuelle Fassung
   START_HIER.md                    Einbauweg in 5 Schritten
@@ -85,8 +105,14 @@ python3 tools/pruefe_referenzen.py          output/01_AppShell_einfuegen.yaml ou
 python3 tools/pruefe_felder.py              output/01_AppShell_einfuegen.yaml output/03_Schema_Mapping.json
 python3 tools/pruefe_auswahlwerte.py        output/01_AppShell_einfuegen.yaml output/04_Setup/Schema-Ergaenzungen.json
 
+# Anmelde-App
+python3 tools/validate_pa_yaml.py --fragment anmeldung/01_AppShell_einfuegen.yaml
+python3 tools/pruefe_referenzen.py          anmeldung/01_AppShell_einfuegen.yaml anmeldung/02_Eigenschaften_EN.md
+python3 tools/pruefe_felder.py              anmeldung/01_AppShell_einfuegen.yaml anmeldung/03_Spalten.json
+
 # Aufnahme-App
 python3 tools/validate_pa_yaml.py --fragment erstaufnahme/01_AppShell_einfuegen.yaml
+python3 tools/validate_pa_yaml.py --fragment erstaufnahme/05_Rezeptfoto/Zusatz_Controls.yaml
 python3 tools/pruefe_referenzen.py          erstaufnahme/01_AppShell_einfuegen.yaml erstaufnahme/02_Eigenschaften_EN.md
 python3 tools/pruefe_felder.py              erstaufnahme/01_AppShell_einfuegen.yaml erstaufnahme/03_Spalten.json
 
@@ -116,8 +142,9 @@ Die Flow-Dateien in `output/05_Flows/` sind **Referenzdefinitionen im
 Peek-code-Format, kein geprüftes Importpaket.** Sie wurden nicht importiert
 und nicht ausgeführt.
 
-Für den optionalen Zusatz in `v3/06_Textpruefung_KI/` liegt **bewusst keine
-Importdatei** bei: Die Aktionen des AI-Builder-Connectors unterscheiden sich
+Die beiden optionalen Zusätze (`v3/06_Textpruefung_KI/` und
+`erstaufnahme/05_Rezeptfoto/`) brauchen je einen Power-Automate-Flow. Für beide
+liegt **bewusst keine Importdatei** bei: Die Aktionen des AI-Builder-Connectors unterscheiden sich
 je nach Tenant und Region, und ich kann keine davon nachsehen. Stattdessen
 steht dort eine Bauanleitung. Der Zusatz ist **nicht getestet** und für den
 Betrieb der App **nicht erforderlich**.
