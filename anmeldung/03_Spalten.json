@@ -14,31 +14,215 @@
   },
   "listen": {
     "Patientenstamm": [
-      { "anzeigename": "ID", "interner_name": "ID", "typ": "Zahl (System)", "lookup_ziel": null, "status": "system", "befund": "Technischer Schluessel.", "erforderliche_aenderung": "keine" },
-      { "anzeigename": "Vorname", "interner_name": "Vorname", "typ": "Text", "lookup_ziel": null, "status": "bestaetigt", "befund": "Wird von allen drei Apps genutzt.", "erforderliche_aenderung": "keine" },
-      { "anzeigename": "Nachname", "interner_name": "Nachname", "typ": "Text", "lookup_ziel": null, "status": "bestaetigt", "befund": "Wird von allen drei Apps genutzt.", "erforderliche_aenderung": "keine" },
-      { "anzeigename": "Geburtsdatum", "interner_name": "Geburtsdatum", "typ": "Datum", "lookup_ziel": null, "status": "bestaetigt", "befund": "Unterscheidet gleiche Namen. Dient hier auch der Dublettenpruefung.", "erforderliche_aenderung": "keine" },
-      { "anzeigename": "Telefon", "interner_name": "Telefon", "typ": "Text", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "Steht auf der Honoraraufklaerung. Text, nicht Zahl - fuehrende Nullen und Vorwahlen mit Klammern.", "erforderliche_aenderung": "Anlegen (Text)." },
-      { "anzeigename": "EMail", "interner_name": "EMail", "typ": "Text", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "Steht auf der Honoraraufklaerung. Ziel fuer den Rechnungsversand, sofern eingewilligt.", "erforderliche_aenderung": "Anlegen (Text)." },
-      { "anzeigename": "Strasse", "interner_name": "Strasse", "typ": "Text", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "Adressfeld der Honoraraufklaerung, aufgeteilt fuer die Abrechnung.", "erforderliche_aenderung": "Anlegen (Text)." },
-      { "anzeigename": "PLZ", "interner_name": "PLZ", "typ": "Text", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "TEXT, nicht Zahl - sonst verschwindet die fuehrende Null bei Orten wie 04103 Leipzig.", "erforderliche_aenderung": "Anlegen (Text)." },
-      { "anzeigename": "Ort", "interner_name": "Ort", "typ": "Text", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "Adressfeld der Honoraraufklaerung.", "erforderliche_aenderung": "Anlegen (Text)." }
+      {
+        "anzeigename": "ID",
+        "interner_name": "ID",
+        "typ": "Zahl (System)",
+        "lookup_ziel": null,
+        "status": "system",
+        "befund": "Technischer Schluessel.",
+        "erforderliche_aenderung": "keine"
+      },
+      {
+        "anzeigename": "Vorname",
+        "interner_name": "Vorname",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "bestaetigt",
+        "befund": "Wird von allen drei Apps genutzt.",
+        "erforderliche_aenderung": "keine"
+      },
+      {
+        "anzeigename": "Nachname",
+        "interner_name": "Nachname",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "bestaetigt",
+        "befund": "Wird von allen drei Apps genutzt.",
+        "erforderliche_aenderung": "keine"
+      },
+      {
+        "anzeigename": "Geburtsdatum",
+        "interner_name": "Geburtsdatum",
+        "typ": "Datum",
+        "lookup_ziel": null,
+        "status": "bestaetigt",
+        "befund": "Unterscheidet gleiche Namen. Dient hier auch der Dublettenpruefung.",
+        "erforderliche_aenderung": "keine"
+      },
+      {
+        "anzeigename": "Telefon",
+        "interner_name": "Telefon",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Steht auf der Honoraraufklaerung. Text, nicht Zahl - fuehrende Nullen und Vorwahlen mit Klammern.",
+        "erforderliche_aenderung": "Anlegen (Text)."
+      },
+      {
+        "anzeigename": "EMail",
+        "interner_name": "EMail",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Steht auf der Honoraraufklaerung. Ziel fuer den Rechnungsversand, sofern eingewilligt.",
+        "erforderliche_aenderung": "Anlegen (Text)."
+      },
+      {
+        "anzeigename": "Strasse",
+        "interner_name": "Strasse",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Adressfeld der Honoraraufklaerung, aufgeteilt fuer die Abrechnung.",
+        "erforderliche_aenderung": "Anlegen (Text)."
+      },
+      {
+        "anzeigename": "PLZ",
+        "interner_name": "PLZ",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "TEXT, nicht Zahl - sonst verschwindet die fuehrende Null bei Orten wie 04103 Leipzig.",
+        "erforderliche_aenderung": "Anlegen (Text)."
+      },
+      {
+        "anzeigename": "Ort",
+        "interner_name": "Ort",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Adressfeld der Honoraraufklaerung.",
+        "erforderliche_aenderung": "Anlegen (Text)."
+      }
     ],
     "Anmeldungen": [
-      { "anzeigename": "ID", "interner_name": "ID", "typ": "Zahl (System)", "lookup_ziel": null, "status": "system", "befund": "Technischer Schluessel.", "erforderliche_aenderung": "keine" },
-      { "anzeigename": "PatientID", "interner_name": "PatientID", "typ": "Zahl", "lookup_ziel": null, "status": "unbestaetigt", "befund": "Verbindet die Anmeldung mit dem Patienten.", "erforderliche_aenderung": "Anlegen (Zahl)." },
-      { "anzeigename": "Anmeldedatum", "interner_name": "Anmeldedatum", "typ": "Datum", "lookup_ziel": null, "status": "unbestaetigt", "befund": "Das Datum, das der Patient auf dem Bildschirm gesehen hat. Entspricht dem 'Muenchen, ___' des Papierformulars.", "erforderliche_aenderung": "Anlegen (Datum)." },
-      { "anzeigename": "Versicherung", "interner_name": "Versicherung", "typ": "Auswahl", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "Auswahlwerte: Privat versichert, Beihilfeberechtigt, Gesetzlich versichert, Selbstzahler.", "erforderliche_aenderung": "Anlegen (Auswahl) mit genau diesen vier Werten." },
-      { "anzeigename": "Vertragsstand", "interner_name": "Vertragsstand", "typ": "Text", "lookup_ziel": null, "status": "unbestaetigt", "befund": "WICHTIG: Fassung der Honoraraufklaerung, der zugestimmt wurde. Ohne dieses Feld laesst sich bei einer Preisaenderung nicht mehr belegen, welche Saetze vereinbart waren.", "erforderliche_aenderung": "Anlegen (Text)." },
-      { "anzeigename": "Honorar_Zugestimmt", "interner_name": "Honorar_x005f_Zugestimmt", "typ": "Ja/Nein", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "Zustimmung zur Honoraraufklaerung. Ohne sie ist keine private Abrechnung vereinbart.", "erforderliche_aenderung": "Anlegen (Ja/Nein)." },
-      { "anzeigename": "Honorar_Name", "interner_name": "Honorar_x005f_Name", "typ": "Text", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "Der vom Patienten getippte Name - tritt an die Stelle der Unterschrift auf dem Papier.", "erforderliche_aenderung": "Anlegen (Text)." },
-      { "anzeigename": "DS_Zugestimmt", "interner_name": "DS_x005f_Zugestimmt", "typ": "Ja/Nein", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "Einwilligung in die Datenverarbeitung einschliesslich der drei Hinweise (Widerruf, Auskunft, Berichtigung).", "erforderliche_aenderung": "Anlegen (Ja/Nein)." },
-      { "anzeigename": "DS_Name", "interner_name": "DS_x005f_Name", "typ": "Text", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "Getippter Name zur Datenschutzerklaerung.", "erforderliche_aenderung": "Anlegen (Text)." },
-      { "anzeigename": "DS_Rechnung_EMail", "interner_name": "DS_x005f_Rechnung_x005f_EMail", "typ": "Ja/Nein", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "Freiwillig: Rechnungen per E-Mail.", "erforderliche_aenderung": "Anlegen (Ja/Nein)." },
-      { "anzeigename": "DS_Kontakt_EMail", "interner_name": "DS_x005f_Kontakt_x005f_EMail", "typ": "Ja/Nein", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "Freiwillig: Kontaktaufnahme per E-Mail.", "erforderliche_aenderung": "Anlegen (Ja/Nein)." },
-      { "anzeigename": "DS_Kontakt_Telefon", "interner_name": "DS_x005f_Kontakt_x005f_Telefon", "typ": "Ja/Nein", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "Freiwillig: Kontaktaufnahme per Telefon.", "erforderliche_aenderung": "Anlegen (Ja/Nein)." },
-      { "anzeigename": "DS_Kontakt_WhatsApp", "interner_name": "DS_x005f_Kontakt_x005f_WhatsApp", "typ": "Ja/Nein", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "Freiwillig: Kontaktaufnahme per WhatsApp.", "erforderliche_aenderung": "Anlegen (Ja/Nein)." },
-      { "anzeigename": "DS_SocialMedia", "interner_name": "DS_x005f_SocialMedia", "typ": "Auswahl", "lookup_ziel": null, "status": "bestaetigt_auftrag", "befund": "Freiwillig: anonymisierte Inhalte fuer Social Media und Website. Auswahlwerte: Einverstanden, Nicht einverstanden.", "erforderliche_aenderung": "Anlegen (Auswahl) mit genau diesen zwei Werten." }
+      {
+        "anzeigename": "ID",
+        "interner_name": "ID",
+        "typ": "Zahl (System)",
+        "lookup_ziel": null,
+        "status": "system",
+        "befund": "Technischer Schluessel.",
+        "erforderliche_aenderung": "keine"
+      },
+      {
+        "anzeigename": "PatientID",
+        "interner_name": "PatientID",
+        "typ": "Zahl",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Verbindet die Anmeldung mit dem Patienten. MUSS eine ZAHL sein, keine Nachschlagespalte: die beiden anderen Apps fuehren PatientID in Rezepte und Behandlungsdokumentation ebenfalls als Zahl. Eine Nachschlagespalte verlangt beim Patch einen Datensatz statt einer Zahl und meldet 'erwartet wird ein Record'.",
+        "erforderliche_aenderung": "Anlegen als Zahl. Falls versehentlich als Nachschlagespalte angelegt: loeschen und als Zahl neu anlegen."
+      },
+      {
+        "anzeigename": "Anmeldedatum",
+        "interner_name": "Anmeldedatum",
+        "typ": "Datum",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "Das Datum, das der Patient auf dem Bildschirm gesehen hat. Entspricht dem 'Muenchen, ___' des Papierformulars.",
+        "erforderliche_aenderung": "Anlegen (Datum)."
+      },
+      {
+        "anzeigename": "Versicherung",
+        "interner_name": "Versicherung",
+        "typ": "Auswahl",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Auswahlwerte: Privat versichert, Beihilfeberechtigt, Gesetzlich versichert, Selbstzahler.",
+        "erforderliche_aenderung": "Anlegen (Auswahl) mit genau diesen vier Werten."
+      },
+      {
+        "anzeigename": "Vertragsstand",
+        "interner_name": "Vertragsstand",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "unbestaetigt",
+        "befund": "WICHTIG: Fassung der Honoraraufklaerung, der zugestimmt wurde. Ohne dieses Feld laesst sich bei einer Preisaenderung nicht mehr belegen, welche Saetze vereinbart waren.",
+        "erforderliche_aenderung": "Anlegen (Text)."
+      },
+      {
+        "anzeigename": "Honorar_Zugestimmt",
+        "interner_name": "Honorar_x005f_Zugestimmt",
+        "typ": "Ja/Nein",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Zustimmung zur Honoraraufklaerung. Ohne sie ist keine private Abrechnung vereinbart.",
+        "erforderliche_aenderung": "Anlegen (Ja/Nein)."
+      },
+      {
+        "anzeigename": "Honorar_Name",
+        "interner_name": "Honorar_x005f_Name",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Der vom Patienten getippte Name - tritt an die Stelle der Unterschrift auf dem Papier.",
+        "erforderliche_aenderung": "Anlegen (Text)."
+      },
+      {
+        "anzeigename": "DS_Zugestimmt",
+        "interner_name": "DS_x005f_Zugestimmt",
+        "typ": "Ja/Nein",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Einwilligung in die Datenverarbeitung einschliesslich der drei Hinweise (Widerruf, Auskunft, Berichtigung).",
+        "erforderliche_aenderung": "Anlegen (Ja/Nein)."
+      },
+      {
+        "anzeigename": "DS_Name",
+        "interner_name": "DS_x005f_Name",
+        "typ": "Text",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Getippter Name zur Datenschutzerklaerung.",
+        "erforderliche_aenderung": "Anlegen (Text)."
+      },
+      {
+        "anzeigename": "DS_Rechnung_Email",
+        "interner_name": "DS_x005f_Rechnung_x005f_Email",
+        "typ": "Ja/Nein",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Freiwillig: Rechnungen per E-Mail.",
+        "erforderliche_aenderung": "Anlegen (Ja/Nein)."
+      },
+      {
+        "anzeigename": "DS_Kontakt_EMail",
+        "interner_name": "DS_x005f_Kontakt_x005f_EMail",
+        "typ": "Ja/Nein",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Freiwillig: Kontaktaufnahme per E-Mail.",
+        "erforderliche_aenderung": "Anlegen (Ja/Nein)."
+      },
+      {
+        "anzeigename": "DS_Kontakt_Telefon",
+        "interner_name": "DS_x005f_Kontakt_x005f_Telefon",
+        "typ": "Ja/Nein",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Freiwillig: Kontaktaufnahme per Telefon.",
+        "erforderliche_aenderung": "Anlegen (Ja/Nein)."
+      },
+      {
+        "anzeigename": "DS_Kontakt_Whattsapp",
+        "interner_name": "DS_x005f_Kontakt_x005f_Whattsapp",
+        "typ": "Ja/Nein",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Freiwillig: Kontaktaufnahme per WhatsApp. Schreibweise wie in der Liste angelegt (doppeltes t, kleines a) - Power Fx muss sie exakt so treffen.",
+        "erforderliche_aenderung": "Anlegen (Ja/Nein)."
+      },
+      {
+        "anzeigename": "DS_SocialMedia",
+        "interner_name": "DS_x005f_SocialMedia",
+        "typ": "Ja/Nein",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Freiwillig: anonymisierte Inhalte fuer Social Media und Website. Ja/Nein-Spalte - Ja entspricht 'Einverstanden'.",
+        "erforderliche_aenderung": "Anlegen (Ja/Nein)."
+      }
     ]
   },
   "nicht_geschrieben": [

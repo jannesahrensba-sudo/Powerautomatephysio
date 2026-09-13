@@ -80,18 +80,17 @@ $spalten = @(
     @{ Liste = 'Anmeldungen';    Anzeige = 'Honorar_Name';        Intern = 'Honorar_Name';        Typ = 'Text'     }
     @{ Liste = 'Anmeldungen';    Anzeige = 'DS_Zugestimmt';       Intern = 'DS_Zugestimmt';       Typ = 'Boolean'  }
     @{ Liste = 'Anmeldungen';    Anzeige = 'DS_Name';             Intern = 'DS_Name';             Typ = 'Text'     }
-    @{ Liste = 'Anmeldungen';    Anzeige = 'DS_Rechnung_EMail';   Intern = 'DS_Rechnung_EMail';   Typ = 'Boolean'  }
+    @{ Liste = 'Anmeldungen';    Anzeige = 'DS_Rechnung_Email';   Intern = 'DS_Rechnung_Email';   Typ = 'Boolean'  }
     @{ Liste = 'Anmeldungen';    Anzeige = 'DS_Kontakt_EMail';    Intern = 'DS_Kontakt_EMail';    Typ = 'Boolean'  }
     @{ Liste = 'Anmeldungen';    Anzeige = 'DS_Kontakt_Telefon';  Intern = 'DS_Kontakt_Telefon';  Typ = 'Boolean'  }
-    @{ Liste = 'Anmeldungen';    Anzeige = 'DS_Kontakt_WhatsApp'; Intern = 'DS_Kontakt_WhatsApp'; Typ = 'Boolean'  }
+    @{ Liste = 'Anmeldungen';    Anzeige = 'DS_Kontakt_Whattsapp'; Intern = 'DS_Kontakt_Whattsapp'; Typ = 'Boolean'  }
+    @{ Liste = 'Anmeldungen';    Anzeige = 'DS_SocialMedia';      Intern = 'DS_SocialMedia';      Typ = 'Boolean'  }
 )
 
 # Auswahlspalten getrennt: sie brauchen ihre Werteliste.
 $auswahlspalten = @(
     @{ Liste = 'Anmeldungen'; Anzeige = 'Versicherung'; Intern = 'Versicherung'
        Werte = @('Privat versichert', 'Beihilfeberechtigt', 'Gesetzlich versichert', 'Selbstzahler') }
-    @{ Liste = 'Anmeldungen'; Anzeige = 'DS_SocialMedia'; Intern = 'DS_SocialMedia'
-       Werte = @('Einverstanden', 'Nicht einverstanden') }
 )
 
 Write-Host ""

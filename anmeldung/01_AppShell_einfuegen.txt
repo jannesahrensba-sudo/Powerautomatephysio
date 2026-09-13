@@ -1745,13 +1745,14 @@
                                                         Honorar_Name: Trim(txtHonorarName.Text),
                                                         DS_Zugestimmt: gblDsOk,
                                                         DS_Name: Trim(txtDsName.Text),
-                                                        DS_Rechnung_EMail: gblDsRechnung = "Ja",
+                                                        // Schreibweise wie in der Liste angelegt:
+                                                        // Email (kleines m) und Whattsapp.
+                                                        DS_Rechnung_Email: gblDsRechnung = "Ja",
                                                         DS_Kontakt_EMail: gblDsEMail = "Ja",
                                                         DS_Kontakt_Telefon: gblDsTelefon = "Ja",
-                                                        DS_Kontakt_WhatsApp: gblDsWhatsApp = "Ja",
-                                                        DS_SocialMedia: {
-                                                            Value: If(gblDsSocial = "Ja", "Einverstanden", "Nicht einverstanden")
-                                                        }
+                                                        DS_Kontakt_Whattsapp: gblDsWhatsApp = "Ja",
+                                                        // Ja/Nein-Spalte, keine Auswahl.
+                                                        DS_SocialMedia: gblDsSocial = "Ja"
                                                     }
                                                 ),
                                                 Set(gblFehlerText, FirstError.Message); Blank()
