@@ -210,7 +210,9 @@
             LayoutGap: =spS
             PaddingLeft: =If(conApp.Width >= bpSchritte, spL, spM)
             PaddingRight: =If(conApp.Width >= bpSchritte, spL, spM)
-            Visible: =gblSchritt <> "Heute"
+            # Positiv gefragt: bei leerem gblSchritt aus, nicht an.
+            Visible: |-
+              =gblSchritt = "Patienten" Or gblSchritt = "Akte" Or gblSchritt = "Doku"
           Children:
             # Schmal passen drei Schritte nebeneinander nicht hin -
             # "3 Dokumentation" wurde abgeschnitten. Statt zu kuerzen
@@ -382,7 +384,9 @@
                 Control: GroupContainer
                 Variant: AutoLayout
                 Properties:
-                  Visible: =gblSchritt = "Heute"
+                  # Faellt ein, wenn gblSchritt leer ist - sonst bleibt
+                  # der Bildschirm leer, solange App.OnStart nicht lief.
+                  Visible: =gblSchritt = "Heute" Or IsBlank(gblSchritt)
                   Fill: =RGBA(0, 0, 0, 0)
                   FillPortions: =1
                   LayoutDirection: =LayoutDirection.Vertical

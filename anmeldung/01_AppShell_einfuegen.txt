@@ -138,7 +138,11 @@
           Control: GroupContainer
           Variant: AutoLayout
           Properties:
-            Visible: =gblSchritt <> "Start" And gblSchritt <> "Fertig"
+            # Positiv gefragt, nicht negativ: Ist gblSchritt leer -
+            # etwa weil App.OnStart noch nicht gelaufen ist -, soll die
+            # Schrittanzeige AUS sein, nicht an.
+            Visible: |-
+              =gblSchritt = "Daten" Or gblSchritt = "Honorar" Or gblSchritt = "Datenschutz"
             Fill: =clrDunkelTief
             FillPortions: =0
             Height: =44
@@ -305,7 +309,10 @@
                 Control: GroupContainer
                 Variant: AutoLayout
                 Properties:
-                  Visible: =gblSchritt = "Start"
+                  # Faellt ein, wenn gblSchritt leer ist. Ohne das zeigt
+                  # die App einen leeren Bildschirm, sobald App.OnStart
+                  # nicht gelaufen ist - im Editor ist das der Normalfall.
+                  Visible: =gblSchritt = "Start" Or IsBlank(gblSchritt)
                   Fill: =RGBA(0, 0, 0, 0)
                   FillPortions: =1
                   LayoutDirection: =LayoutDirection.Vertical

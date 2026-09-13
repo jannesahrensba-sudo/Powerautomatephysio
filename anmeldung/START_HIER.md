@@ -123,7 +123,25 @@ Rechtsklick auf `scrAnmeldung` → **Code einfügen** → vollständigen Inhalt 
 
 Danach steht `conApp` mit 103 untergeordneten Steuerelementen im Baum.
 
-## Schritt 5 – Durchspielen (10 Minuten)
+## Schritt 5 – App.OnStart einmal ausführen
+
+**Im Studio-Editor läuft `App.OnStart` nicht von allein.** Solange es nicht
+gelaufen ist, ist `gblSchritt` leer und die App weiß nicht, welche Ansicht sie
+zeigen soll.
+
+Damit das nicht zu einem leeren Bildschirm führt, fällt die Startseite bei
+leerem `gblSchritt` ein – Sie sehen also etwas. Trotzdem einmal ausführen,
+sonst fehlen alle anderen Variablen:
+
+**App** im Baum auswählen → Rechtsklick → **App.OnStart ausführen**
+(englisch: *Run OnStart*).
+
+> Bleibt der Inhaltsbereich leer, obwohl die Schrittanzeige zu sehen ist, ist
+> das immer dieselbe Ursache: `gblSchritt` hat keinen Wert. Entweder wurde
+> `App.OnStart` nicht gesetzt, oder es steht ein Fehler darin und es bricht ab,
+> bevor `Set(gblSchritt; "Start")` erreicht wird.
+
+## Schritt 6 – Durchspielen (10 Minuten)
 
 | Prüfung | Erwartet |
 |---|---|
