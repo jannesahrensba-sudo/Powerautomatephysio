@@ -162,6 +162,81 @@ Die fett markierte Zeile ist der eigentliche Test.
 
 ---
 
+## Wie die Verknüpfung entsteht
+
+Die Frage kommt fast immer: Wenn `PatientID` nur eine Zahl ist, woher kommt
+dann die Verbindung?
+
+**SharePoint vergibt die Nummer selbst.** Jede Liste hat eine `ID`-Spalte, die
+beim Anlegen automatisch hochgezählt wird. `Patch` gibt den angelegten
+Datensatz **einschließlich dieser Nummer** zurück – und genau die schreibt die
+App weiter:
+
+```powerfx
+Set(gblPatient; Patch(Patientenstamm; Defaults(Patientenstamm); { ... }));;
+//     ^ enthält jetzt die frisch vergebene ID
+
+Patch(Anmeldungen; Defaults(Anmeldungen); { PatientID: gblPatient.ID; ... })
+//                                                     ^ ebendiese Nummer
+```
+
+Mehr braucht es nicht. Es ist dasselbe Muster, mit dem die Behandlungs-App
+schon heute ihre Dokumentation am Patienten hängt.
+
+**Eine Nachschlagespalte wäre hier der falsche Weg.** Sie sieht in SharePoint
+hübscher aus, verlangt beim Schreiben aber einen ganzen Datensatz statt einer
+Zahl – und die beiden anderen Apps führen `PatientID` als Zahl. Drei Listen,
+ein Muster.
+
+### Nachsehen, ob es wirklich geklappt hat
+
+Die Dankeseite zeigt unten eine graue Zeile für die Rezeption:
+
+```
+Für die Rezeption:  Patient Nr. 142   ·   Anmeldung Nr. 37   ·   PatientID im Eintrag: 142
+```
+
+**Erste und letzte Zahl müssen gleich sein.** Dann trägt der Anmeldeeintrag die
+Nummer des Patienten, und die Verknüpfung steht. Sind sie verschieden oder
+leer, stimmt etwas mit der Spalte `PatientID` nicht.
+
+### Wenn das Anlegen fehlschlägt
+
+Diese App ist die **erste, die Zeilen in `Patientenstamm` anlegt** – die
+anderen beiden lesen nur. Damit kommt eine Stolperstelle ins Spiel, die vorher
+niemand treffen konnte: **die Spalte `Title`.**
+
+SharePoint legt in jeder Liste eine `Title`-Spalte an, und die ist
+standardmäßig **erforderlich**. Wird sie beim Anlegen nicht gefüllt, weist
+SharePoint den Datensatz zurück. Die App zeigt dann „Ihre Daten konnten nicht
+gespeichert werden" mit der Meldung von SharePoint dahinter.
+
+Zwei Wege:
+
+**Entweder** in SharePoint: Liste `Patientenstamm` → Listeneinstellungen →
+Spalte `Titel` → *Erforderlich: Nein*.
+
+**Oder** in der App `Title` mitschreiben. Dann steht in der SharePoint-Ansicht
+auch gleich der Name statt einer leeren Spalte. Ergänzen Sie im Datensatz von
+`btnAbschliessen`, beim Patch auf `Patientenstamm`:
+
+```powerfx
+    Title: If(
+        IsBlank(gblVorhandenerPatient);
+        Trim(txtNachname.Text) & ", " & Trim(txtVorname.Text);
+        gblVorhandenerPatient.Title
+    );
+```
+
+Das `If` ist wichtig: Bei einem **bekannten** Patienten bleibt der vorhandene
+Titel stehen, statt überschrieben zu werden.
+
+> Meldet Studio einen Fehler an `.Title`, wurde die Spalte in Ihrer Liste
+> umbenannt. Dann den tatsächlichen Anzeigenamen verwenden – oder den ersten
+> Weg nehmen und `Titel` einfach nicht mehr erforderlich machen.
+
+---
+
 ## Das iPad für den Wartebereich
 
 Die Kopfleiste hat **bewusst keine Navigation**. Der Patient kann nicht in

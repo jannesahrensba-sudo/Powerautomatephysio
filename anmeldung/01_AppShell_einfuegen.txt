@@ -1822,7 +1822,7 @@
                       Properties:
                         Fill: =clrErfolgSanft
                         FillPortions: =0
-                        Height: =240
+                        Height: =272
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =spS
@@ -1854,6 +1854,23 @@
                               Color: =clrText
                               Size: =fsNormal
                               FillPortions: =1
+                              PaddingLeft: =0
+                        # Macht die Verknuepfung sichtbar: links die Nummer,
+                        # die SharePoint dem Patienten gegeben hat, rechts
+                        # die Anmeldung, die genau diese Nummer traegt.
+                        # Stimmen beide, ist der Patient verbunden.
+                        - lblFertigNummer:
+                            Control: Label
+                            Properties:
+                              Text: |-
+                                ="Für die Rezeption:  Patient Nr. " & gblPatient.ID &
+                                 "   ·   Anmeldung Nr. " & gblAnmeldung.ID &
+                                 "   ·   PatientID im Eintrag: " & gblAnmeldung.PatientID
+                              Color: =clrTextLeise
+                              Size: =fsKlein
+                              Height: =24
+                              FillPortions: =0
+                              Wrap: =false
                               PaddingLeft: =0
 
                   - btnFertig:
