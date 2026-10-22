@@ -96,6 +96,15 @@
         "status": "unbestaetigt",
         "befund": "Wird als Anamnese angezeigt.",
         "erforderliche_aenderung": "Anzeigenamen pruefen."
+      },
+      {
+        "anzeigename": "RezeptBild",
+        "interner_name": "RezeptBild",
+        "typ": "Bild",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Das abfotografierte Rezept. Diese App LIEST es nur und zeigt es in der Vorbereitung; geschrieben wird es von der Erstaufnahme-App.",
+        "erforderliche_aenderung": "Keine. In SharePoint von Hand angelegt (Typ Bild)."
       }
     ],
     "Behandlungsdokumentation": [

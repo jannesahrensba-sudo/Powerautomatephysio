@@ -786,7 +786,11 @@
                         # Schmal: behaelt die eigene Hoehe, damit der
                         # Inhaltsbereich ueberlaeuft und scrollen kann.
                         FillPortions: =If(conApp.Width >= bpBreit, 1, 0)
-                        Height: =104 + 300 + 128 + 64 + 3 * spM
+                        # Die Rezeptkarte kommt nur dazu, wenn es ein
+                        # Rezept gibt - dann auch ihre Hoehe.
+                        Height: |-
+                          =104 + 300 + 128 + 64 + 3 * spM +
+                           If(IsBlank(gblRezept), 0, 260 + spM)
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutAlignItems: =LayoutAlignItems.Stretch
                         LayoutGap: =spM
@@ -924,6 +928,64 @@
                                     PaddingLeft: =0
 
                         # --- Therapeut waehlen ----------------------
+                        # --- Das abfotografierte Rezept --------------
+                        # Die Bild-Spalte RezeptBild wird von der
+                        # Erstaufnahme-App gefuellt.
+                        - conRezeptBild:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              Visible: =Not(IsBlank(gblRezept))
+                              BorderColor: =clrRahmen
+                              BorderThickness: =1
+                              Fill: =clrFlaeche
+                              Height: =260
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =spS
+                              PaddingBottom: =spM
+                              PaddingLeft: =spM
+                              PaddingRight: =spM
+                              PaddingTop: =spM
+                              RadiusBottomLeft: =radL
+                              RadiusBottomRight: =radL
+                              RadiusTopLeft: =radL
+                              RadiusTopRight: =radL
+                            Children:
+                              - lblRezeptBildTitel:
+                                  Control: Label
+                                  Properties:
+                                    Color: =clrText
+                                    FillPortions: =0
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =30
+                                    PaddingLeft: =0
+                                    Size: =fsGross
+                                    Text: ="Rezept"
+                                    Wrap: =false
+                              - imgRezept:
+                                  Control: Image
+                                  Properties:
+                                    # Zeigt Studio hier einen Fehler an .Full,
+                                    # heisst die Eigenschaft in Ihrer Version
+                                    # anders. Dann der Reihe nach probieren:
+                                    #   =gblRezept.RezeptBild.Large
+                                    #   =gblRezept.RezeptBild
+                                    FillPortions: =1
+                                    Image: =gblRezept.RezeptBild.Full
+                                    ImagePosition: =ImagePosition.Fit
+                                    OnSelect: =Launch(gblRezept.RezeptBild.Full)
+                              - lblRezeptBildHinweis:
+                                  Control: Label
+                                  Properties:
+                                    Color: =clrTextLeise
+                                    FillPortions: =0
+                                    Height: =22
+                                    PaddingLeft: =0
+                                    Size: =fsKlein
+                                    Text: ="Antippen öffnet das Rezept in voller Größe."
+                                    Wrap: =false
+
                         - conTherapeut:
                             Control: GroupContainer
                             Variant: AutoLayout
