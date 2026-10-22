@@ -96,6 +96,15 @@
         "status": "unbestaetigt",
         "befund": "Wird in der Behandlungs-App unter Befund und Anamnese angezeigt.",
         "erforderliche_aenderung": "Anlegen, falls nicht vorhanden (Mehrere Textzeilen, Nur-Text)."
+      },
+      {
+        "anzeigename": "RezeptBild",
+        "interner_name": "RezeptBild",
+        "typ": "Bild",
+        "lookup_ziel": null,
+        "status": "bestaetigt_auftrag",
+        "befund": "Das abfotografierte Rezept. SharePoint-Spaltentyp 'Bild' - die Datei landet in SiteAssets, die Spalte haelt nur den Verweis. In der App wird sie in einem EIGENEN Schreibvorgang nach der Aufnahme gefuellt.",
+        "erforderliche_aenderung": "Anlegen (Bild). Bereits in der Liste angelegt."
       }
     ]
   },

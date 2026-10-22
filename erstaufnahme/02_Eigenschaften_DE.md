@@ -136,6 +136,10 @@ Set(gblReset; false);;
 Set(gblMeldung; "");;
 Set(gblMeldungArt; "");;
 Set(gblFehlerText; "");;
+// Meldung, falls das Rezeptbild nicht geschrieben werden konnte.
+// gblFoto steht hier ABSICHTLICH nicht: Es ist ein Bild, kein Text -
+// ein Set(gblFoto; "") wuerde es zu Text machen.
+Set(gblFotoFehler; "");;
 // Textpuffer der drei Eingabefelder. Sie sind Text, kein Datensatz -
 // "" ist hier also richtig und noetig, weil Default darauf zeigt.
 Set(gblTxtD; "");;

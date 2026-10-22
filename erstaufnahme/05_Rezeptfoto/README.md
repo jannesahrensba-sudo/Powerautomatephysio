@@ -1,11 +1,18 @@
-# Rezept fotografieren – optionaler Zusatz
+# Rezeptfoto über einen Flow – nur noch der Rückfallweg
 
-> **Nicht Teil der App.** Die Erstaufnahme funktioniert vollständig ohne
-> diesen Ordner. Er braucht einen Power-Automate-Flow.
-
-Was er ergänzt: in Schritt 2 der Erstaufnahme-App eine Kamera. Ein Tipp löst
-aus, die Aufnahme erscheint als Vorschau, „Foto ablegen" schickt sie in eine
-SharePoint-Dokumentbibliothek – benannt nach Patient und Zeitpunkt.
+> **Sie brauchen diesen Ordner wahrscheinlich nicht mehr.**
+>
+> Die Kamera steckt inzwischen **fest in Schritt 2** der Erstaufnahme-App, und
+> das Bild geht direkt in die SharePoint-Spalte `RezeptBild` auf derselben
+> Rezeptzeile wie Befund und Anamnese. Kein Flow, keine zweite Ablage.
+>
+> Dieser Ordner beschreibt den Weg über einen Power-Automate-Flow in eine
+> Dokumentbibliothek. Nehmen Sie ihn **nur**, wenn sich die Bild-Spalte aus der
+> App heraus nicht beschreiben lässt – also wenn nach dem Speichern die
+> Warnung „Das Rezeptbild wurde NICHT gespeichert" erscheint.
+>
+> In dem Fall: In der App `conFoto` stehen lassen, nur den zweiten `Patch` auf
+> `RezeptBild` durch den Flow-Aufruf unten ersetzen.
 
 ---
 

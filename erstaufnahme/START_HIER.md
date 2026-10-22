@@ -44,7 +44,7 @@ nichts – sie wird die aktuelle.
 | Schritt | Was der Therapeut sieht |
 |---|---|
 | **1 Patient** | Suchfeld, Trefferliste mit Name und Geburtsdatum, je Zeile „Aufnehmen". |
-| **2 Befund und Anamnese** | Diagnose laut Rezept, Erstbefund, Anamnese. Liegt schon eine Aufnahme vor, bietet die App an, sie als Ausgangspunkt zu übernehmen. „Aufnahme speichern". |
+| **2 Befund und Anamnese** | Diagnose laut Rezept, Erstbefund, Anamnese, und darunter die Kamera fuers Rezept. Liegt schon eine Aufnahme vor, bietet die App an, sie als Ausgangspunkt zu übernehmen. „Aufnahme speichern". |
 
 Nach dem Speichern springt die App zurück zu Schritt 1 und ist bereit für den
 nächsten Patienten.
@@ -95,7 +95,7 @@ Fehler.
 Rechtsklick auf `scrAufnahme` → **Code einfügen** → vollständigen Inhalt von
 `01_AppShell_einfuegen.yaml` einfügen.
 
-Danach steht `conApp` mit 41 untergeordneten Steuerelementen im Baum.
+Danach steht `conApp` mit 47 untergeordneten Steuerelementen im Baum.
 
 ## Schritt 5 – Durchspielen (8 Minuten)
 
@@ -106,7 +106,10 @@ Legen Sie einen Testpatienten mit erkennbarem Namen an, etwa `ZZ-Test`.
 | Vorschau starten | Anthrazitfarbene Kopfleiste, darunter die Patientensuche |
 | Patient suchen und „Aufnehmen" | Schritt 2 mit Namen und Geburtsdatum im dunklen Kopf |
 | Ohne Text speichern | Hinweis „Bitte Erstbefund und Anamnese ausfüllen.", beide Felder rot umrandet |
+| Auf das Kamerabild tippen | Vorschau erscheint, Kamera weicht, „Neu aufnehmen" erscheint |
 | Beides ausfüllen, speichern | Grüne Meldung mit der Nummer, zurück zu Schritt 1 |
+| **In SharePoint die Zeile öffnen** | **Das Rezeptbild hängt in der Spalte `RezeptBild`** |
+| Ohne Foto speichern | Funktioniert genauso – das Foto ist freiwillig |
 | **In der Behandlungs-App denselben Patienten aufrufen** | **Diagnose, Erstbefund und Anamnese stehen unter „Befund und Anamnese"** |
 | Denselben Patienten nochmal aufnehmen | Der goldene Kasten „Vorherige übernehmen" erscheint |
 | „Vorherige übernehmen" | Alle drei Felder gefüllt, Meldung „Übernommen" |
@@ -115,6 +118,36 @@ Die fett markierte Zeile ist der eigentliche Test. Erst wenn der Befund in
 der anderen App auftaucht, arbeiten die beiden zusammen.
 
 ---
+
+## Das Rezeptfoto
+
+Die Kamera steht in Schritt 2 unter den Textfeldern. Tippen löst aus, die
+Aufnahme ersetzt das Kamerabild durch eine Vorschau, „Neu aufnehmen" verwirft
+sie wieder. Ohne Foto speichert die Aufnahme genauso – es ist freiwillig.
+
+Gespeichert wird in die SharePoint-Spalte **`RezeptBild`** (Typ *Bild*), auf
+**derselben Rezeptzeile** wie Befund und Anamnese. Kein Flow, keine zweite
+Ablage, kein Zuordnungsproblem.
+
+**Das Bild geht in einem eigenen Schreibvorgang raus**, erst nachdem die
+Aufnahme gespeichert ist. Der Grund: Das Schreiben in eine Bild-Spalte aus
+einer Canvas-App ist die einzige Stelle dieser App, die ich nicht belegen
+kann. Stünde es im selben `Patch`, würde ein Fehler daran den ganzen
+Schreibvorgang kippen – getippter Befund weg. Getrennt gilt: **Die Aufnahme
+ist gespeichert, komme was wolle.**
+
+Klappt das Bild nicht, wird die Erfolgsmeldung zur Warnung und nennt die
+Zeilennummer zum Nachtragen:
+
+> Aufnahme gespeichert als Nr. 42. … **ABER: Das Rezeptbild wurde NICHT
+> gespeichert – bitte in SharePoint an Zeile 42 nachtragen.**
+
+Sehen Sie das dauerhaft, führt der Weg über einen Flow:
+[`05_Rezeptfoto/`](05_Rezeptfoto/README.md).
+
+**Zur Bildqualität:** Einen Dokumentenscanner gibt es in Canvas Apps nicht –
+keine Kantenerkennung, keine Entzerrung. Rezept flach auf den Tisch, gutes
+Licht, von oben. Das steht auch als Hinweis in der App.
 
 ## Folgerezept: warum „Vorherige übernehmen"
 
@@ -154,9 +187,8 @@ Im Kopf steht statt „physio / HUMAN PERFORMANCE" der Titel **„Erstaufnahme"*
 - **Keine Behandlungsdokumentation.** Dafür ist die andere App da.
 - **Keine Anlagen.** Vertrag und Datenschutzerklärung laufen digital über die
   Anmelde-App.
-- **Kein Rezeptfoto im Grundumfang.** Es liegt als einschaltbarer Zusatz in
-  [`05_Rezeptfoto/`](05_Rezeptfoto/README.md) – braucht einen
-  Power-Automate-Flow, die App läuft ohne ihn vollständig.
+- **Keine Bildbearbeitung.** Das Rezeptfoto geht so in die Liste, wie die
+  Kamera es liefert – kein Zuschneiden, kein Entzerren.
 
 ## Geprüft und nicht geprüft
 

@@ -135,6 +135,10 @@ Set(gblReset, false);
 Set(gblMeldung, "");
 Set(gblMeldungArt, "");
 Set(gblFehlerText, "");
+// Message if the prescription image could not be written.
+// gblFoto is DELIBERATELY absent: it is an image, not text - a
+// Set(gblFoto, "") would make it text.
+Set(gblFotoFehler, "");
 // Text buffers for the three input fields. They are text, not
 // records - so "" is correct and necessary here, because Default
 // points at them.
