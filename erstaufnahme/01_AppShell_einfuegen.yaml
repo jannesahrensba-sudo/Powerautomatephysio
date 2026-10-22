@@ -2,7 +2,7 @@
 # Physio Human Performance - Erstaufnahme
 #
 # Zweite App neben der Behandlungs-App. Sie schreibt Diagnose,
-# Erstbefund und Anamnese in die Liste "Rezept" - also genau in die
+# Erstbefund und Anamnese in die Liste "Rezepte" - also genau in die
 # Felder, aus denen die Behandlungs-App den Befund bereits liest.
 # An der Behandlungs-App ist KEINE Aenderung noetig.
 #
@@ -10,14 +10,35 @@
 #
 # So gehen Sie vor:
 #   1. Zwei SharePoint-Listen als Datenquellen hinzufuegen:
-#      Patientenstamm und Rezept.
+#      Patientenstamm und Rezepte.
 #   2. Die App-Eigenschaften aus 02_Eigenschaften_DE.md setzen.
 #   3. Diesen Code auf den Bildschirm scrAufnahme einfuegen.
 #
-# Die Datenquelle heisst hier REZEPT (Einzahl), so wie in der
-# Behandlungs-App. Heisst sie in IHRER App anders, ersetzen Sie
-# Rezept ueberall durch den Namen aus dem Bereich Daten - es sind
-# genau vier Stellen, und 'RezeptBild' bleibt dabei unangetastet.
+# ------------------------------------------------------------------
+# ZUM NAMEN DER DATENQUELLE - bitte NICHT per Suchen-und-Ersetzen
+#
+# Hier heisst sie REZEPTE (Mehrzahl), wie die SharePoint-Liste selbst.
+# In der Behandlungs-App heisst dieselbe Liste REZEPT (Einzahl) - der
+# Name ist ein Alias je App, beide sind richtig, solange sie auf
+# dieselbe Liste zeigen.
+#
+# Heisst sie in IHRER App anders, aendern Sie GENAU DIESE VIER
+# Stellen von Hand:
+#      Filter(Rezepte, PatientID = ThisItem.ID)
+#      Patch(Rezepte, Defaults(Rezepte), { ... })        <- zwei Stellen
+#      Patch(Rezepte, gblAufnahme, { RezeptBild: gblFoto })
+#
+# Ein globales Ersetzen von "Rezept" trifft auch die SPALTENNAMEN und
+# macht die App kaputt. Diese drei duerfen sich NIE aendern:
+#      'Diagnose laut Rezept'   <- Spalte, Einzahl, auch in der
+#                                  Mehrzahl-Variante der Datenquelle
+#      RezeptBild               <- Spalte
+#      gblLetztesRezept         <- Variable
+#
+# Ist ein Spaltenname falsch, unterkringelt Studio nicht das Wort,
+# sondern den GANZEN Datensatz { ... } - der Fehler sieht dann so
+# aus, als laege er an der Datenquelle.
+# ------------------------------------------------------------------
 #
 # ENTSCHEIDEND: Beide Apps muessen auf DIESELBE SharePoint-Liste
 # zeigen. Tun sie das nicht, erscheint der Befund nie in der
@@ -443,7 +464,7 @@
                                 // Befund uebernehmen, wenn es ein Folgerezept ist.
                                 Set(
                                     gblLetztesRezept,
-                                    First(Sort(Filter(Rezept, PatientID = ThisItem.ID), ID, SortOrder.Descending))
+                                    First(Sort(Filter(Rezepte, PatientID = ThisItem.ID), ID, SortOrder.Descending))
                                 );
                                 Set(gblAufnahme, Blank()); Set(gblFoto, Blank());
                                 Set(gblTxtD, ""); Set(gblTxtB, ""); Set(gblTxtA, "");
@@ -814,8 +835,8 @@
                                         gblAufnahme,
                                         IfError(
                                             Patch(
-                                                Rezept,
-                                                Defaults(Rezept),
+                                                Rezepte,
+                                                Defaults(Rezepte),
                                                 {
                                                     PatientID: gblPatient.ID,
                                                     'Diagnose laut Rezept': Trim(txtDiagnose.Text),
@@ -842,7 +863,7 @@
                                         If(
                                             Not(IsBlank(gblFoto)),
                                             IfError(
-                                                Patch(Rezept, gblAufnahme, { RezeptBild: gblFoto }),
+                                                Patch(Rezepte, gblAufnahme, { RezeptBild: gblFoto }),
                                                 // Das Blank() am Ende ist kein Beiwerk:
                                                 // IfError verlangt fuer Wert und Ersatz
                                                 // denselben Typ. Patch liefert einen

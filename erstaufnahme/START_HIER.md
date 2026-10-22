@@ -18,14 +18,14 @@ Rechnen Sie mit **20 bis 25 Minuten**.
 **An der Behandlungs-App ist keine einzige Änderung nötig.** Sie liest den
 Befund heute schon aus genau den Feldern, die diese App schreibt:
 
-| Diese App schreibt in `Rezept` | Die Behandlungs-App liest |
+| Diese App schreibt in `Rezepte` | Die Behandlungs-App liest |
 |---|---|
 | `PatientID` | `Filter(Rezept, PatientID = ThisItem.ID)` |
 | `Diagnose laut Rezept` | `gblRezept.'Diagnose laut Rezept'` |
 | `Erstbefund` | `gblRezept.Erstbefund` |
 | `Anamnese` | `gblRezept.Anamnese` |
 
-> **Die beiden Apps nennen die Datenquelle unterschiedlich:** hier `Rezept`,
+> **Die beiden Apps nennen die Datenquelle unterschiedlich:** hier `Rezepte`,
 > in der Behandlungs-App `Rezept`. Der Name innerhalb einer App ist nur ein
 > lokaler Alias – entscheidend ist, dass **beide auf dieselbe SharePoint-Liste
 > zeigen**. Tun sie das nicht, erscheint der Befund nie in der Behandlungs-App.
@@ -189,6 +189,53 @@ Im Kopf steht statt „physio / HUMAN PERFORMANCE" der Titel **„Erstaufnahme"*
   Anmelde-App.
 - **Keine Bildbearbeitung.** Das Rezeptfoto geht so in die Liste, wie die
   Kamera es liefert – kein Zuschneiden, kein Entzerren.
+
+## Wenn Studio den ganzen Datensatz rot unterkringelt
+
+Sieht so aus, als sei die Datenquelle schuld – ist sie aber meistens nicht:
+
+```
+Patch(
+    Rezepte;
+    Defaults(Rezepte);
+    {
+        PatientID: gblPatient.ID;
+        'Diagnose laut Rezepte': Trim(txtDiagnose.Text);   <- hier
+        Erstbefund: Trim(txtErstbefund.Text);
+        Anamnese: Trim(txtAnamnese.Text)
+    }
+)
+```
+
+Ist **ein** Feldname im Datensatz unbekannt, markiert Power Apps den
+**kompletten Block `{ … }`**, nicht das einzelne Wort. Der Name der
+Datenquelle davor bleibt dabei türkis und ohne Kringel – das ist das
+Erkennungszeichen: **türkis = aufgelöst, der Fehler liegt weiter unten.**
+
+Häufigste Ursache: ein globales Suchen-und-Ersetzen von `Rezept` nach
+`Rezepte`. Das trifft auch die **Spalte** `'Diagnose laut Rezept'`, die in
+beiden Apps in der Einzahl heißt. Diese drei Namen dürfen sich beim
+Umbenennen der Datenquelle **nie** ändern:
+
+| Name | Was es ist |
+|---|---|
+| `'Diagnose laut Rezept'` | SharePoint-Spalte, immer Einzahl |
+| `RezeptBild` | SharePoint-Spalte |
+| `gblLetztesRezept` | Variable in der App |
+
+Zu ändern sind beim Umbenennen genau vier Stellen, alle mit einer
+Klammer dahinter: `Filter(…)`, `Patch(…)`, `Defaults(…)` und das zweite
+`Patch(…)` fürs Foto.
+
+Vorab prüfen lässt sich das ohne Studio:
+
+```
+python3 tools/pruefe_felder.py erstaufnahme/01_AppShell_einfuegen.yaml erstaufnahme/03_Spalten.json
+```
+
+Der Lauf meldet jeden Spaltennamen, den es in SharePoint nicht gibt.
+
+---
 
 ## Geprüft und nicht geprüft
 
