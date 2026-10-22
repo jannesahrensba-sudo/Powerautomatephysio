@@ -843,7 +843,14 @@
                                             Not(IsBlank(gblFoto)),
                                             IfError(
                                                 Patch(Rezept, gblAufnahme, { RezeptBild: gblFoto }),
-                                                Set(gblFotoFehler, FirstError.Message)
+                                                // Das Blank() am Ende ist kein Beiwerk:
+                                                // IfError verlangt fuer Wert und Ersatz
+                                                // denselben Typ. Patch liefert einen
+                                                // Datensatz, Set einen Wahrheitswert.
+                                                // Ohne Blank() passt der Typ nicht und
+                                                // Studio markiert jedes Set auf
+                                                // gblFotoFehler als ungueltig.
+                                                Set(gblFotoFehler, FirstError.Message); Blank()
                                             )
                                         );
                                         Set(gblPatient, Blank());
