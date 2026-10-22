@@ -18,14 +18,14 @@ Rechnen Sie mit **20 bis 25 Minuten**.
 **An der Behandlungs-App ist keine einzige Änderung nötig.** Sie liest den
 Befund heute schon aus genau den Feldern, die diese App schreibt:
 
-| Diese App schreibt in `Rezepte` | Die Behandlungs-App liest |
+| Diese App schreibt in `Rezept` | Die Behandlungs-App liest |
 |---|---|
 | `PatientID` | `Filter(Rezept, PatientID = ThisItem.ID)` |
 | `Diagnose laut Rezept` | `gblRezept.'Diagnose laut Rezept'` |
 | `Erstbefund` | `gblRezept.Erstbefund` |
 | `Anamnese` | `gblRezept.Anamnese` |
 
-> **Die beiden Apps nennen die Datenquelle unterschiedlich:** hier `Rezepte`,
+> **Die beiden Apps nennen die Datenquelle unterschiedlich:** hier `Rezept`,
 > in der Behandlungs-App `Rezept`. Der Name innerhalb einer App ist nur ein
 > lokaler Alias – entscheidend ist, dass **beide auf dieselbe SharePoint-Liste
 > zeigen**. Tun sie das nicht, erscheint der Befund nie in der Behandlungs-App.
@@ -85,7 +85,7 @@ Englisch läuft.
 > Woran Sie es erkennen: Tippen Sie `If(` in die Formelleiste. Steht dort
 > `If( Bedingung; Dann; Sonst )`, nehmen Sie die DE-Datei.
 
-**Zwei** Listen verbinden (`Patientenstamm` und `Rezepte`), Bildschirm
+**Zwei** Listen verbinden (`Patientenstamm` und `Rezept`), Bildschirm
 `scrAufnahme` anlegen, dann `App.Formulas` und `App.OnStart` setzen. **Vor**
 dem Einfügen des Oberflächencodes – sonst fehlen die Farben und alles zeigt
 Fehler.

@@ -23,10 +23,10 @@ noch fehlen.
 | Name in der App | Liste |
 |---|---|
 | `Patientenstamm` | Patientenstammdaten |
-| `Rezepte` | Rezepte |
+| `Rezept` | Rezepte |
 
 > **Prüfen Sie, dass beide Apps auf dieselbe Liste zeigen.** Diese App
-> spricht die Datenquelle als `Rezepte` an, die laufende Behandlungs-App als
+> spricht die Datenquelle als `Rezept` an, die laufende Behandlungs-App als
 > `Rezept`. Der Name innerhalb einer App ist nur ein lokaler Alias – was
 > zählt, ist die SharePoint-Liste dahinter. Zeigen die beiden auf
 > **verschiedene** Listen, erscheint der Befund nie in der Behandlungs-App.

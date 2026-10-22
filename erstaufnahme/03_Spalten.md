@@ -2,11 +2,23 @@
 
 Diese App schreibt in die Felder, aus denen die Behandlungs-App den Befund
 bereits liest - deshalb erscheint eine Aufnahme dort ohne jede Änderung an
-der anderen App. Dazu kommt seit neuem das Rezeptbild.
+der anderen App. Dazu kommt das Rezeptbild.
 
-> **Die Datenquelle heißt in dieser App `Rezepte`, in der Behandlungs-App
-> `Rezept`.** Der Name innerhalb einer App ist nur ein lokaler Alias -
-> entscheidend ist, dass beide auf **dieselbe SharePoint-Liste** zeigen.
+## Zwei Namen für dieselbe Sache
+
+| | heißt | wo |
+|---|---|---|
+| die SharePoint-Liste | **`Rezepte`** | in SharePoint, und im PowerShell-Skript |
+| die Datenquelle in der App | **`Rezept`** | in Power Fx, also in jeder Formel |
+
+Der Name in der App ist nur ein lokaler Alias. **Entscheidend ist, dass diese
+App und die Behandlungs-App auf dieselbe Liste zeigen** - sonst erscheint der
+Befund dort nie. Nachsehen: in beiden Apps den Bereich **Daten** öffnen und
+den Eintrag anklicken.
+
+Heißt die Datenquelle in Ihrer App anders, ersetzen Sie `Rezept` im
+Oberflächencode - es sind genau **vier** Stellen, und `RezeptBild` bleibt
+dabei unangetastet.
 
 > **Grenze:** Die Spalten der Liste Rezept sind nicht gegen die Liste selbst geprueft. Fehlt eine, zeigt Studio direkt nach dem Einfuegen einen Formelfehler an der betroffenen Stelle.
 
@@ -28,7 +40,7 @@ der anderen App. Dazu kommt seit neuem das Rezeptbild.
 | [OK] | `Nachname` | `Nachname` | Text | Suche und Anzeige. |
 | [OK] | `Geburtsdatum` | `Geburtsdatum` | Datum | Unterscheidet gleiche Namen. |
 
-## Rezepte (lesen und schreiben)
+## Rezept (lesen und schreiben)
 
 | | Anzeigename | Interner Name | Typ | Bedeutung |
 |---|---|---|---|---|
@@ -44,10 +56,10 @@ der anderen App. Dazu kommt seit neuem das Rezeptbild.
 Befund und Anamnese gehen in einem `Patch`, das Bild in einem **zweiten**:
 
 ```powerfx
-Set(gblAufnahme; Patch(Rezepte; Defaults(Rezepte); { Erstbefund: ...; ... }));;
+Set(gblAufnahme; Patch(Rezept; Defaults(Rezept); { Erstbefund: ...; ... }));;
 // erst danach, und nur wenn ein Foto da ist:
 IfError(
-    Patch(Rezepte; gblAufnahme; { RezeptBild: gblFoto });
+    Patch(Rezept; gblAufnahme; { RezeptBild: gblFoto });
     Set(gblFotoFehler; FirstError.Message)
 )
 ```
@@ -72,7 +84,8 @@ Nachtragen.
 ## Wenn eine Spalte fehlt
 
 `04_Spalten_anlegen.ps1` legt die fehlenden an - es prüft zuerst und ändert
-nichts Vorhandenes. Zuerst immer mit `-WhatIf` ausführen.
+nichts Vorhandenes. Dort steht die **Liste** `Rezepte`, nicht der App-Alias.
+Zuerst immer mit `-WhatIf` ausführen.
 
 **`RezeptBild` legt das Skript nicht an.** Bild-Spalten lassen sich mit
 `Add-PnPField` nicht zuverlässig erzeugen; sie ist in SharePoint von Hand

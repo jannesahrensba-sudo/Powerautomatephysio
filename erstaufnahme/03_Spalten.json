@@ -3,7 +3,7 @@
   "stand": "2026-09-12",
   "quellenlage": {
     "hinweis": "Diese App legt KEINE neue Spalte an. Sie schreibt genau die Felder, die die Behandlungs-App bereits liest.",
-    "belegt_durch": "Der von Ihnen eingefuegte Studio-Code beider Apps: die Behandlungs-App liest gblRezept.'Diagnose laut Rezept', gblRezept.Erstbefund und gblRezept.Anamnese, die Aufnahme-App schreibt dieselben Felder. Die Datenquelle heisst in der Behandlungs-App Rezept, in der Aufnahme-App Rezepte - beide muessen auf dieselbe SharePoint-Liste zeigen.",
+    "belegt_durch": "Der Studio-Code beider Apps. Die Datenquelle heisst in dieser App wie in der Behandlungs-App 'Rezept' (Einzahl). Der Name ist ein App-Alias - entscheidend ist, dass beide auf dieselbe SharePoint-Liste zeigen.",
     "nicht_geprueft": "Die Spalten der Liste Rezept sind nicht gegen die Liste selbst geprueft. Fehlt eine, zeigt Studio direkt nach dem Einfuegen einen Formelfehler an der betroffenen Stelle."
   },
   "statuslegende": {
@@ -51,7 +51,7 @@
         "erforderliche_aenderung": "keine"
       }
     ],
-    "Rezepte": [
+    "Rezept": [
       {
         "anzeigename": "ID",
         "interner_name": "ID",
